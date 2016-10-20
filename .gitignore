@@ -1,0 +1,11 @@
+*.pyc
+*.pyo
+*.log
+*.db
+config.py
+data/
+
+.project
+.pydevproject
+.settings/
+
