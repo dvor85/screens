@@ -21,6 +21,7 @@ def GET(target, post=None, cookie=None, headers=None, trys=1):
         return http
     finally:
         resp.close()
+
         
 def rListFiles(path):
         files = []
@@ -30,3 +31,10 @@ def rListFiles(path):
             else:
                 files.append(os.path.join(path, f))
         return files
+    
+
+def makedirs(path):
+    try:
+        os.makedirs(path)
+    except:
+        pass

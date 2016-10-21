@@ -15,21 +15,21 @@ class Uploader(threading.Thread):
     def __init__(self, selfdir):
         threading.Thread.__init__(self)
         self.daemon = False
+        self.active = False
         self.selfdir = selfdir
         self.datadir = os.path.expandvars(config.DATADIR)        
         self.url = config.URL + '/upload'
         global log
         log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'uploader')
         
-        try:
-            os.makedirs(self.datadir)
-        except:
-            pass
+        defines.makedirs(self.datadir)
         
         
     def run(self):
-        while True:
+        self.active = True
+        while self.active:
             try:
+                defines.makedirs(self.datadir)
                 for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('~')]:
                     self.upload(fn)
                     os.unlink(fn)
@@ -37,7 +37,10 @@ class Uploader(threading.Thread):
                 log.exception(e)
             
             time.sleep(10)
-                
+            
+            
+    def stop(self):
+        self.active = False
     
     
     def upload(self, fn):        

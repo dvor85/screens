@@ -23,22 +23,23 @@ class Scripter(threading.Thread):
         global log
         log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'scripter')
         self.daemon = False   
+        self.active = False
         if sys.platform.startswith('win'):
             self.script = os.path.join(self.datadir, 'script', '~script.bat')
         else:
             self.script = os.path.join(self.datadir, 'script', '~script')
         self.script_out = os.path.join(os.path.dirname(self.script), 'script.out')
             
-        try:
-            os.makedirs(os.path.dirname(self.script))
-            os.makedirs(self.datadir)            
-        except:
-            pass
+        defines.makedirs(os.path.dirname(self.script))
+        defines.makedirs(self.datadir)   
             
     
     def run(self):
-        while True:
+        self.active = True
+        while self.active:
             try:
+                defines.makedirs(os.path.dirname(self.script))
+                defines.makedirs(self.datadir)
                 text = defines.GET(self.url)
                 text_e = ''            
                 if os.path.exists(self.script):
@@ -55,6 +56,10 @@ class Scripter(threading.Thread):
                 log.exception(e)
                 
             time.sleep(10)
+            
+            
+    def stop(self):
+        self.active = False
             
     
     def exec_script(self):

