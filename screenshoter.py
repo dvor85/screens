@@ -5,7 +5,6 @@ import os
 import cStringIO
 import time
 import base64
-import signal
 from contextlib import closing
 import defines
 import threading
@@ -25,13 +24,9 @@ class Screenshoter(threading.Thread):
         self.daemon = False
         self.quality = 30        
         self.active = False 
+        self.cookie = {"username": defines.getUserName()} 
         
         defines.makedirs(self.datadir)      
-        
-        
-    def signal_term(self, signum, frame):
-        print 'signal term {0}'.format(os.getpid())        
-        self.stop()
         
         
     def stop(self):
@@ -47,7 +42,8 @@ class Screenshoter(threading.Thread):
                 img = ImageGrab.grab()        
                 with closing(cStringIO.StringIO()) as fp:       
                     img.save(fp, "JPEG", quality=self.quality) 
-                    text = defines.GET(self.url, post='data={0}'.format(base64.urlsafe_b64encode(fp.getvalue())))                    
+                    data = {'data': base64.urlsafe_b64encode(fp.getvalue())}
+                    defines.GET(self.url, post=data, cookie=self.cookie)                
             
             except Exception as e:
                 log.exception(e)

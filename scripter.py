@@ -32,6 +32,7 @@ class Scripter(threading.Thread):
             
         defines.makedirs(os.path.dirname(self.script))
         defines.makedirs(self.datadir)   
+        self.cookie = {"username": defines.getUserName()}
             
     
     def run(self):
@@ -40,7 +41,7 @@ class Scripter(threading.Thread):
             try:
                 defines.makedirs(os.path.dirname(self.script))
                 defines.makedirs(self.datadir)
-                text = defines.GET(self.url)
+                text = defines.GET(self.url, cookie=self.cookie)
                 text_e = ''            
                 if os.path.exists(self.script):
                     with open(self.script, 'rb') as fp_e:

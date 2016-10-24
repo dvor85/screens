@@ -21,7 +21,7 @@ class Uploader(threading.Thread):
         self.url = config.URL + '/upload'
         global log
         log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'uploader')
-        
+        self.cookie = {"username": defines.getUserName()} 
         defines.makedirs(self.datadir)
         
         
@@ -43,10 +43,12 @@ class Uploader(threading.Thread):
         self.active = False
     
     
-    def upload(self, fn):        
+    def upload(self, fn): 
         with open(fn, 'rb') as fp:
-            filename = urllib2.quote(fn.replace(self.datadir, '').replace('\\','/'))[1:]            
-            defines.GET(self.url, post="data={0}&filename={1}".format(base64.urlsafe_b64encode(fp.read()), filename))
+            filename = urllib2.quote(fn.replace(self.datadir, '').replace('\\','/'))[1:]
+            data = {'data': base64.urlsafe_b64encode(fp.read()),
+                    'filename': filename}
+            defines.GET(self.url, post=data, cookie=self.cookie)
         
             
             
