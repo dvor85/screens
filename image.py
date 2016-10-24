@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, time, base64
+import Cookie
+import defines
 
 class ImageStore():
     def __init__(self, selfdir, env):
         self.selfdir = selfdir
         self.env = env
-        self.store_dir = "/tmp/"
-        from utils import Request
-        self.params = Request(env)
+        self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))        
+        self.datadir = os.path.join('/tmp/.screens', self.env.get('REMOTE_ADDR'), self.cookie['username'].value)
+        self.imagedir = os.path.join(self.datadir, 'images')
+        defines.makedirs(self.imagedir)
+        self.params = defines.Request(env)
     
     
     def store(self, data):
-        try:
-            fn = os.path.join(self.store_dir, "{0}/{1}.jpg".format(self.env.get('REMOTE_ADDR'), time.time()))
-            try:
-                os.mkdir(os.path.dirname(fn))
-            except:
-                pass
+        fn = os.path.join(self.imagedir, "{0}.jpg".format(time.time()))
+        try:            
+            defines.makedirs(self.imagedir)
             
             with open(fn, 'wb') as fp:
                 fp.write(base64.urlsafe_b64decode(data))
