@@ -29,7 +29,7 @@ def GET(target, post=None, cookie=None, headers=None, trys=1):
         resp.close()
         
 
-class Request(UserDict):
+class QueryParam(UserDict):
    
     def __init__(self, environ):
         
@@ -113,5 +113,12 @@ def getUserName():
         return os.getenv('USERNAME')
     else:
         return os.getenv('USER')
+    
+    
+def getDataDIR():
+    if sys.platform.startswith('win'):
+        return os.path.expandvars('%APPDATA%/.screens')
+    else:
+        return os.path.expanduser('~/.screens')
     
     

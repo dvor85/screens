@@ -5,6 +5,7 @@ import config
 import defines
 import logger
 import time
+import requests
 
 
 log = None
@@ -15,7 +16,7 @@ class Env(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = False
         self.selfdir = selfdir
-        self.datadir = os.path.expandvars(config.DATADIR)        
+        self.datadir = defines.getDataDIR()        
         self.url = config.URL + '/env'
         self.cookie = {"username": os.getenv('USERNAME')}
         global log
@@ -24,7 +25,7 @@ class Env(threading.Thread):
         defines.makedirs(self.datadir)
         
     def run(self):
-        print defines.GET(self.url, cookie=self.cookie)
+        print requests.get(self.url, cookies=self.cookie, auth=config.AUTH, timeout=(1,5)).text
 #             time.sleep(2)
         
         

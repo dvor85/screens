@@ -16,7 +16,7 @@ log = None
 class Screen():
     def __init__(self, selfdir):
         self.sefdir = selfdir
-        self.datadir = os.path.expandvars(config.DATADIR)
+        self.datadir = defines.getDataDIR()
         self.daemons = []
         global log
         log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'screenshoter')
@@ -54,7 +54,8 @@ class Screen():
 
 if __name__ == '__main__':
     selfdir = os.path.abspath(os.path.dirname(__file__)) 
-    Screen(selfdir).start()
+    Screen(selfdir).start()    
+    log.debug(os.getpid())
     log.debug('Exit')
         
     

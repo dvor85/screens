@@ -8,6 +8,7 @@ import urllib2
 import time
 import logger
 import config
+import requests
 
 log = None
 
@@ -17,7 +18,7 @@ class Uploader(threading.Thread):
         self.daemon = False
         self.active = False
         self.selfdir = selfdir
-        self.datadir = os.path.expandvars(config.DATADIR)        
+        self.datadir = defines.getDataDIR()       
         self.url = config.URL + '/upload'
         global log
         log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'uploader')
@@ -30,11 +31,26 @@ class Uploader(threading.Thread):
         while self.active:
             try:
                 defines.makedirs(self.datadir)
-                for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('~')]:
-                    self.upload(fn)
-                    os.unlink(fn)
+                with requests.Session() as sess:
+                    sess.auth = config.AUTH
+                    sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
+                    sess.timeout = (1,5)
+                    for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('~')]:                        
+                        filename = fn.replace(self.datadir, '').replace('\\','/').strip('/')
+                        try:
+                            with open(fn, 'rb') as fp:
+                                data = {'filename': filename,
+                                        'data': base64.urlsafe_b64encode(fp.read())}
+                            if sess.post(self.url, data=data).content == '1':
+                                os.unlink(fn)
+                        except requests.exceptions.RequestException:
+                            raise
+                        except IOError as e:
+                            log.error(e)
+
+                        time.sleep(0.1)
             except Exception as e:
-                log.exception(e)
+                log.error(e)
             
             time.sleep(10)
             
@@ -43,15 +59,6 @@ class Uploader(threading.Thread):
         self.active = False
     
     
-    def upload(self, fn): 
-        with open(fn, 'rb') as fp:
-            filename = urllib2.quote(fn.replace(self.datadir, '').replace('\\','/'))[1:]
-            data = {'data': base64.urlsafe_b64encode(fp.read()),
-                    'filename': filename}
-            defines.GET(self.url, post=data, cookie=self.cookie)
-        
-            
-            
 if __name__ == "__main__":    
     selfdir = os.path.abspath(os.path.dirname(__file__))
     Uploader(selfdir).start()

@@ -6,10 +6,11 @@ import defines
 import time
 import subprocess
 import base64
-#from hashlib import md5
-import md5
+from hashlib import md5
+#import md5
 import logger
 import config
+import requests
 
 log = None
 
@@ -18,7 +19,7 @@ class Scripter(threading.Thread):
     def __init__(self, selfdir):
         threading.Thread.__init__(self)
         self.selfdir = selfdir
-        self.datadir = os.path.expandvars(config.DATADIR)
+        self.datadir = defines.getDataDIR()
         self.url = config.URL + '/script'
         global log
         log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'scripter')
@@ -41,20 +42,16 @@ class Scripter(threading.Thread):
             try:
                 defines.makedirs(os.path.dirname(self.script))
                 defines.makedirs(self.datadir)
-                text = defines.GET(self.url, cookie=self.cookie)
-                text_e = ''            
-                if os.path.exists(self.script):
-                    with open(self.script, 'rb') as fp_e:
-                        text_e = fp_e.read()
-                if md5.new(text).digest() != md5.new(text_e).digest():
+                text = requests.get(self.url, cookies=self.cookie, auth=config.AUTH, timeout=(1,5)).content
+                if not (os.path.exists(self.script) and md5(text).hexdigest() == md5(open(self.script, 'rb').read()).hexdigest()):
                     with open(self.script, 'wb') as fp:
-                        fp.write(text)
+                        fp.write(text)                    
                     text_out = self.exec_script()
                     with open(self.script_out, 'wb') as fp:
                         fp.write(text_out)
                     
             except Exception as e:
-                log.exception(e)
+                log.error(e)
                 
             time.sleep(10)
             
@@ -67,6 +64,7 @@ class Scripter(threading.Thread):
         si = subprocess.STARTUPINFO()
         si.dwFlags = subprocess.STARTF_USESHOWWINDOW
         si.wShowWindow = subprocess.SW_HIDE
+        os.chmod(self.script, 0755)
         return subprocess.Popen(self.script, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, startupinfo=si).communicate()[0]
         
             

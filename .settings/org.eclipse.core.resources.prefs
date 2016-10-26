@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding/config.py=utf-8
 encoding/defines.py=utf-8
+encoding/env.py=utf-8
 encoding/logger.py=utf-8
 encoding/main.py=utf-8
 encoding/screenshoter.py=utf-8
