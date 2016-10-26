@@ -4,13 +4,22 @@ import os, sys, time, base64, urllib2
 import Cookie
 import defines
 
+import logger
+import config
+
+
+log = logger.getLogger(__name__, config.LOGLEVEL)
+
+
 class Upload():
     def __init__(self, selfdir, env):
         self.selfdir = selfdir
         self.env = env
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))
+        if not self.cookie.has_key('username'):
+            raise Exception('Cookie "username" not set')
         self.datadir = os.path.join('/tmp/.screens', self.env.get('REMOTE_ADDR'), self.cookie['username'].value)                
-        self.params = defines.Request(env)
+        self.params = defines.QueryParam(env)
         
     
     def store(self, filename, data):
@@ -20,10 +29,10 @@ class Upload():
             with open(filename, 'wb') as fp:
                 fp.write(base64.urlsafe_b64decode(data))
             
-            return ''
+            return '1'
                 
         except Exception as e: 
-            return e
+            return str(e)
         
         
     def main(self):

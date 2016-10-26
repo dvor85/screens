@@ -29,7 +29,7 @@ def GET(target, post=None, cookie=None, headers=None, trys=1):
         resp.close()
         
 
-class Request(UserDict):
+class QueryParam(UserDict):
    
     def __init__(self, environ):
         

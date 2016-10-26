@@ -4,8 +4,11 @@ import time
 import urllib2
 import os ,sys
 import logger
+import config
 
-log = logger.Logger('wsgi')
+
+log = logger.getLogger(__name__, config.LOGLEVEL)
+
 
 def application(env, start_response):
     selfdir = os.path.abspath(os.path.dirname(__file__))  
@@ -25,14 +28,22 @@ def application(env, start_response):
             body = Upload(selfdir, env).main()
         elif path_info == "/env":
             for k,v in env.items():
-                body += '{0}: {1}\n'.format(k,v)        
-                    
+                body += '{0}: {1}\n'.format(k,v)
+        else:
+            status = '404 Error'
+            body = status
+            
+        if body is None:
+            body = ''
+                
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         status = '500 Error'
         body = 'error {type}: {value}'.format(**{'type':exc_type, 'value':exc_value}) 
-        log.exception(status)      
+        log.error(status)      
     finally:
+        if body is None:
+            body = '' 
         start_response(status, [('Content-type', 'text/plain'),
                                 ('Content-Length', str(len(body)))])
     return [body]
@@ -41,5 +52,5 @@ def application(env, start_response):
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8080, application)
-    print "Serving on port 8080..."
+    log.debug("Serving on port 8080...")
     httpd.serve_forever()
