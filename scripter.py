@@ -12,7 +12,7 @@ import logger
 import config
 import requests
 
-log = None
+log = logger.getLogger(__name__)
 
 
 class Scripter(threading.Thread):
@@ -21,8 +21,6 @@ class Scripter(threading.Thread):
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()
         self.url = config.URL + '/script'
-        global log
-        log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'scripter')
         self.daemon = False   
         self.active = False
         if sys.platform.startswith('win'):

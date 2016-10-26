@@ -1,4 +1,4 @@
-﻿  # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import os
@@ -12,7 +12,8 @@ import logger
 import config
 import requests
 
-log = None
+log = logger.getLogger(__name__)
+
 
 class Screenshoter(threading.Thread):
     def __init__(self, selfdir):
@@ -21,8 +22,6 @@ class Screenshoter(threading.Thread):
         self.datadir = defines.getDataDIR()     
         self.imagesdir = os.path.join(self.datadir, 'images')  
         self.url = config.URL + '/image'
-        global log
-        log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'screenshoter')
         self.daemon = False
         self.quality = 30        
         self.active = False 

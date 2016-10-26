@@ -10,7 +10,7 @@ import logger
 import config
 import requests
 
-log = None
+log = logger.getLogger(__name__)
 
 class Uploader(threading.Thread):
     def __init__(self, selfdir):
@@ -20,8 +20,6 @@ class Uploader(threading.Thread):
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()       
         self.url = config.URL + '/upload'
-        global log
-        log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'uploader')
         self.cookie = {"username": defines.getUserName()} 
         defines.makedirs(self.datadir)
         

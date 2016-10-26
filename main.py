@@ -5,12 +5,17 @@ import signal,time
 from screenshoter import Screenshoter
 from scripter import Scripter
 from uploader import Uploader
-import logger
+import logger, logging
 import config
 import defines
 
 
-log = None
+log = logger.getLogger('main')
+# for i in range(10):
+#     log.debug('test')
+# 
+# 
+# sys.exit()
 
 
 class Screen():
@@ -18,8 +23,8 @@ class Screen():
         self.sefdir = selfdir
         self.datadir = defines.getDataDIR()
         self.daemons = []
-        global log
-        log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'screenshoter')
+#         log.debug('test')
+        
         signal.signal(signal.SIGTERM, self.signal_term)
         self.daemons.append(Screenshoter(self.sefdir))
         self.daemons.append(Scripter(selfdir))
