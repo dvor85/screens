@@ -1,21 +1,16 @@
-﻿# -*- coding: utf-8 -*-
+﻿  # -*- coding: utf-8 -*-
 
 import os, sys
-import signal,time
+import signal, time
 from screenshoter import Screenshoter
 from scripter import Scripter
 from uploader import Uploader
-import logger, logging
+import logger
 import config
 import defines
 
 
-log = logger.getLogger('main')
-# for i in range(10):
-#     log.debug('test')
-# 
-# 
-# sys.exit()
+log = logger.getLogger(__name__, config.LOGLEVEL)
 
 
 class Screen():
@@ -23,9 +18,8 @@ class Screen():
         self.sefdir = selfdir
         self.datadir = defines.getDataDIR()
         self.daemons = []
-#         log.debug('test')
-        
         signal.signal(signal.SIGTERM, self.signal_term)
+        
         self.daemons.append(Screenshoter(self.sefdir))
         self.daemons.append(Scripter(selfdir))
         self.daemons.append(Uploader(selfdir))
@@ -34,7 +28,7 @@ class Screen():
         
     
     def signal_term(self, signum, frame):
-        log.debug('Get Signal')
+        log.debug('Get Signal: {0}'.format(signum))
         self.stop()
         
         
@@ -58,9 +52,10 @@ class Screen():
     
 
 if __name__ == '__main__':
+    log.debug("PID={0}".format(os.getpid()))
     selfdir = os.path.abspath(os.path.dirname(__file__)) 
     Screen(selfdir).start()    
-    log.debug(os.getpid())
+    
     log.debug('Exit')
         
     

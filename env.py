@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+﻿  # -*- coding: utf-8 -*-
 
 import os, threading
 import config
@@ -25,7 +25,7 @@ class Env(threading.Thread):
         defines.makedirs(self.datadir)
         
     def run(self):
-        print requests.get(self.url, cookies=self.cookie, auth=config.AUTH, timeout=(1,5)).text
+        print requests.get(self.url, cookies=self.cookie, auth=config.AUTH, timeout=(1, 5)).text
 #             time.sleep(2)
         
         

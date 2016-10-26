@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+﻿  # -*- coding: utf-8 -*-
 
 import os, sys
 import threading
@@ -10,13 +10,15 @@ import logger
 import config
 import requests
 
-log = logger.getLogger(__name__)
+log = logger.getLogger(__name__, config.LOGLEVEL)
 
 class Uploader(threading.Thread):
     def __init__(self, selfdir):
         threading.Thread.__init__(self)
+        self.name = __name__
         self.daemon = False
         self.active = False
+        
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()       
         self.url = config.URL + '/upload'
@@ -25,6 +27,7 @@ class Uploader(threading.Thread):
         
         
     def run(self):
+        log.info('Start daemon: {0}'.format(self.name))
         self.active = True
         while self.active:
             try:
@@ -32,14 +35,16 @@ class Uploader(threading.Thread):
                 with requests.Session() as sess:
                     sess.auth = config.AUTH
                     sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
-                    sess.timeout = (1,5)
+                    sess.timeout = (1, 5)
                     for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('~')]:                        
-                        filename = fn.replace(self.datadir, '').replace('\\','/').strip('/')
+                        filename = fn.replace(self.datadir, '').replace('\\', '/').strip('/')
                         try:
                             with open(fn, 'rb') as fp:
                                 data = {'filename': filename,
                                         'data': base64.urlsafe_b64encode(fp.read())}
+                            log.debug('Try to upload: {0}'.format(fn))    
                             if sess.post(self.url, data=data).content == '1':
+                                log.debug('Try to delete: {0}'.format(fn))
                                 os.unlink(fn)
                         except requests.exceptions.RequestException:
                             raise

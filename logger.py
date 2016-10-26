@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+﻿  # -*- coding: utf-8 -*-
 
 import logging
 import sys, os
@@ -14,7 +14,7 @@ from logging.handlers import RotatingFileHandler as RFHandler
 #     from logging.handlers import RotatingFileHandler as RFHandler
 
 class Logger(logging.Logger):
-    def __init__(self, name, level=logging.DEBUG):
+    def __init__(self, name, level=logging.NOTSET):
         logging.Logger.__init__(self, name, level=level)
 #            
         lf = logging.Formatter(fmt="%(asctime)-19s  %(levelname)s:%(module)s: %(message)s")  
@@ -25,7 +25,7 @@ class Logger(logging.Logger):
         logfile = os.path.join(defines.getDataDIR(), 'logs/~screens.log') 
             
         defines.makedirs(os.path.dirname(logfile))
-        rfh = RFHandler(filename=logfile, maxBytes=1000, backupCount=2)                
+        rfh = RFHandler(filename=logfile, maxBytes=1024 * 1024, backupCount=2)                
         rfh.setFormatter(lf)     
         self.addHandler(rfh)
         
@@ -48,18 +48,13 @@ class Logger(logging.Logger):
         self.close_handlers()
         
         
-def getLogger(name, level=logging.DEBUG):
+def getLogger(name, level=logging.NOTSET):
     """
     Returns the logger with the specified name.
-    If the logger doesn't exist, it is created.
-
     name       - The name of the logger to retrieve
     """
     logging.setLoggerClass(Logger)
 
-    if name in Logger.manager.loggerDict:
-        return logging.getLogger(name)
-    
     log = logging.getLogger(name)
     log.setLevel(level)
     
