@@ -1,7 +1,10 @@
 eclipse.preferences.version=1
+encoding/archive.py=utf-8
+encoding/base.py=utf-8
 encoding/config.py=utf-8
 encoding/defines.py=utf-8
 encoding/image.py=utf-8
 encoding/logger.py=utf-8
+encoding/online.py=utf-8
 encoding/script.py=utf-8
 encoding/upload.py=utf-8

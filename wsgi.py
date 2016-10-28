@@ -26,6 +26,10 @@ def application(env, start_response):
         elif path_info == "/upload":
             from upload import Upload 
             body = Upload(selfdir, env).main()
+        elif path_info == "/archive":
+            from archive import Archive 
+            body = Archive(selfdir, env).main()    
+                    
         elif path_info == "/env":
             for k,v in env.items():
                 body += '{0}: {1}\n'.format(k,v)
