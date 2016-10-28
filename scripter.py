@@ -28,7 +28,7 @@ class Scripter(threading.Thread):
             
         defines.makedirs(self.script_dir)
         defines.makedirs(self.datadir)   
-        self.cookie = {"username": defines.getUserName()}
+        self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()}
             
     
     def run(self):

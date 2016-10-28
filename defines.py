@@ -114,6 +114,12 @@ def getUserName():
     else:
         return os.getenv('USER')
     
+def getCompName():
+    if sys.platform.startswith('win'):
+        return os.getenv('COMPUTERNAME')
+    else:
+        return os.getenv('COMPUTERNAME')
+    
     
 def getDataDIR():
     if sys.platform.startswith('win'):

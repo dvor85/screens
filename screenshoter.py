@@ -27,7 +27,7 @@ class Screenshoter(threading.Thread):
         self.imagesdir = os.path.join(self.datadir, 'images')  
         self.url = config.URL + '/image'
         self.quality = 30        
-        self.cookie = {"username": defines.getUserName()} 
+        self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()} 
         
         defines.makedirs(self.datadir)      
         
