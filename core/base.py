@@ -3,20 +3,20 @@
 
 import sqlite3
 import os, sys
-import config
-import logger
-import defines
+
+from core import logger, defines
+from core.config import config
 
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Base:
     def __init__(self, root_path): 
         log.info('Init Base')      
-        defines.makedirs(os.path.dirname(config.BASE_FILE))
+        defines.makedirs(os.path.dirname(config['BASE_FILE']))
         
-        self.conn = sqlite3.connect(config.BASE_FILE)
+        self.conn = sqlite3.connect(config['BASE_FILE'])
         self.conn.row_factory = sqlite3.Row
         with self.conn:
 #             self.conn.execute("create table if not exists comps (comp varchar(16), title varchar(32))")

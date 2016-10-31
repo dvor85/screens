@@ -4,18 +4,17 @@ import os, sys, time, base64, urllib2
 import Cookie
 import json
 
-import defines
-import logger
-import config
-import base
+selfdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(selfdir)
+from core import logger, defines, base
+from core.config import config
 
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Archive():
-    def __init__(self, selfdir, env):
-        self.selfdir = selfdir
+    def __init__(self, env):
         self.env = env
         
         self.params = defines.QueryParam(env)
@@ -47,16 +46,16 @@ class Archive():
         if kwargs.has_key('user') and kwargs.has_key('comp') and kwargs.has_key('date') and \
             kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
                 
-            journal = ["{date}/{comp}/{user}/{}".format(f, **kwargs) for f \
-                       in os.listdir("{}/{date}/{comp}/{user}".format(config.ARCHIVE_DIR, **kwargs))]            
+            journal = ["/archive/{date}/{comp}/{user}/{}".format(f, **kwargs) for f \
+                       in os.listdir("{}/{date}/{comp}/{user}".format(config['ARCHIVE_DIR'], **kwargs))]            
         elif kwargs.has_key('comp') and kwargs.has_key('date') and kwargs['comp'] in allowed_comps:
             
-            journal = [u for u in os.listdir("{}/{date}/{comp}".format(config.ARCHIVE_DIR, **kwargs)) if u in allowed_users] 
+            journal = [u for u in os.listdir("{}/{date}/{comp}".format(config['ARCHIVE_DIR'], **kwargs)) if u in allowed_users] 
         elif kwargs.has_key('date'):
             
-            journal = [c for c in os.listdir("{}/{date}".format(config.ARCHIVE_DIR, **kwargs)) if c in allowed_comps]
+            journal = [c for c in os.listdir("{}/{date}".format(config['ARCHIVE_DIR'], **kwargs)) if c in allowed_comps]
         else:
-            journal = os.listdir(config.ARCHIVE_DIR)[::-1]
+            journal = os.listdir(config['ARCHIVE_DIR'])[::-1]
             
         return json.dumps(journal)
     

@@ -2,23 +2,22 @@
 
 import os, sys, time, base64, urllib2
 import Cookie
-import defines
-
-import logger
-import config
 
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+from core import logger, defines, base
+from core.config import config
+
+
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Upload():
-    def __init__(self, selfdir, env):
-        self.selfdir = selfdir
+    def __init__(self, env):
         self.env = env
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))
         if not (self.cookie.has_key('username') and self.cookie.has_key('compname')):
             raise Exception('Cookie not set')
-        self.datadir = os.path.join('/tmp/.screens', self.cookie['compname'].value, self.cookie['username'].value)               
+        self.datadir = os.path.join(config['DATA_DIR'], self.cookie['compname'].value, self.cookie['username'].value)               
         self.params = defines.QueryParam(env)
         
     

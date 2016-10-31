@@ -4,18 +4,15 @@ import os, sys, time, base64, urllib2
 import Cookie
 import json
 
-import defines
-import logger
-import config
-import base
+from core import logger, defines, base
+from core.config import config
 
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Online():
-    def __init__(self, selfdir, env):
-        self.selfdir = selfdir
+    def __init__(self, env):
         self.env = env
         
         self.params = defines.QueryParam(env)
@@ -46,15 +43,14 @@ class Online():
             allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])
                   
             if kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
-                journal = ["{comp}/{user}/images/{}".format(f, **kwargs) for f in os.listdir("{}/{comp}/{user}/images".format(config.DATA_DIR, **kwargs))][-1:]
+                journal = ["/data/{comp}/{user}/images/{}".format(f, **kwargs) for f in os.listdir("{}/{comp}/{user}/images".format(config['DATA_DIR'], **kwargs))][-1:]
         
             
         return json.dumps(journal)
     
 
     def main(self): 
-        return self.get(**self.params)    
-        
-
-            
+        return self.get(**self.params) 
+    
+    
         

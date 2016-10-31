@@ -1,34 +1,37 @@
-from cgi import parse_qs, escape
-import datetime
-import time
-import urllib2
+from cgi import escape
 import os ,sys
-import logger
-import config
+
+selfdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(selfdir)
+from core import logger, defines
+from core.config import config
 
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 def application(env, start_response):
-    selfdir = os.path.abspath(os.path.dirname(__file__))  
+    
     try:
         status = '200 OK'
         body = ''        
         path_info = escape(env['PATH_INFO'])      
                 
         if path_info == "/image":      
-            from image import ImageStore
-            body = ImageStore(selfdir, env).main()
+            from wsgi.image import ImageStore
+            body = ImageStore(env).main()
         elif path_info == "/script":
-            from script import Script
-            body = Script(selfdir, env).main()
+            from wsgi.script import Script
+            body = Script(env).main()
         elif path_info == "/upload":
-            from upload import Upload 
-            body = Upload(selfdir, env).main()
+            from wsgi.upload import Upload 
+            body = Upload(env).main()
+        if path_info == "/online":      
+            from wsgi.online import Online
+            body = Online(env).main()
         elif path_info == "/archive":
-            from archive import Archive 
-            body = Archive(selfdir, env).main()    
+            from wsgi.archive import Archive 
+            body = Archive(env).main()    
                     
         elif path_info == "/env":
             for k,v in env.items():

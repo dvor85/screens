@@ -2,22 +2,21 @@
 
 import os, sys, time, base64
 import Cookie
-import defines
-import logger
-import config
+
+from core import logger, defines, base
+from core.config import config
 
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class ImageStore():
-    def __init__(self, selfdir, env):
-        self.selfdir = selfdir
+    def __init__(self, env):
         self.env = env
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))
         if not (self.cookie.has_key('username') and self.cookie.has_key('compname')):
             raise Exception('Cookie not set')
-        self.datadir = os.path.join('/tmp/.screens', self.cookie['compname'].value, self.cookie['username'].value)
+        self.datadir = os.path.join(config['DATA_DIR'], self.cookie['compname'].value, self.cookie['username'].value)
         self.imagedir = os.path.join(self.datadir, 'images')
         defines.makedirs(self.imagedir)
         self.params = defines.QueryParam(env)
@@ -41,8 +40,6 @@ class ImageStore():
     def main(self):
         if self.params.has_key('data'):
             return self.store(self.params.get('data'))
-        else:
-            return ''
         
        
         
