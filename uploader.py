@@ -7,10 +7,10 @@ import defines
 import urllib2
 import time
 import logger
-import config
+from config import config
 import requests
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 class Uploader(threading.Thread):
     def __init__(self, selfdir):
@@ -21,7 +21,7 @@ class Uploader(threading.Thread):
         
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()       
-        self.url = config.URL + '/upload'
+        self.url = config['URL'] + 'api/upload'
         self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()} 
         defines.makedirs(self.datadir)
         
@@ -33,7 +33,7 @@ class Uploader(threading.Thread):
             try:
                 defines.makedirs(self.datadir)
                 with requests.Session() as sess:
-                    sess.auth = config.AUTH
+                    sess.auth = config['AUTH']
                     sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
                     sess.timeout = (1, 5)
                     for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('~')]:                        

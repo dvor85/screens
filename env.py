@@ -17,7 +17,7 @@ class Env(threading.Thread):
         self.daemon = False
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()        
-        self.url = config.URL + '/env'
+        self.url = config['URL'] + 'api/env'
         self.cookie = {"username": os.getenv('USERNAME')}
         global log
         log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'env')
@@ -25,7 +25,7 @@ class Env(threading.Thread):
         defines.makedirs(self.datadir)
         
     def run(self):
-        print requests.get(self.url, cookies=self.cookie, auth=config.AUTH, timeout=(1, 5)).text
+        print requests.get(self.url, cookies=self.cookie, auth=config['AUTH'], timeout=(1, 5)).text
 #             time.sleep(2)
         
         

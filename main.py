@@ -6,11 +6,11 @@ from screenshoter import Screenshoter
 from scripter import Scripter
 from uploader import Uploader
 import logger
-import config
+from config import config
 import defines
 
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Screen():

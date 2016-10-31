@@ -9,10 +9,10 @@ from contextlib import closing
 import defines
 import threading
 import logger
-import config
+from config import config
 import requests
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Screenshoter(threading.Thread):
@@ -25,7 +25,7 @@ class Screenshoter(threading.Thread):
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()     
         self.imagesdir = os.path.join(self.datadir, 'images')  
-        self.url = config.URL + '/image'
+        self.url = config['URL'] + 'api/image'
         self.quality = 30        
         self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()} 
         
@@ -50,7 +50,7 @@ class Screenshoter(threading.Thread):
                     data = {'data': base64.urlsafe_b64encode(fp.getvalue())}
                     try:
                         log.debug('Try to upload image data')
-                        r = requests.post(self.url, data=data, cookies=self.cookie, auth=config.AUTH, timeout=(1, 5))
+                        r = requests.post(self.url, data=data, cookies=self.cookie, auth=config['AUTH'], timeout=(1, 5))
                         r.raise_for_status()                        
                         if r.content != '1':
                             raise requests.exceptions.HTTPError
@@ -62,7 +62,7 @@ class Screenshoter(threading.Thread):
                         log.debug('Try to save: {0}'.format(fn))                       
                         with open(fn, 'wb') as imfp:
                             imfp.write(fp.getvalue())                        
-                        for i in os.listdir(self.imagesdir)[-config.SAVED_IMAGES::-1]:
+                        for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
                             log.debug('Try to delete: {0}'.format(os.path.join(self.imagesdir, i)))  
                             os.unlink(os.path.join(self.imagesdir, i))
             

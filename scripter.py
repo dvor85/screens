@@ -7,10 +7,10 @@ import time
 import subprocess
 from hashlib import md5
 import logger
-import config
+from config import config
 import requests
 
-log = logger.getLogger(__name__, config.LOGLEVEL)
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Scripter(threading.Thread):
@@ -21,7 +21,7 @@ class Scripter(threading.Thread):
         self.active = False
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()
-        self.url = config.URL + '/script'
+        self.url = config['URL'] + 'api/script'
         
         self.script_dir = os.path.join(self.datadir, 'script') 
         self.md5file = os.path.join(self.script_dir, '~script.md5')
@@ -40,7 +40,7 @@ class Scripter(threading.Thread):
                 defines.makedirs(self.datadir)
                 data = {'filename': os.path.basename(self.md5file)}
                 log.debug('Try to download: {0}'.format(data.get('filename')))
-                index_content = requests.post(self.url, data=data, cookies=self.cookie, auth=config.AUTH, timeout=(1, 5)).content
+                index_content = requests.post(self.url, data=data, cookies=self.cookie, auth=config['AUTH'], timeout=(1, 5)).content
                 if not (os.path.exists(self.md5file) and md5(index_content).hexdigest() == md5(open(self.md5file, 'rb').read()).hexdigest()):
                     indexlist = self.parseIndex(index_content) 
                     if self.download(indexlist):
@@ -57,7 +57,7 @@ class Scripter(threading.Thread):
         if not indexlist:
             return False
         with requests.Session() as sess:
-            sess.auth = config.AUTH
+            sess.auth = config['AUTH']
             sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
             sess.timeout = (1, 5)
             for index in indexlist:
