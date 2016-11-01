@@ -21,7 +21,7 @@ class Scripter(threading.Thread):
         self.active = False
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()
-        self.url = config['URL'] + 'api/script'
+        self.url = config['URL'] + '/script'
         
         self.script_dir = os.path.join(self.datadir, 'script') 
         self.md5file = os.path.join(self.script_dir, '~script.md5')

@@ -21,7 +21,7 @@ class Uploader(threading.Thread):
         
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()       
-        self.url = config['URL'] + 'api/upload'
+        self.url = config['URL'] + '/upload'
         self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()} 
         defines.makedirs(self.datadir)
         
