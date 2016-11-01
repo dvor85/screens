@@ -4,6 +4,7 @@ encoding//core/config.py=utf-8
 encoding//core/defines.py=utf-8
 encoding//core/init_core.py=utf-8
 encoding//core/logger.py=utf-8
+encoding//service/videomaker.py=utf-8
 encoding//wsgi/archive.py=utf-8
 encoding//wsgi/image.py=utf-8
 encoding//wsgi/online.py=utf-8

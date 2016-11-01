@@ -26,7 +26,7 @@ def application(env, start_response):
         elif path_info == "/upload":
             from wsgi.upload import Upload 
             body = Upload(env).main()
-        if path_info == "/online":      
+        elif path_info == "/online":      
             from wsgi.online import Online
             body = Online(env).main()
         elif path_info == "/archive":

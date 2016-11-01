@@ -101,11 +101,12 @@ def rListFiles(path):
         return files
     
 
-def makedirs(path):
+def makedirs(path, mode=0775):
     try:
-        os.makedirs(path)
-    except:
-        pass
+        if not os.path.exists(path):
+            os.makedirs(path, mode)
+    except Exception as e:
+        print e
     
 
 def getUserName():

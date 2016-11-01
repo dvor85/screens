@@ -43,7 +43,7 @@ class Online():
             allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])
                   
             if kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
-                journal = ["/data/{comp}/{user}/images/{}".format(f, **kwargs) for f in os.listdir("{}/{comp}/{user}/images".format(config['DATA_DIR'], **kwargs))][-1:]
+                journal = sorted(["/data/{comp}/{user}/images/{}".format(f, **kwargs) for f in os.listdir("{}/{comp}/{user}/images".format(config['DATA_DIR'], **kwargs))])[-1:]
         
             
         return json.dumps(journal)

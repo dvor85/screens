@@ -46,8 +46,8 @@ class Archive():
         if kwargs.has_key('user') and kwargs.has_key('comp') and kwargs.has_key('date') and \
             kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
                 
-            journal = ["/archive/{date}/{comp}/{user}/{}".format(f, **kwargs) for f \
-                       in os.listdir("{}/{date}/{comp}/{user}".format(config['ARCHIVE_DIR'], **kwargs))]            
+            journal = sorted(["/archive/{date}/{comp}/{user}/{}".format(f, **kwargs) for f \
+                       in os.listdir("{}/{date}/{comp}/{user}".format(config['ARCHIVE_DIR'], **kwargs))])            
         elif kwargs.has_key('comp') and kwargs.has_key('date') and kwargs['comp'] in allowed_comps:
             
             journal = [u for u in os.listdir("{}/{date}/{comp}".format(config['ARCHIVE_DIR'], **kwargs)) if u in allowed_users] 
@@ -55,7 +55,7 @@ class Archive():
             
             journal = [c for c in os.listdir("{}/{date}".format(config['ARCHIVE_DIR'], **kwargs)) if c in allowed_comps]
         else:
-            journal = os.listdir(config['ARCHIVE_DIR'])[::-1]
+            journal = sorted(os.listdir(config['ARCHIVE_DIR']), reverse=True)
             
         return json.dumps(journal)
     
