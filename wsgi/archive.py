@@ -4,10 +4,8 @@ import os, sys, time, base64, urllib2
 import Cookie
 import json
 
-selfdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(selfdir)
+from config import config
 from core import logger, defines, base
-from core.config import config
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -17,7 +15,7 @@ class Archive():
     def __init__(self, env):
         self.env = env
         
-        self.params = defines.QueryParam(env)
+        self.params = defines.QueryParam(env, safe=True)
 #         self.username = self.getUsername()
         self.username = 'admin'
         self.db = base.Base('')

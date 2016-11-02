@@ -3,9 +3,8 @@
 import os, sys, time, base64, urllib2
 import Cookie
 
-
-from core import logger, defines, base
-from core.config import config
+from config import config
+from core import logger, defines
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -17,7 +16,8 @@ class Upload():
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))
         if not (self.cookie.has_key('username') and self.cookie.has_key('compname')):
             raise Exception('Cookie not set')
-        self.datadir = os.path.join(config['DATA_DIR'], self.cookie['compname'].value, self.cookie['username'].value)               
+        self.datadir = os.path.join(config['DATA_DIR'], defines.safe_str(self.cookie['compname'].value), \
+                                    defines.safe_str(self.cookie['username'].value))             
         self.params = defines.QueryParam(env)
         
     
@@ -36,7 +36,7 @@ class Upload():
         
     def main(self):
         if self.params.has_key('data') and self.params.has_key('filename'):
-            return self.store(os.path.join(self.datadir, urllib2.unquote(self.params.get('filename'))), self.params.get('data'))
+            return self.store(os.path.join(self.datadir, urllib2.unquote(defines.safe_str(self.params.get('filename')))), self.params.get('data'))
         else:
             return ''
 

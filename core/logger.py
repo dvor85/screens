@@ -17,10 +17,6 @@ class Logger(logging.Logger):
         self.addHandler(sh)
         
 
-    def __call__(self, msg):
-        logging.log(self.level, msg)
-        
-        
     def _log(self, level, msg, args, exc_info=None, extra=None):
         if sys.platform.startswith('win'):
             msg = str(msg).decode('windows-1251', 'ignore')

@@ -4,8 +4,8 @@
 import sqlite3
 import os, sys
 
+from config import config
 from core import logger, defines
-from core.config import config
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])

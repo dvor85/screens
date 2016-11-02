@@ -2,18 +2,18 @@
 import os, sys
 from string import Template
 
+from config import config
 from core import logger, defines
-from core.config import config
 
-selfdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Generator():
     
     def __init__(self):
-        self.templates_dir = os.path.join(selfdir, 'templates')
-        self.generated_dir = os.path.join(selfdir, 'generated')
+        self.templates_dir = os.path.join(config['SELF_DIR'], 'templates')
+        self.generated_dir = os.path.join(config['SELF_DIR'], 'generated')
         defines.makedirs(self.generated_dir)
         
         

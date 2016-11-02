@@ -3,9 +3,8 @@
 import os, sys, time, base64
 import Cookie
 
-
-from core import logger, defines, base
-from core.config import config
+from config import config
+from core import logger, defines
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -18,9 +17,10 @@ class Script():
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))
         if not (self.cookie.has_key('username') and self.cookie.has_key('compname')):
             raise Exception('Cookie not set')
-        self.datadir = os.path.join(config['DATA_DIR'], self.cookie['compname'].value, self.cookie['username'].value)  
+        self.datadir = os.path.join(config['DATA_DIR'], defines.safe_str(self.cookie['compname'].value), \
+                                    defines.safe_str(self.cookie['username'].value))  
         self.script_dir = os.path.join(self.datadir, 'script')              
-        self.query_file = os.path.join(self.script_dir, self.params.get('filename'))               
+        self.query_file = os.path.join(self.script_dir, defines.safe_str(self.params.get('filename')))               
         
     
     def get(self):       

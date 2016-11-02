@@ -4,8 +4,8 @@ import os, sys, time, base64, urllib2
 import Cookie
 import json
 
+from config import config
 from core import logger, defines, base
-from core.config import config
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -15,7 +15,7 @@ class Online():
     def __init__(self, env):
         self.env = env
         
-        self.params = defines.QueryParam(env)
+        self.params = defines.QueryParam(env, safe=True)
 #         self.username = self.getUsername()
         self.username = 'admin'
         self.db = base.Base('')

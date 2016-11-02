@@ -1,10 +1,9 @@
 from cgi import escape
 import os ,sys
 
-selfdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(selfdir)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import config
 from core import logger, defines
-from core.config import config
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
