@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import sys
 import os
@@ -29,7 +30,8 @@ class Screenshoter(threading.Thread):
         self.url = config['URL'] + '/image'
         self.quality = 30        
         self.maxRMS = 50
-        self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()} 
+        self.cookie = {"username": base64.urlsafe_b64encode(defines.getUserName()), \
+                       'compname': base64.urlsafe_b64encode(defines.getCompName())}
         
         defines.makedirs(self.datadir)      
         

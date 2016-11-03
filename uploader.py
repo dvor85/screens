@@ -1,4 +1,5 @@
-﻿  # -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import os, sys
 import threading
@@ -22,7 +23,8 @@ class Uploader(threading.Thread):
         self.selfdir = selfdir
         self.datadir = defines.getDataDIR()       
         self.url = config['URL'] + '/upload'
-        self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()} 
+        self.cookie = {"username": base64.urlsafe_b64encode(defines.getUserName()), \
+                       'compname': base64.urlsafe_b64encode(defines.getCompName())} 
         defines.makedirs(self.datadir)
         
         
@@ -36,7 +38,7 @@ class Uploader(threading.Thread):
                     sess.auth = config['AUTH']
                     sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
                     sess.timeout = (1, 5)
-                    for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('~')]:                        
+                    for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('-')]:                        
                         filename = fn.replace(self.datadir, '').replace('\\', '/').strip('/')
                         try:
                             with open(fn, 'rb') as fp:

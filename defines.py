@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import urllib, urllib2, os, sys
 
 from cgi import parse_qs, escape
 from UserDict import UserDict
+import re
+
+
+__denied_regex = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
 
 
 
@@ -31,8 +36,8 @@ def GET(target, post=None, cookie=None, headers=None, trys=1):
 
 class QueryParam(UserDict):
    
-    def __init__(self, environ):
-        
+    def __init__(self, environ, safe=False):
+        self.safe = safe
         self.data = parse_qs(environ['QUERY_STRING'])
         if environ['REQUEST_METHOD'].upper() == 'POST':
             try:           
@@ -43,7 +48,18 @@ class QueryParam(UserDict):
         
     
     def __getitem__(self, key):
-        return escape(UserDict.__getitem__(self, key)[0])
+        val = UserDict.__getitem__(self, key)[0]
+        if self.safe:
+            return safe_str('', val)
+        return escape(val)
+    
+    
+def safe_str(s):  
+    res = s
+    if not isinstance(res, unicode):
+        res = res.decode('utf-8', errors='ignore')
+    
+    return __denied_regex.sub('', res).encode('utf-8', errors='ignore')
 
 
 def parseStr(s):
@@ -101,24 +117,18 @@ def rListFiles(path):
         return files
     
 
-def makedirs(path):
-    try:
-        os.makedirs(path)
-    except:
-        pass
-
-
 def getUserName():
     if sys.platform.startswith('win'):
-        return os.getenv('USERNAME')
+        return os.getenv('USERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
     else:
         return os.getenv('USER')
+
     
 def getCompName():
     if sys.platform.startswith('win'):
-        return os.getenv('COMPUTERNAME')
+        return os.getenv('COMPUTERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
     else:
-        return os.getenv('COMPUTERNAME')
+        return os.getenv('HOSTNAME')
     
     
 def getDataDIR():
@@ -127,4 +137,13 @@ def getDataDIR():
     else:
         return os.path.expanduser('~/.screens')
     
+    
+def makedirs(path, mode=0775):
+    try:
+        if not os.path.exists(path):
+            os.makedirs(path, mode)
+    except Exception as e:
+        print e
+    
+
     

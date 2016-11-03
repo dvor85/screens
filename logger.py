@@ -1,4 +1,5 @@
-﻿  # -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import logging
 import sys, os
@@ -22,7 +23,7 @@ class Logger(logging.Logger):
         sh = logging.StreamHandler(stream=sys.stdout)
         sh.setFormatter(lf)
         self.addHandler(sh)
-        logfile = os.path.join(defines.getDataDIR(), 'logs/~screens.log') 
+        logfile = os.path.join(defines.getDataDIR(), 'logs/-screens.log') 
             
         defines.makedirs(os.path.dirname(logfile))
         rfh = RFHandler(filename=logfile, maxBytes=1024 * 1024, backupCount=2)                
@@ -36,15 +37,13 @@ class Logger(logging.Logger):
     It is need for rotating without errors in windows
     """        
     def close_handlers(self):
-        for h in self.handlers:
-            h.close()
+        if sys.platform.startswith('win'):
+            for h in self.handlers:
+                h.close()
         
 
     def _log(self, level, msg, args, exc_info=None, extra=None):      
-        if sys.platform.startswith('win'):
-            msg = str(msg).decode('windows-1251', 'ignore')
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
-        
         self.close_handlers()
         
         

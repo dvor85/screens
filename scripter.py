@@ -1,10 +1,12 @@
-﻿  # -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import os, sys
 import threading
 import defines
 import time
 import subprocess
+import base64
 from hashlib import md5
 import logger
 from config import config
@@ -24,11 +26,12 @@ class Scripter(threading.Thread):
         self.url = config['URL'] + '/script'
         
         self.script_dir = os.path.join(self.datadir, 'script') 
-        self.md5file = os.path.join(self.script_dir, '~script.md5')
+        self.md5file = os.path.join(self.script_dir, '-script.md5')
             
         defines.makedirs(self.script_dir)
         defines.makedirs(self.datadir)   
-        self.cookie = {"username": defines.getUserName(), 'compname': defines.getCompName()}
+        self.cookie = {"username": base64.urlsafe_b64encode(defines.getUserName()), \
+                       'compname': base64.urlsafe_b64encode(defines.getCompName())}
             
     
     def run(self):
