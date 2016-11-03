@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import os, sys, time, base64, urllib2
 import Cookie

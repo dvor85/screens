@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import logging, logging.handlers
 import sys
@@ -16,11 +17,21 @@ class Logger(logging.Logger):
         sh.setFormatter(lf)
         self.addHandler(sh)
         
-
-    def _log(self, level, msg, args, exc_info=None, extra=None):
+        self.close_handlers()
+        
+        
+    """
+    It is need for rotating without errors in windows
+    """        
+    def close_handlers(self):
         if sys.platform.startswith('win'):
-            msg = str(msg).decode('windows-1251', 'ignore')
+            for h in self.handlers:
+                h.close()
+        
+
+    def _log(self, level, msg, args, exc_info=None, extra=None):      
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
+        self.close_handlers()
         
         
 def getLogger(name, level=logging.NOTSET):

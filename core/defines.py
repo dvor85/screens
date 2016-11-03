@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import urllib, urllib2, os, sys
 
@@ -8,7 +9,7 @@ import re
 import shutil
 
 
-__denied_regex = re.compile(ur'[^~@./_A-zА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
+__denied_regex = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
 
 
 def GET(target, post=None, cookie=None, headers=None, trys=1):    
@@ -49,7 +50,7 @@ class QueryParam(UserDict):
     def __getitem__(self, key):
         val = UserDict.__getitem__(self, key)[0]
         if self.safe:
-            return safe_str('', val.strip())
+            return safe_str('', val)
         return escape(val)
     
     

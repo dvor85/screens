@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
 
 import os, sys, time, base64
 import Cookie
@@ -16,8 +17,9 @@ class ImageStore():
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))
         if not (self.cookie.has_key('username') and self.cookie.has_key('compname')):
             raise Exception('Cookie not set')
-        self.datadir = os.path.join(config['DATA_DIR'], defines.safe_str(self.cookie['compname'].value), \
-                                    defines.safe_str(self.cookie['username'].value))
+        self.datadir = os.path.join(config['DATA_DIR'], \
+                                    defines.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)), \
+                                    defines.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))
         self.imagedir = os.path.join(self.datadir, 'images')
         defines.makedirs(self.imagedir, 0777)
         self.params = defines.QueryParam(env)
