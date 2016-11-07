@@ -7,7 +7,7 @@ import threading, multiprocessing
 import subprocess
 
 from config import config
-from core import logger, defines
+from core import logger, utils
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -34,8 +34,9 @@ class VideoProcess(multiprocessing.Process):
                            user=self.user,
                            comp=self.comp)
             
-            dst_file = os.path.join(config['ARCHIVE_DIR'], '{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4'.format(**_params))
-            defines.makedirs(os.path.dirname(dst_file))
+            dst_file = os.path.join(config['ARCHIVE_DIR'], '{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4'.format(**_params))            
+            utils.makedirs(os.path.dirname(dst_file), mode=0775)            
+            
             proc = subprocess.Popen('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
                                     -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
                                     -profile:v baseline -b:v 100k -qp 28 -an -r 25 {}'.format(dst_file), \

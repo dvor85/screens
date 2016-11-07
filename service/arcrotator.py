@@ -7,7 +7,7 @@ import threading
 import shutil
 
 from config import config
-from core import logger, defines
+from core import logger, utils
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -25,7 +25,7 @@ class ArchiveRotator(threading.Thread):
         
     def calculate_arc_size(self):
         total_size = 0
-        for f in defines.rListFiles(config['ARCHIVE_DIR']):
+        for f in utils.rListFiles(config['ARCHIVE_DIR']):
             total_size += os.path.getsize(os.path.join(config['ARCHIVE_DIR'], f))
         return total_size/(1024**3)
         

@@ -5,7 +5,7 @@ import os, sys, time, base64, urllib2
 import Cookie
 
 from config import config
-from core import logger, defines
+from core import logger, utils
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -18,17 +18,18 @@ class Upload():
         if not (self.cookie.has_key('username') and self.cookie.has_key('compname')):
             raise Exception('Cookie not set')
         self.datadir = os.path.join(config['DATA_DIR'], \
-                                    defines.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)), \
-                                    defines.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))         
-        self.params = defines.QueryParam(env)
+                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)), \
+                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))         
+        self.params = utils.QueryParam(env)
         
     
     def store(self, filename, data):
         try:            
-            defines.makedirs(os.path.dirname(filename))
+            utils.makedirs(os.path.dirname(filename), mode=0775)
             
             with open(filename, 'wb') as fp:
                 fp.write(base64.urlsafe_b64decode(data))
+            os.chmod(filename, 0664)
             
             return '1'
                 
@@ -38,7 +39,7 @@ class Upload():
         
     def main(self):
         if self.params.has_key('data') and self.params.has_key('filename'):
-            return self.store(os.path.join(self.datadir, urllib2.unquote(defines.safe_str(self.params.get('filename')))), self.params.get('data'))
+            return self.store(os.path.join(self.datadir, urllib2.unquote(utils.safe_str(self.params.get('filename')))), self.params.get('data'))
         else:
             return ''
 

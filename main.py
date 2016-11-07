@@ -7,7 +7,7 @@ import threading
 import signal
 
 from config import config
-from core import logger, defines
+from core import logger, utils
 from service.videomaker import VideoMaker
 from service.arcrotator import ArchiveRotator
 from core.init_core import Generator

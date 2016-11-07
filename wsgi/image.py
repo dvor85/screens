@@ -5,7 +5,7 @@ import os, sys, time, base64
 import Cookie
 
 from config import config
-from core import logger, defines
+from core import logger, utils
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
@@ -18,20 +18,20 @@ class ImageStore():
         if not (self.cookie.has_key('username') and self.cookie.has_key('compname')):
             raise Exception('Cookie not set')
         self.datadir = os.path.join(config['DATA_DIR'], \
-                                    defines.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)), \
-                                    defines.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))
+                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)), \
+                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))
         self.imagedir = os.path.join(self.datadir, 'images')
-        defines.makedirs(self.imagedir, 0777)
-        self.params = defines.QueryParam(env)
+        self.params = utils.QueryParam(env)
     
     
     def store(self, data):
         fn = os.path.join(self.imagedir, "{0}.jpg".format(time.time()))
         try:            
-            defines.makedirs(self.imagedir)
+            utils.makedirs(self.imagedir, mode=0775)
             
             with open(fn, 'wb') as fp:
                 fp.write(base64.urlsafe_b64decode(data))
+            os.chmod(fn, 0664)
             
             return '1'
                 
