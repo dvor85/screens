@@ -119,14 +119,14 @@ def rListFiles(path):
 
 def getUserName():
     if sys.platform.startswith('win'):
-        return os.getenv('USERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
+        return os.getenv('USERNAME')
     else:
         return os.getenv('USER')
 
     
 def getCompName():
     if sys.platform.startswith('win'):
-        return os.getenv('COMPUTERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
+        return os.getenv('COMPUTERNAME')
     else:
         return os.getenv('HOSTNAME')
     

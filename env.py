@@ -2,28 +2,28 @@
 # from __future__ import unicode_literals
 
 import os, threading
-import config
-import defines
+import utils
 import logger
 import time
 import requests
+import base64
+from config import config
 
 
-log = None
+log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Env(threading.Thread):
-    def __init__(self, selfdir):
+    def __init__(self):
         threading.Thread.__init__(self)
         self.daemon = False
-        self.selfdir = selfdir
-        self.datadir = defines.getDataDIR()        
+        self.datadir = utils.getDataDIR()        
         self.url = config['URL'] + '/env'
-        self.cookie = {"username": os.getenv('USERNAME')}
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()), \
+                       'compname': base64.urlsafe_b64encode(utils.getCompName())}
         global log
-        log = logger.Logger(os.path.join(self.datadir, 'logs/~screens.log'), 'env')
         
-        defines.makedirs(self.datadir)
+        utils.makedirs(self.datadir)
         
     def run(self):
         print requests.get(self.url, cookies=self.cookie, auth=config['AUTH'], timeout=(1, 5)).text
@@ -31,6 +31,5 @@ class Env(threading.Thread):
         
         
 if __name__ == "__main__":    
-    selfdir = os.path.abspath(os.path.dirname(__file__))
-    Env(selfdir).start()
+    Env().start()
         

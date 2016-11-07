@@ -4,7 +4,7 @@
 import os, sys
 import threading
 import base64
-import defines
+import utils
 import urllib2
 import time
 import logger
@@ -14,18 +14,20 @@ import requests
 log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 class Uploader(threading.Thread):
-    def __init__(self, selfdir):
+    def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__
         self.daemon = False
         self.active = False
         
-        self.selfdir = selfdir
-        self.datadir = defines.getDataDIR()       
+        self.datadir = utils.getDataDIR()       
         self.url = config['URL'] + '/upload'
-        self.cookie = {"username": base64.urlsafe_b64encode(defines.getUserName()), \
-                       'compname': base64.urlsafe_b64encode(defines.getCompName())} 
-        defines.makedirs(self.datadir)
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()), \
+                       'compname': base64.urlsafe_b64encode(utils.getCompName())} 
+        
+        self.headers = {'user-agent': "{NAME}/{VERSION}".format(**config)}
+        
+        utils.makedirs(self.datadir)
         
         
     def run(self):
@@ -33,12 +35,13 @@ class Uploader(threading.Thread):
         self.active = True
         while self.active:
             try:
-                defines.makedirs(self.datadir)
+                utils.makedirs(self.datadir)
                 with requests.Session() as sess:
                     sess.auth = config['AUTH']
                     sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
                     sess.timeout = (1, 5)
-                    for fn in [f for f in defines.rListFiles(self.datadir) if not os.path.basename(f).startswith('-')]:                        
+                    sess.headers = self.headers
+                    for fn in [f for f in utils.rListFiles(self.datadir) if not os.path.basename(f).startswith('-')]:                        
                         filename = fn.replace(self.datadir, '').replace('\\', '/').strip('/')
                         try:
                             with open(fn, 'rb') as fp:
@@ -67,7 +70,7 @@ class Uploader(threading.Thread):
 if __name__ == "__main__":    
     selfdir = os.path.abspath(os.path.dirname(__file__))
     Uploader(selfdir).start()
-#     for f in defines.rListFiles(selfdir):
+#     for f in utils.rListFiles(selfdir):
 #         log.debug(f)
 #     print Uploader(selfdir).rgetFiles(selfdir)
     

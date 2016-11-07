@@ -3,7 +3,7 @@
 
 import os, sys
 import threading
-import defines
+import utils
 import time
 import subprocess
 import base64
@@ -16,22 +16,23 @@ log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
 class Scripter(threading.Thread):
-    def __init__(self, selfdir):
+    def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__
         self.daemon = False   
         self.active = False
-        self.selfdir = selfdir
-        self.datadir = defines.getDataDIR()
+        self.datadir = utils.getDataDIR()
         self.url = config['URL'] + '/script'
         
         self.script_dir = os.path.join(self.datadir, 'script') 
         self.md5file = os.path.join(self.script_dir, '-script.md5')
             
-        defines.makedirs(self.script_dir)
-        defines.makedirs(self.datadir)   
-        self.cookie = {"username": base64.urlsafe_b64encode(defines.getUserName()), \
-                       'compname': base64.urlsafe_b64encode(defines.getCompName())}
+        utils.makedirs(self.script_dir)
+        utils.makedirs(self.datadir)   
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()), \
+                       'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        
+        self.headers = {'user-agent': "{NAME}/{VERSION}".format(**config)}
             
     
     def run(self):
@@ -39,11 +40,11 @@ class Scripter(threading.Thread):
         self.active = True
         while self.active:
             try:
-                defines.makedirs(os.path.dirname(self.md5file))
-                defines.makedirs(self.datadir)
+                utils.makedirs(os.path.dirname(self.md5file))
+                utils.makedirs(self.datadir)
                 data = {'filename': os.path.basename(self.md5file)}
                 log.debug('Try to download: {0}'.format(data.get('filename')))
-                index_content = requests.post(self.url, data=data, cookies=self.cookie, auth=config['AUTH'], timeout=(1, 5)).content
+                index_content = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers, auth=config['AUTH'], timeout=(1, 5)).content
                 if not (os.path.exists(self.md5file) and md5(index_content).hexdigest() == md5(open(self.md5file, 'rb').read()).hexdigest()):
                     indexlist = self.parseIndex(index_content) 
                     if self.download(indexlist):
@@ -63,6 +64,7 @@ class Scripter(threading.Thread):
             sess.auth = config['AUTH']
             sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
             sess.timeout = (1, 5)
+            sess.headers = self.headers
             for index in indexlist:
                 try:
                     log.debug('Try to download: {0}'.format(index.get('filename')))
@@ -109,7 +111,7 @@ class Scripter(threading.Thread):
         os.chmod(script_file, 0755)
         
         cmds = cmd.split(' ')
-        timeout = defines.parseStr(cmds[1]) if len(cmds) > 1 else 60
+        timeout = utils.parseStr(cmds[1]) if len(cmds) > 1 else 60
         
         proc = subprocess.Popen(script_file, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, cwd=os.path.dirname(script_file), startupinfo=si)
         threading.Timer(timeout, proc.kill).start()

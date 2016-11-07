@@ -3,7 +3,7 @@
 
 import logging
 import sys, os
-import defines
+import utils
 from logging.handlers import RotatingFileHandler as RFHandler
 
 # try:
@@ -23,9 +23,9 @@ class Logger(logging.Logger):
         sh = logging.StreamHandler(stream=sys.stdout)
         sh.setFormatter(lf)
         self.addHandler(sh)
-        logfile = os.path.join(defines.getDataDIR(), 'logs/-screens.log') 
+        logfile = os.path.join(utils.getDataDIR(), 'logs/-screens.log') 
             
-        defines.makedirs(os.path.dirname(logfile))
+        utils.makedirs(os.path.dirname(logfile))
         rfh = RFHandler(filename=logfile, maxBytes=1024 * 1024, backupCount=2)                
         rfh.setFormatter(lf)     
         self.addHandler(rfh)

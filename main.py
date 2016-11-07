@@ -8,24 +8,23 @@ from scripter import Scripter
 from uploader import Uploader
 import logger
 from config import config
-import defines
+import utils
 
 
 log = logger.getLogger(__name__, config['LOGLEVEL'])
 
 
-class Screen():
-    def __init__(self, selfdir):
-        self.sefdir = selfdir
-        self.datadir = defines.getDataDIR()
+class SPclient():
+    def __init__(self):
+        self.datadir = utils.getDataDIR()
         self.daemons = []
         signal.signal(signal.SIGTERM, self.signal_term)
         
-        self.daemons.append(Screenshoter(self.sefdir))
-        self.daemons.append(Scripter(selfdir))
-        self.daemons.append(Uploader(selfdir))
+        self.daemons.append(Screenshoter())
+        self.daemons.append(Scripter())
+        self.daemons.append(Uploader())
         
-        defines.makedirs(self.datadir)
+        utils.makedirs(self.datadir)
         
     
     def signal_term(self, signum, frame):
@@ -54,8 +53,7 @@ class Screen():
 
 if __name__ == '__main__':
     log.debug("PID={0}".format(os.getpid()))
-    selfdir = os.path.abspath(os.path.dirname(__file__)) 
-    Screen(selfdir).start()    
+    SPclient().start()    
     
     log.debug('Exit')
         
