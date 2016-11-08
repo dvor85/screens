@@ -5,13 +5,11 @@ import os, sys
 import time
 import threading
 import shutil
-
 from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
-
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class ArchiveRotator(threading.Thread):

@@ -3,12 +3,11 @@
 
 import os, sys
 from string import Template
-
 from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Generator():

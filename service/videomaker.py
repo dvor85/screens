@@ -5,14 +5,12 @@ import os, sys
 import datetime, time
 import threading, multiprocessing
 import subprocess
-
 from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 sema = multiprocessing.Semaphore(8)
-
 
 
 class VideoProcess(multiprocessing.Process):

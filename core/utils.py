@@ -2,7 +2,6 @@
 # from __future__ import unicode_literals
 
 import urllib, urllib2, os, sys
-
 from cgi import parse_qs, escape
 from UserDict import UserDict
 import re

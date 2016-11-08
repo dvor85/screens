@@ -4,34 +4,24 @@
 import logging, logging.handlers
 import sys
 
+
 class Logger(logging.Logger):
     def __init__(self, name, level=logging.NOTSET):
         logging.Logger.__init__(self, name, level=level) 
-        lf = logging.Formatter(fmt="%(asctime)-19s  %(levelname)s:%(module)s: %(message)s")  
         
-        syslog_handler = logging.handlers.SysLogHandler()
-        syslog_handler.setFormatter(lf)     
+        stream_format = logging.Formatter(fmt="%(asctime)-19s: %(name)s[%(module)s]: %(levelname)s: %(message)s")
+        stream_handler = logging.StreamHandler(stream=sys.stdout)
+        stream_handler.setFormatter(stream_format)
+        self.addHandler(stream_handler)
+        
+        syslog_format = logging.Formatter(fmt="%(name)s: %(levelname)s: [%(module)s]: %(message)s")  
+        syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+        syslog_handler.setFormatter(syslog_format)     
         self.addHandler(syslog_handler)
         
-        sh = logging.StreamHandler(stream=sys.stdout)
-        sh.setFormatter(lf)
-        self.addHandler(sh)
         
-        self.close_handlers()
-        
-        
-    """
-    It is need for rotating without errors in windows
-    """        
-    def close_handlers(self):
-        if sys.platform.startswith('win'):
-            for h in self.handlers:
-                h.close()
-        
-
     def _log(self, level, msg, args, exc_info=None, extra=None):      
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
-        self.close_handlers()
         
         
 def getLogger(name, level=logging.NOTSET):

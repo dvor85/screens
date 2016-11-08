@@ -4,12 +4,11 @@
 
 import sqlite3
 import os, sys
-
 from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Base:

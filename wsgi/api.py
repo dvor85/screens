@@ -2,13 +2,12 @@
 # from __future__ import unicode_literals
 from cgi import escape
 import os ,sys
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 def application(env, start_response):

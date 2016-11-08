@@ -3,12 +3,11 @@
 
 import os, sys, time, base64
 import Cookie
-
 from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class ImageStore():

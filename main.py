@@ -5,7 +5,6 @@ import os, sys
 import time
 import threading
 import signal
-
 from config import config
 from core import logger, utils
 from service.videomaker import VideoMaker
@@ -13,7 +12,7 @@ from service.arcrotator import ArchiveRotator
 from core.init_core import Generator
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Starter():

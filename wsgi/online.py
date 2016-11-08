@@ -4,12 +4,11 @@
 import os, sys, time, base64, urllib2
 import Cookie
 import json
-
 from config import config
 from core import logger, base, utils
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Online():
