@@ -6,45 +6,25 @@ import sys, os
 import utils
 from logging.handlers import RotatingFileHandler as RFHandler
 
-# try:
-#     from cloghandler import ConcurrentRotatingFileHandler as RFHandler
-# except ImportError:
-#     # Next 2 lines are optional:  issue a warning to the user
-#     from warnings import warn
-#     warn("ConcurrentLogHandler package not installed.  Using builtin log handler")
-#     from logging.handlers import RotatingFileHandler as RFHandler
 
 class Logger(logging.Logger):
     def __init__(self, name, level=logging.NOTSET):
         logging.Logger.__init__(self, name, level=level)
-#            
-        lf = logging.Formatter(fmt="%(asctime)-19s  %(levelname)s:%(module)s: %(message)s")  
-            
-        sh = logging.StreamHandler(stream=sys.stdout)
-        sh.setFormatter(lf)
-        self.addHandler(sh)
-        logfile = os.path.join(utils.getDataDIR(), 'logs/-screens.log') 
-            
+
+        stream_format = logging.Formatter(fmt="%(asctime)-19s: %(name)s[%(module)s]: %(levelname)s: %(message)s")
+        stream_handler = logging.StreamHandler(stream=sys.stdout)
+        stream_handler.setFormatter(stream_format)
+        self.addHandler(stream_handler)
+        
+        logfile = os.path.join(utils.getDataDIR(), 'logs/-screens.log')             
         utils.makedirs(os.path.dirname(logfile))
         rfh = RFHandler(filename=logfile, maxBytes=1024 * 1024, backupCount=2)                
-        rfh.setFormatter(lf)     
+        rfh.setFormatter(stream_format)     
         self.addHandler(rfh)
-        
-        self.close_handlers()
-        
-        
-    """
-    It is need for rotating without errors in windows
-    """        
-    def close_handlers(self):
-        if sys.platform.startswith('win'):
-            for h in self.handlers:
-                h.close()
         
 
     def _log(self, level, msg, args, exc_info=None, extra=None):      
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
-        self.close_handlers()
         
         
 def getLogger(name, level=logging.NOTSET):

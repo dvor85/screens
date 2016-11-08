@@ -2,14 +2,12 @@
 # from __future__ import unicode_literals
 
 import urllib, urllib2, os, sys
-
 from cgi import parse_qs, escape
 from UserDict import UserDict
 import re
 
 
 __denied_regex = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
-
 
 
 def GET(target, post=None, cookie=None, headers=None, trys=1):    

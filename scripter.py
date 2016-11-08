@@ -12,7 +12,8 @@ import logger
 from config import config
 import requests
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Scripter(threading.Thread):

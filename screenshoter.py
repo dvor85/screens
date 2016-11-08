@@ -14,7 +14,8 @@ from config import config
 import requests
 import math
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Screenshoter(threading.Thread):

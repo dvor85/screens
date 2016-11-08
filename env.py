@@ -10,7 +10,7 @@ import base64
 from config import config
 
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Env(threading.Thread):

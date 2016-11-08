@@ -11,7 +11,9 @@ import logger
 from config import config
 import requests
 
-log = logger.getLogger(__name__, config['LOGLEVEL'])
+
+log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+
 
 class Uploader(threading.Thread):
     def __init__(self):
