@@ -11,5 +11,6 @@ encoding//wsgi/image.py=utf-8
 encoding//wsgi/online.py=utf-8
 encoding//wsgi/script.py=utf-8
 encoding//wsgi/upload.py=utf-8
+encoding/accessctl.py=utf-8
 encoding/config.py=utf-8
 encoding/main.py=utf-8

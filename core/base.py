@@ -12,7 +12,7 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Base:
-    def __init__(self, root_path): 
+    def __init__(self): 
         log.info('Init Base') 
         utils.makedirs(os.path.dirname(config['BASE_FILE']), mode=0775)     
         
@@ -34,13 +34,19 @@ class Base:
             last_viwer = self.conn.execute('select max(id) as id from viewers').fetchone()['id']
             self.conn.execute('insert into scheme values({0}, {1})'.format(last_viwer, last_user))
             
-    def add_comp(self, comp, title):
-        with self.conn:
-            self.conn.execute('insert into comps values("{0}", "{1}")'.format(comp, title))
             
     def add_scheme(self, viewer, comp, user):
         with self.conn:
             self.conn.execute('insert into scheme values("{0}", "{1}", "{2}")'.format(viewer, comp, user))
+            
+            
+    def get_scheme(self, viewer):
+        try:
+            with self.conn:
+                return self.conn.execute('select viewer, comp, user from scheme where viewer like "{0}%"'.format(viewer)).fetchall()
+        except Exception as e:
+            log.error(e)
+            return []
             
     
     def get_allowed_comps(self, viewer):
@@ -59,19 +65,7 @@ class Base:
             log.error(e)
             return []             
     
-            
-    def get_comps(self, viewer):
-        try:
-            with self.conn:
-                return self.conn.execute("select * from comps inner join ( users inner join scheme on users.id=scheme.user_id ) on comps.comp=users.comp  where viewer_id={0}".format(viewer)).fetchall()
-        except Exception as e:
-            log.error(e)
-            return []
-        
     def test(self):
-#         self.add_comp('10.0.0.193', 'test 1')
-#         self.add_comp('10.0.0.19', 'test 2')
-#         self.add_comp('10.0.0.12', 'test 3')
         self.add_scheme('viewer 1', 'VDV-PC', 'user')
         self.add_scheme('viewer 1', 'VDV-PC', 'admin')
         self.add_scheme('viewer 1', 'COMP2', 'user')
@@ -84,7 +78,7 @@ class Base:
 
     
 if __name__ == "__main__":
-    db = Base('')
+    db = Base()
 #     db.test()    
     print db.get_allowed_comps('viewer 1')
     print db.get_allowed_users('viewer 1', 'VDV-PC')

@@ -9,7 +9,7 @@ from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+log = logger.getLogger(config['NAME'], 0)
 sema = multiprocessing.Semaphore(8)
 
 
