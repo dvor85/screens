@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache">
+<link href="css/base.css" rel="stylesheet" type="text/css" media="screen" />
+<script type="text/javascript" src="js/swfobject.js"></script>
+</head>
+<body>
+	<h3>Screen Viewer</h3>
+	<div id="main_display">
+		<div id="config_bar">
+			<form name="config" action="" onsubmit="return false">
+				<select id="date_select" onchange="get_comps();">
+				</select> <select id="comp_select" onchange="get_users();">
+				</select> <select id="user_select" onchange="get_movies();">
+				</select> <select id="mode_select" onchange="change_mode();">
+					<option value='0'>Online</option>
+					<option value='1'>Archive</option>
+				</select>
+			</form>
+		</div>
+		<div id="display_html">
+			<div id="playlist"></div>
+			<div id="player"></div>
+		</div>
+	</div>
+	<script type="text/javascript" src="js/index.js"></script>
+</body>

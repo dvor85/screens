@@ -18,7 +18,7 @@ class Archive():
         self.params = utils.QueryParam(env, safe=True)
 #         self.username = self.getUsername()
         self.username = 'admin'
-        self.db = base.Base('')
+        self.db = base.Base()
         
         
     def getUsername(self):

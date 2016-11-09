@@ -50,7 +50,7 @@ class QueryParam(UserDict):
     def __getitem__(self, key):
         val = UserDict.__getitem__(self, key)[0]
         if self.safe:
-            return safe_str('', val)
+            return safe_str(val)
         return escape(val)
     
     

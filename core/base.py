@@ -52,7 +52,7 @@ class Base:
     def get_allowed_comps(self, viewer):
         try:
             with self.conn:
-                return [r['comp'] for r in self.conn.execute('select distinct comp from scheme where viewer="{0}"'.format(viewer)).fetchall()]
+                return [r['comp'].encode('utf8') for r in self.conn.execute('select distinct comp from scheme where viewer="{0}"'.format(viewer)).fetchall()]
         except Exception as e:
             log.error(e)
             return []   
@@ -60,7 +60,7 @@ class Base:
     def get_allowed_users(self, viewer, comp):
         try:
             with self.conn:
-                return [r['user'] for r in self.conn.execute('select distinct user from scheme where viewer="{0}" and comp="{1}"'.format(viewer, comp)).fetchall()]
+                return [r['user'].encode('utf8') for r in self.conn.execute('select distinct user from scheme where viewer="{0}" and comp="{1}"'.format(viewer, comp)).fetchall()]
         except Exception as e:
             log.error(e)
             return []             

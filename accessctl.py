@@ -20,7 +20,7 @@ class AccessControl():
 
     def show_scheme(self, viewer):
         for line in self.db.get_scheme(viewer):
-            print "{viewer} | {comp} | {user}".format(**line)
+            print u"{viewer} | {comp} | {user}".format(**line)
     
     
        
