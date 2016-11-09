@@ -29,7 +29,7 @@ class Screenshoter(threading.Thread):
         self.imagesdir = os.path.join(self.datadir, 'images')  
         self.url = config['URL'] + '/image'
         self.quality = 30        
-        self.maxRMS = 50
+        self.maxRMS = 10
         self.img1_histogram, self.img2_histogram = None, None
         self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()), \
                        'compname': base64.urlsafe_b64encode(utils.getCompName())}
@@ -46,7 +46,7 @@ class Screenshoter(threading.Thread):
     Сравнение изображений методом среднеквадратичного отклонения
     :return: среднеквадратичное отклонение. Если  0, то изображения одинаковы
     """    
-    def compare_img(self):        
+    def compare_images(self):        
         h1 = self.img1_histogram
         h2 = self.img2_histogram
         rms = math.sqrt(sum(map(lambda a, b: (a - b) ** 2, h1, h2)) / len(h1))
@@ -65,7 +65,7 @@ class Screenshoter(threading.Thread):
                 
                 img = ImageGrab.grab()
                 self.img1_histogram = img.histogram()
-                rms = self.compare_img() if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
+                rms = self.compare_images() if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
                     
                 log.debug("Root Mean Square={}".format(rms))
                 if rms > self.maxRMS:

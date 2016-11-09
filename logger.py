@@ -29,8 +29,8 @@ class Logger(logging.Logger):
         
 def getLogger(name, level=logging.NOTSET):
     """
-    Returns the logger with the specified name.
-    name       - The name of the logger to retrieve
+    :name The name of the logger to retrieve
+    :return: the logger with the specified name
     """
     logging.setLoggerClass(Logger)
 
