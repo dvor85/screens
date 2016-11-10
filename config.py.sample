@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
+import logging, os, json
+
+
+config=dict(
+NAME = 'spclient',
+VERSION = '1.0.0',    
+URL = 'http://spserver/api', # url to spserver api
+AUTH = ('', ''), # tuple with login and password for url
+SAVED_IMAGES = 300, # amount of saved images when no connection to url
+LOGLEVEL = logging.DEBUG,
+SELF_DIR = os.path.dirname(__file__),
+CHGSCR_THRESHOLD = 50, # change screen threshold (less - higher sensibility, more - lower sensibility)
+SCR_QUALITY = 30, # quality of jpg (0-100)
+)
+
+# load config.json if exists
+try:
+    custom_config_file = os.path.join(config['SELF_DIR'], 'config.json')
+    if os.path.exists(custom_config_file):
+        custom_config = json.load(open(custom_config_file, 'r'))
+        config.update(custom_config)
+except:
+    pass
+    
+

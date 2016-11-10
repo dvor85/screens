@@ -17,6 +17,18 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Scripter(threading.Thread):
+    """
+    Скачивает -script.md5 со списком файлов каждые 10с.
+        Формат -script.md5:
+        md5sum filename command
+        Command = [wait [timeout]|nowait|None]
+    Если command = wait, то запускается filename и ожидает завершения timeout или 60с если не задан.
+    
+    Download -script.md5 with list of files every 10s.
+        Format: md5sum filename command
+        Command = [wait [timeout]|nowait|None]
+    If command is "wait" then exec filename and wait for complete timeout or 60 seconds if not specified  
+    """
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__
@@ -59,6 +71,10 @@ class Scripter(threading.Thread):
             
             
     def download(self, indexlist):
+        """
+        :indexlist: tuple of dictionaries represented of md5 file
+        :return: True if successful or False if other
+        """
         if not indexlist:
             return False
         with requests.Session() as sess:
@@ -84,6 +100,10 @@ class Scripter(threading.Thread):
                         
                     
     def parseIndex(self, indexdata):
+        """
+        :indexdata: raw data of md5 file
+        :return: tuple of dictionaries represented of md5 file
+        """
         index_obj = []
         for line in indexdata.splitlines():
             values = line.split(' ', 2)
@@ -98,6 +118,15 @@ class Scripter(threading.Thread):
             
     
     def exec_script(self, script_file, cmd):
+        """
+        :script_file: Filename to execute
+        :cmd: Если command = wait, то запускается script_file и ожидает завершения timeout или 60с если не задан. 
+        По окончании пишет out file, который будет загружен на сервер модулем uploader. 
+                
+        Command. If None then return. If it's "wait" then wait for complete and write out file, 
+        which will be upload to server.
+        :raise  CalledProcessError if return code is not zero
+        """
         if not cmd:
             return False
         
@@ -118,7 +147,7 @@ class Scripter(threading.Thread):
         threading.Timer(timeout, proc.kill).start()
         if cmd.startswith('wait'):
             script_out = proc.communicate()[0]
-            f = os.path.join(os.path.dirname(script_file), os.path.basename(script_file).lstrip('~'))
+            f = os.path.join(os.path.dirname(script_file), os.path.basename(script_file).lstrip('-'))
             cmd_out_file = "{0}.out".format(f)
             log.debug('Try to save: {0}'.format(cmd_out_file))
             with open(cmd_out_file, 'wb') as fp:

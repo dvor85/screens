@@ -16,6 +16,13 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Uploader(threading.Thread):
+    """
+    Выгружает файлы из data_dir на сервер каждые 10с, за исключением файлов начинающихся с "-". 
+    Все выгруженные файлы удаляются.
+    
+    Upload all of data dir every 10s, except files with leading "-" 
+    All uploaded files are removed.
+    """
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__

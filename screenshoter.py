@@ -19,6 +19,14 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
 class Screenshoter(threading.Thread):
+    """
+    Делает скриншоты каждые 2с и пытается отправить на сервер.
+    Если нет соединения с сервером, то сохраняет последние config[SAVED_IMAGES],
+    которые будут отправлены на сервер модулем "uploader" при восстановлении подключения.
+    
+    Capturing screenshots every 2s and try to upload to server. 
+    If no connection, then save it, and will be uploaded later, when connection recover.
+    """
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__
@@ -28,8 +36,8 @@ class Screenshoter(threading.Thread):
         self.datadir = utils.getDataDIR()     
         self.imagesdir = os.path.join(self.datadir, 'images')  
         self.url = config['URL'] + '/image'
-        self.quality = 30        
-        self.maxRMS = 10
+        self.quality = config['SCR_QUALITY']        
+        self.maxRMS = config['CHGSCR_THRESHOLD']
         self.img1_histogram, self.img2_histogram = None, None
         self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()), \
                        'compname': base64.urlsafe_b64encode(utils.getCompName())}
@@ -42,11 +50,12 @@ class Screenshoter(threading.Thread):
     def stop(self):
         self.active = False
         
-    """
-    Сравнение изображений методом среднеквадратичного отклонения
-    :return: среднеквадратичное отклонение. Если  0, то изображения одинаковы
-    """    
-    def compare_images(self):        
+      
+    def compare_images(self):   
+        """
+        Сравнение изображений методом среднеквадратичного отклонения
+        :return: среднеквадратичное отклонение. Если  0, то изображения одинаковы
+        """       
         h1 = self.img1_histogram
         h2 = self.img2_histogram
         rms = math.sqrt(sum(map(lambda a, b: (a - b) ** 2, h1, h2)) / len(h1))
