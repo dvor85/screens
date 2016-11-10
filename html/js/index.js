@@ -19,9 +19,8 @@ loadingimg.style.zIndex = -1;
 loadingimg.style.border = 0;
 
 var onlineimg = new Image();
-onlineimg.style.width = '99%';
-onlineimg.style.height = '98%';
-onlineimg.style.margin = '10px';
+onlineimg.style.width = '100%';
+onlineimg.style.height = '100%';
 onlineimg.style.zIndex = 1;
 onlineimg.style.border = 0;
 onlineimg.onerror = function() {show_elem(this, false);}
@@ -121,7 +120,7 @@ function get_xmlHttp_obj() {
 function get_dates() {	
 	show_elem(onlineimg, false);
 	var xmlHttp = get_xmlHttp_obj();
-	xmlHttp.open('GET', '/api/archive', true);
+	xmlHttp.open('GET', '/api/archive' + '?act=get_dates', true);
 	xmlHttp.onreadystatechange = function() {
 		if (xmlHttp.readyState == 4) {
 			xmlHttp.onreadystatechange = null; // plug memory leak
@@ -142,7 +141,7 @@ function get_dates() {
 function get_comps() {
 	show_elem(onlineimg, false);
 	var xmlHttp = get_xmlHttp_obj();
-	xmlHttp.open('GET', '/api/archive' + '?date=' + date_select.value, true);
+	xmlHttp.open('GET', '/api/archive' + '?act=get_comps', true);
 	xmlHttp.onreadystatechange = function() {
 		if (xmlHttp.readyState == 4) {
 			xmlHttp.onreadystatechange = null; // plug memory leak
@@ -164,7 +163,7 @@ function get_comps() {
 function get_users() {
 	show_elem(onlineimg, false);
 	var xmlHttp = get_xmlHttp_obj();	
-	xmlHttp.open('GET', '/api/archive' + '?date=' + date_select.value + '&comp=' + comp_select.value, true);
+	xmlHttp.open('GET', '/api/archive' + '?act=get_users&' + '&comp=' + comp_select.value, true);
 	xmlHttp.onreadystatechange = function() {
 		if (xmlHttp.readyState == 4) {
 			xmlHttp.onreadystatechange = null; // plug memory leak
@@ -186,7 +185,7 @@ function get_users() {
 function get_movies() {
 	var xmlHttp = get_xmlHttp_obj();
 	movies.length = 0;
-	xmlHttp.open('GET', '/api/archive' + '?date=' + date_select.value + '&comp=' + comp_select.value + '&user=' + user_select.value, true);
+	xmlHttp.open('GET', '/api/archive' + '?act=get_movies' + '&date=' + date_select.value + '&comp=' + comp_select.value + '&user=' + user_select.value, true);
 	xmlHttp.onreadystatechange = function() {
 		if (xmlHttp.readyState == 4) {
 			xmlHttp.onreadystatechange = null; // plug memory leak
@@ -234,8 +233,8 @@ function show_archive(movie_index) {
 	videoPlayer.set_video_player({
 		id : 'player_obj',
 		name : movies[movie_index],
-		width : player.clientWidth-15,
-		height : player.clientHeight
+		width : '100%',
+		height : '100%'
 	})	
 	if (document.getElementById('html5player')) {
 		var html5player = document.getElementById('html5player');
@@ -547,9 +546,9 @@ videoPlayer = function() {
 		if (canplay == "html5") {
 			document.getElementById(params.id).innerHTML = '<video id="html5player" width="'
 					+ params.width
-					+ 'px" height="'
+					+ '" height="'
 					+ params.height
-					+ 'px" autoplay controls ></video>';
+					+ '" autoplay controls ></video>';
 
 			var html5player = document.getElementById('html5player');
 			html5player.innerHTML = "<p><a href=\"" + document.URL + params.name

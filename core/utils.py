@@ -182,16 +182,16 @@ def makedirs(path, mode=0775, user=None, group=None):
         chown(path, user, group)
         
 
-def getUserName():
-    if sys.platform.startswith('win'):
-        return os.getenv('USERNAME')
-    else:
-        return os.getenv('USER')
-    
-    
 def getCompName():
     if sys.platform.startswith('win'):
-        return os.getenv('COMPUTERNAME')
+        return os.getenv('COMPUTERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
     else:
         return os.getenv('HOSTNAME')
+    
+    
+def getDataDIR():
+    if sys.platform.startswith('win'):
+        return os.path.expandvars('%APPDATA%/.screens')
+    else:
+        return os.path.expanduser('~/.screens')
 

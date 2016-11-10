@@ -18,6 +18,7 @@ class Archive():
         self.params = utils.QueryParam(env, safe=True)
 #         self.username = self.getUsername()
         self.username = 'admin'
+        self.action = self.params['act']
         self.db = base.Base()
         
         
@@ -37,23 +38,25 @@ class Archive():
     
     def get(self, *args, **kwargs):
         journal = []
-        allowed_comps = self.db.get_allowed_comps(self.username)
-        if kwargs.has_key('comp'):
-            allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])      
-                  
-        if kwargs.has_key('user') and kwargs.has_key('comp') and kwargs.has_key('date') and \
-            kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
-                
-            journal = sorted(["/archive/{date}/{comp}/{user}/{}".format(f, **kwargs) for f \
-                       in os.listdir("{}/{date}/{comp}/{user}".format(config['ARCHIVE_DIR'], **kwargs))])            
-        elif kwargs.has_key('comp') and kwargs.has_key('date') and kwargs['comp'] in allowed_comps:
+        try:
+            allowed_comps = self.db.get_allowed_comps(self.username)
+            if kwargs.has_key('comp'):
+                allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])      
             
-            journal = [u for u in os.listdir("{}/{date}/{comp}".format(config['ARCHIVE_DIR'], **kwargs)) if u in allowed_users] 
-        elif kwargs.has_key('date'):
-            
-            journal = [c for c in os.listdir("{}/{date}".format(config['ARCHIVE_DIR'], **kwargs)) if c in allowed_comps]
-        else:
-            journal = sorted(os.listdir(config['ARCHIVE_DIR']), reverse=True)
+            if self.action == 'get_movies':                      
+                if kwargs.has_key('user') and kwargs.has_key('comp') and kwargs.has_key('date') and \
+                    kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
+                        
+                    journal = sorted(["/archive/{date}/{comp}/{user}/{}".format(f, **kwargs) for f \
+                               in os.listdir("{}/{date}/{comp}/{user}".format(config['ARCHIVE_DIR'], **kwargs))]) 
+            elif self.action == 'get_users':           
+                    journal = allowed_users
+            elif self.action == 'get_comps': 
+                journal = allowed_comps
+            elif self.action == 'get_dates':
+                journal = sorted(os.listdir(config['ARCHIVE_DIR']), reverse=True)
+        except Exception as e:
+            log.error(e)
             
         return json.dumps(journal)
     

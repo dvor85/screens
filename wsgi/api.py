@@ -43,11 +43,10 @@ def application(env, start_response):
         if body is None:
             body = ''
                 
-    except:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
+    except Exception as e:
         status = '500 Error'
-        body = 'error {type}: {value}'.format(**{'type':exc_type, 'value':exc_value}) 
-        log.error(status)      
+        body = status
+        log.error(e)      
     finally:
         if body is None:
             body = '' 

@@ -37,14 +37,16 @@ class Online():
     
     def get(self, *args, **kwargs):
         journal = []
-        if kwargs.has_key('user') and kwargs.has_key('comp'): 
-                 
-            allowed_comps = self.db.get_allowed_comps(self.username)  
-            allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])
-                  
-            if kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
-                journal = sorted(["/data/{comp}/{user}/images/{}".format(f, **kwargs) for f in os.listdir("{}/{comp}/{user}/images".format(config['DATA_DIR'], **kwargs))])[-1:]
-        
+        try:
+            if kwargs.has_key('user') and kwargs.has_key('comp'): 
+                     
+                allowed_comps = self.db.get_allowed_comps(self.username)  
+                allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])
+                      
+                if kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
+                    journal = sorted(["/data/{comp}/{user}/images/{}".format(f, **kwargs) for f in os.listdir("{}/{comp}/{user}/images".format(config['DATA_DIR'], **kwargs))])[-1:]
+        except Exception as e:
+            log.error(e)
             
         return json.dumps(journal)
     

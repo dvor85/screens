@@ -13,26 +13,12 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 class Base:
     def __init__(self): 
-        log.info('Init Base') 
         utils.makedirs(os.path.dirname(config['BASE_FILE']), mode=0775)     
         
         self.conn = sqlite3.connect(config['BASE_FILE'])
         self.conn.row_factory = sqlite3.Row
         with self.conn:
-#             self.conn.execute("create table if not exists comps (comp varchar(16), title varchar(32))")
-#             self.conn.execute("create table if not exists users (id integer primary key autoincrement, comp varchar(16), name varchar(32))")
-#             self.conn.execute("create table if not exists viewers (id integer primary key autoincrement, name varchar(32))")
             self.conn.execute("create table if not exists scheme (viewer varchar(32), comp varchar(32), user varchar(32))")
-            
-    def test_add(self):
-        with self.conn:
-            self.conn.execute('insert into comps values("10.0.0.193", "demon")')
-            self.conn.execute('insert into users values(null, "10.0.0.193", "Dmitriy")')
-            
-            last_user = self.conn.execute('select max(id) as id from users').fetchone()['id']
-            self.conn.execute('insert into viewers values(null, "viewer 1")')
-            last_viwer = self.conn.execute('select max(id) as id from viewers').fetchone()['id']
-            self.conn.execute('insert into scheme values({0}, {1})'.format(last_viwer, last_user))
             
             
     def add_scheme(self, viewer, comp, user):
@@ -65,30 +51,6 @@ class Base:
             log.error(e)
             return []             
     
-    def test(self):
-        self.add_scheme('viewer 1', 'VDV-PC', 'user')
-        self.add_scheme('viewer 1', 'VDV-PC', 'admin')
-        self.add_scheme('viewer 1', 'COMP2', 'user')
-        self.add_scheme('viewer 2', 'COMP1', 'user')
-        self.add_scheme('viewer 2', 'VDV-PC', 'user')
-        self.add_scheme('admin', 'COMP2', 'user')
-        self.add_scheme('admin', 'COMP1', 'user')
-        self.add_scheme('admin', 'VDV-PC', 'user')
-        self.add_scheme('admin', 'VDV-PC', 'Dmitriy')
-
-    
 if __name__ == "__main__":
-    db = Base()
-#     db.test()    
-    print db.get_allowed_comps('viewer 1')
-    print db.get_allowed_users('viewer 1', 'VDV-PC')
-#     [sys.stdout.write(r+" ") for r in db.get_allowed_comp('viewer 1')]
-    
-        
-#     res = db.get_allowed_comp('viewer 1')
-#     for r in res:
-#         print r
-#     print [r['comp'] for r in res]
-#     print res[0]['comp']
-    
+    pass
 

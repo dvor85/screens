@@ -7,14 +7,14 @@
 <script type="text/javascript" src="js/swfobject.js"></script>
 </head>
 <body>
-	<h3>Screen Viewer</h3>
+	<div id="title">Screen Viewer</div>
 	<div id="main_display">
 		<div id="config_bar">
 			<form name="config" action="" onsubmit="return false">
-				<select id="date_select" onchange="get_comps();">
-				</select> <select id="comp_select" onchange="get_users();">
-				</select> <select id="user_select" onchange="get_movies();">
-				</select> <select id="mode_select" onchange="change_mode();">
+				<select id="date_select" onchange="get_comps();"></select> 
+				<select id="comp_select" onchange="get_users();"></select> 
+				<select id="user_select" onchange="get_movies();"></select> 
+				<select id="mode_select" onchange="change_mode();">
 					<option value='0'>Online</option>
 					<option value='1'>Archive</option>
 				</select>
