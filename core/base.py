@@ -25,6 +25,18 @@ class Base:
         with self.conn:
             self.conn.execute('insert into scheme values("{0}", "{1}", "{2}")'.format(viewer, comp, user))
             
+    def del_viewer(self, viewer):
+        with self.conn:
+            self.conn.execute('delete from scheme where viewer="{0}"'.format(viewer))
+            
+    def del_comp(self, viewer, comp):
+        with self.conn:
+            self.conn.execute('delete from scheme where viewer="{0}" and comp="{1}"'.format(viewer, comp))
+            
+    def del_user(self, viewer, comp, user):
+        with self.conn:
+            self.conn.execute('delete from scheme where viewer="{0}" and comp="{1}" and user="{2}"'.format(viewer, comp, user))    
+            
             
     def get_scheme(self, viewer):
         try:

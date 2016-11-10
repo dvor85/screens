@@ -1,0 +1,18 @@
+# -*- coding: utf-8 -*-
+# from __future__ import unicode_literals
+
+import os.path, logging
+
+
+config = dict(
+NAME = 'spserver',
+VERSION = '1.0.0',
+LOGLEVEL = logging.DEBUG, 
+DATA_DIR = 'data', #path to operative data
+ARCHIVE_DIR = 'archive', #path to archive,
+SELF_DIR = os.path.dirname(__file__),
+HTML_DIR = os.path.join(os.path.dirname(__file__), 'html'),
+WSGI_DIR = os.path.join(os.path.dirname(__file__), 'wsgi'),
+BASE_FILE = os.path.join(os.path.dirname(__file__), 'base/base.db'),
+ARC_SIZE_GB = 1, #archive size in gb,
+)

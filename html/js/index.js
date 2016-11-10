@@ -92,6 +92,15 @@ function hhmmss_format(hhmmss) {
     return pad_out2(hh) + ':' + pad_out2(mm) + ':' + pad_out2(ss);
 }
 
+function yyyymmdd_format(yyyymmdd) {
+    // convert yyyymmdd string to a 'yyyy-mm-dd'
+	yyyymmdd = pad_out(yyyymmdd, 8);
+    var yyyy=parseInt(yyyymmdd.slice(0, 4), 10);
+    var mm=parseInt(yyyymmdd.slice(4, 6), 10);
+    var dd=parseInt(yyyymmdd.slice(6, 8), 10);
+    return pad_out4(yyyy) + '-' + pad_out2(mm) + '-' + pad_out2(dd);
+}
+
 function show_elem(elem, visible) {
 	if (elem) {
 		if (visible === true) {
@@ -128,10 +137,9 @@ function get_dates() {
 				var html_data = '';
 				var obj_data = JSON.parse(xmlHttp.responseText);
 				for (var d of obj_data) {
-					html_data += '<option value="' + d	+ '">' + d + '</option>';
+					html_data += '<option value="' + d	+ '">' + yyyymmdd_format(d) + '</option>';
 				}
 				date_select.innerHTML = html_data;
-				get_comps();
 			}
 		};
 	}
@@ -209,6 +217,20 @@ function get_movies() {
 	xmlHttp.send(null);		
 }
 
+
+function playlist_hlight(movie_index) {
+	videoPlayer.set_next_movie(movie_index+1);
+	var lines = playlist.children;
+	for (var i = 0; i < lines.length; i++) {
+		if (i != movie_index) {
+			lines[i].classList.remove('playlist_hlight');
+		} else {
+			lines[i].classList.add('playlist_hlight');
+		}
+	}
+}
+
+
 function show_archive(movie_index) {
 	show_elem(onlineimg, false);
 	mode_select.selectedIndex = 1;
@@ -219,16 +241,9 @@ function show_archive(movie_index) {
 	if (!movie_index) {
 		movie_index = 0;
 	}
-	videoPlayer.set_next_movie(movie_index+1);
+
+	playlist_hlight(movie_index);
 	
-	var playlist = document.getElementById('playlist').children;
-	for (var i = 0; i < playlist.length; i++) {
-		if (i != movie_index) {
-			playlist[i].classList.remove('archive_hlight');
-		} else {
-			playlist[i].classList.add('archive_hlight');
-		}
-	}
 	player.innerHTML = "<div id='player_obj'></div>";
 	videoPlayer.set_video_player({
 		id : 'player_obj',
@@ -292,7 +307,8 @@ function change_mode() {
 
 function init() {
 	get_dates();
-	show_online()
+	get_comps();
+	show_online();
 }
 
 
@@ -420,16 +436,15 @@ videoPlayer = function() {
     }
     
     function html5VideoScrolled() {
-        if (document.getElementById('html5player')) {
-            var html5player=document.getElementById('html5player');
-            tm=html5player.currentTime;            
-            html5player=null;
-        }
+        tm=this.currentTime;            
     }
     
     function html5VideoFinished() {
         tm=0;
-        show_archive(next_movie);
+        if (movies[next_movie]) {
+        	this.src = movies[next_movie];
+        	playlist_hlight(next_movie);
+        }
     }
     
     function html5playerPlayPause() {
