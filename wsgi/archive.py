@@ -21,22 +21,9 @@ class Archive():
         self.env = env
 
         self.params = utils.QueryParam(env, safe=True)
-#         self.username = self.getUsername()
-        self.username = 'admin'
+        self.username = env['REMOTE_USER']
         self.action = self.params['act']
         self.db = base.Base()
-
-    def getUsername(self):
-        try:
-            username = ''
-            auth = self.env['HTTP_AUTHORIZATION']
-            if auth:
-                scheme, data = auth.split(None, 1)
-                if scheme.lower() == 'basic':
-                    username, password = data.decode('base64').split(':', 1)
-        except Exception as e:
-            log.error(e)
-        return username
 
     def get(self, *args, **kwargs):
         journal = []
