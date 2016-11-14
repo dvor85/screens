@@ -23,12 +23,13 @@ class Env(threading.Thread):
         self.url = config['URL'] + '/env'
         self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
                        'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         global log
 
         utils.makedirs(self.datadir)
 
     def run(self):
-        print requests.get(self.url, cookies=self.cookie, auth=config['AUTH'], timeout=(1, 5)).text
+        print requests.get(self.url, cookies=self.cookie, auth=self.auth, timeout=(1, 5)).text
 #             time.sleep(2)
 
 

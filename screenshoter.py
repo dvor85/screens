@@ -39,6 +39,7 @@ class Screenshoter(threading.Thread):
         self.url = config['URL'] + '/image'
         self.quality = config['SCR_QUALITY']
         self.maxRMS = config['CHGSCR_THRESHOLD']
+        self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         self.img1_histogram, self.img2_histogram = None, None
         self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
                        'compname': base64.urlsafe_b64encode(utils.getCompName())}
@@ -72,8 +73,7 @@ class Screenshoter(threading.Thread):
 
                 img = ImageGrab.grab()
                 self.img1_histogram = img.histogram()
-                rms = self.compare_images(
-                ) if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
+                rms = self.compare_images() if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
 
                 log.debug("Root Mean Square={}".format(rms))
                 if rms > self.maxRMS:
@@ -84,8 +84,8 @@ class Screenshoter(threading.Thread):
                             'data': base64.urlsafe_b64encode(fp.getvalue())}
                         try:
                             log.debug('Try to upload image data')
-                            r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers, auth=config[
-                                              'AUTH'], timeout=(1, 5))
+                            r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers, auth=self.auth,
+                                              timeout=(1, 5), verify=False)
                             r.raise_for_status()
                             if r.content != '1':
                                 raise requests.exceptions.HTTPError
@@ -93,14 +93,12 @@ class Screenshoter(threading.Thread):
                         except Exception as e:
                             log.debug(e)
                             utils.makedirs(self.imagesdir)
-                            fn = os.path.join(
-                                self.imagesdir, "{0}.jpg".format(time.time()))
+                            fn = os.path.join(self.imagesdir, "{0}.jpg".format(time.time()))
                             log.debug('Try to save: {0}'.format(fn))
                             with open(fn, 'wb') as imfp:
                                 imfp.write(fp.getvalue())
                             for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
-                                log.debug(
-                                    'Try to delete: {0}'.format(os.path.join(self.imagesdir, i)))
+                                log.debug('Try to delete: {0}'.format(os.path.join(self.imagesdir, i)))
                                 os.unlink(os.path.join(self.imagesdir, i))
 
             except Exception as e:

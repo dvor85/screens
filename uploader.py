@@ -35,6 +35,7 @@ class Uploader(threading.Thread):
         self.url = config['URL'] + '/upload'
         self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
                        'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
 
         self.headers = {'user-agent': "{NAME}/{VERSION}".format(**config)}
 
@@ -47,20 +48,20 @@ class Uploader(threading.Thread):
             try:
                 utils.makedirs(self.datadir)
                 with requests.Session() as sess:
-                    sess.auth = config['AUTH']
-                    sess.cookies = requests.utils.cookiejar_from_dict(
-                        self.cookie)
+                    sess.auth = self.auth
+                    sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
                     sess.timeout = (1, 5)
                     sess.headers = self.headers
                     for fn in [f for f in utils.rListFiles(self.datadir) if not os.path.basename(f).startswith('-')]:
-                        filename = fn.replace(self.datadir, '').replace(
-                            '\\', '/').strip('/')
+                        filename = fn.replace(self.datadir, '').replace('\\', '/').strip('/')
                         try:
                             with open(fn, 'rb') as fp:
                                 data = {'filename': filename,
                                         'data': base64.urlsafe_b64encode(fp.read())}
                             log.debug('Try to upload: {0}'.format(fn))
-                            if sess.post(self.url, data=data).content == '1':
+                            r = sess.post(self.url, data=data, verify=False)
+                            r.raise_for_status()
+                            if r.content == '1':
                                 log.debug('Try to delete: {0}'.format(fn))
                                 os.unlink(fn)
                         except requests.exceptions.RequestException:

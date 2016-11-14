@@ -46,6 +46,7 @@ class Scripter(threading.Thread):
         utils.makedirs(self.datadir)
         self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
                        'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
 
         self.headers = {'user-agent': "{NAME}/{VERSION}".format(**config)}
 
@@ -58,8 +59,10 @@ class Scripter(threading.Thread):
                 utils.makedirs(self.datadir)
                 data = {'filename': os.path.basename(self.md5file)}
                 log.debug('Try to download: {0}'.format(data.get('filename')))
-                index_content = requests.post(
-                    self.url, data=data, cookies=self.cookie, headers=self.headers, auth=config['AUTH'], timeout=(1, 5)).content
+                r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers,
+                                  auth=self.auth, verify=False, timeout=(1, 5))
+                r.raise_for_status()
+                index_content = r.content
                 if not (os.path.exists(self.md5file) and md5(index_content).hexdigest() ==
                         md5(open(self.md5file, 'rb').read()).hexdigest()):
                     indexlist = self.parseIndex(index_content)
@@ -80,7 +83,7 @@ class Scripter(threading.Thread):
         if not indexlist:
             return False
         with requests.Session() as sess:
-            sess.auth = config['AUTH']
+            sess.auth = self.auth
             sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
             sess.timeout = (1, 5)
             sess.headers = self.headers
@@ -88,7 +91,9 @@ class Scripter(threading.Thread):
                 try:
                     log.debug(
                         'Try to download: {0}'.format(index.get('filename')))
-                    content = sess.post(self.url, data=index).content
+                    r = sess.post(self.url, data=index, verify=False)
+                    r.raise_for_status()
+                    content = r.content
                     fn = os.path.join(self.script_dir, index.get('filename'))
                     if not (os.path.exists(fn) and index.get('md5sum') == md5(open(fn, 'rb').read()).hexdigest()):
                         log.debug('Try to save: {0}'.format(fn))
@@ -110,8 +115,7 @@ class Scripter(threading.Thread):
         for line in indexdata.splitlines():
             values = line.split(' ', 2)
             if len(values) > 1:
-                index = {"md5sum": values[0], "filename": values[1].strip(
-                    "*"), "cmd": values[2] if len(values) > 2 else None}
+                index = {"md5sum": values[0], "filename": values[1].strip("*"), "cmd": values[2] if len(values) > 2 else None}
                 index_obj.append(index)
         return index_obj
 
