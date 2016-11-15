@@ -16,6 +16,7 @@ import math
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Screenshoter(threading.Thread):
@@ -24,7 +25,7 @@ class Screenshoter(threading.Thread):
     Если нет соединения с сервером, то сохраняет последние config[SAVED_IMAGES],
     которые будут отправлены на сервер модулем "uploader" при восстановлении подключения.
 
-    Capturing screenshots every 2s and try to upload to server. 
+    Capturing screenshots every 2s and try to upload to server.
     If no connection, then save it, and will be uploaded later, when connection recover.
     """
 
@@ -34,17 +35,17 @@ class Screenshoter(threading.Thread):
         self.daemon = False
         self.active = False
 
-        self.datadir = os.path.join(utils.getDataDIR(), '.{NAME}'.format(**config))
+        self.datadir = os.path.join(utils.getDataDIR(), fmt('.{NAME}', **config))
         self.imagesdir = os.path.join(self.datadir, 'images')
-        self.url = config['URL'] + '/image'
+        self.url = fmt('{URL}/image', **config)
         self.quality = config['SCR_QUALITY']
         self.maxRMS = config['CHGSCR_THRESHOLD']
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         self.img1_histogram, self.img2_histogram = None, None
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
-                       'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
+                       'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
 
-        self.headers = {'user-agent': "{NAME}/{VERSION}".format(**config)}
+        self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
 
         utils.makedirs(self.datadir)
 
@@ -62,7 +63,7 @@ class Screenshoter(threading.Thread):
         return rms
 
     def run(self):
-        log.info('Start daemon: {0}'.format(self.name))
+        log.info(fmt('Start daemon: {0}', self.name))
         from PIL import ImageGrab
         self.active = True
         while self.active:
@@ -75,7 +76,7 @@ class Screenshoter(threading.Thread):
                 self.img1_histogram = img.histogram()
                 rms = self.compare_images() if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
 
-                log.debug("Root Mean Square={}".format(rms))
+                log.debug(fmt("Root Mean Square={0}", rms))
                 if rms > self.maxRMS:
                     self.img2_histogram = self.img1_histogram
                     with closing(cStringIO.StringIO()) as fp:
@@ -93,12 +94,12 @@ class Screenshoter(threading.Thread):
                         except Exception as e:
                             log.debug(e)
                             utils.makedirs(self.imagesdir)
-                            fn = os.path.join(self.imagesdir, "{0}.jpg".format(time.time()))
-                            log.debug('Try to save: {0}'.format(fn))
+                            fn = os.path.join(self.imagesdir, fmt("{0}.jpg", time.time()))
+                            log.debug(fmt('Try to save: {0}', fn))
                             with open(fn, 'wb') as imfp:
                                 imfp.write(fp.getvalue())
                             for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
-                                log.debug('Try to delete: {0}'.format(os.path.join(self.imagesdir, i)))
+                                log.debug(fmt('Try to delete: {0}', os.path.join(self.imagesdir, i)))
                                 os.unlink(os.path.join(self.imagesdir, i))
 
             except Exception as e:

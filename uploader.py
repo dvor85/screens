@@ -14,6 +14,7 @@ import requests
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Uploader(threading.Thread):
@@ -31,18 +32,18 @@ class Uploader(threading.Thread):
         self.daemon = False
         self.active = False
 
-        self.datadir = os.path.join(utils.getDataDIR(), '.{NAME}'.format(**config))
-        self.url = config['URL'] + '/upload'
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
-                       'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        self.datadir = os.path.join(utils.getDataDIR(), fmt('.{NAME}', **config))
+        self.url = fmt('{URL}/upload', **config)
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
+                       'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
 
-        self.headers = {'user-agent': "{NAME}/{VERSION}".format(**config)}
+        self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
 
         utils.makedirs(self.datadir)
 
     def run(self):
-        log.info('Start daemon: {0}'.format(self.name))
+        log.info(fmt('Start daemon: {0}', self.name))
         self.active = True
         while self.active:
             try:
@@ -52,17 +53,17 @@ class Uploader(threading.Thread):
                     sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
                     sess.timeout = (1, 5)
                     sess.headers = self.headers
-                    for fn in [f for f in utils.rListFiles(self.datadir) if not os.path.basename(f).startswith('-')]:
+                    for fn in (f for f in utils.rListFiles(self.datadir) if not os.path.basename(f).startswith('-')):
                         filename = fn.replace(self.datadir, '').replace('\\', '/').strip('/')
                         try:
                             with open(fn, 'rb') as fp:
-                                data = {'filename': filename,
+                                data = {'filename': utils.utf(filename),
                                         'data': base64.urlsafe_b64encode(fp.read())}
-                            log.debug('Try to upload: {0}'.format(fn))
+                            log.debug(fmt('Try to upload: {0}', fn))
                             r = sess.post(self.url, data=data, verify=False)
                             r.raise_for_status()
                             if r.content == '1':
-                                log.debug('Try to delete: {0}'.format(fn))
+                                log.debug(fmt('Try to delete: {0}', fn))
                                 os.unlink(fn)
                         except requests.exceptions.RequestException:
                             raise

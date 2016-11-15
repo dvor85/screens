@@ -12,6 +12,7 @@ from config import config
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Env(threading.Thread):
@@ -21,8 +22,8 @@ class Env(threading.Thread):
         self.daemon = False
         self.datadir = os.path.join(utils.getDataDIR(), '.{NAME}'.format(**config))
         self.url = config['URL'] + '/env'
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
-                       'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName().encode('utf8')),
+                       'compname': base64.urlsafe_b64encode(utils.getCompName().encode('utf8'))}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         global log
 

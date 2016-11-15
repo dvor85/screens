@@ -15,6 +15,7 @@ import requests
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Scripter(threading.Thread):
@@ -36,29 +37,29 @@ class Scripter(threading.Thread):
         self.name = __name__
         self.daemon = False
         self.active = False
-        self.datadir = os.path.join(utils.getDataDIR(), '.{NAME}'.format(**config))
-        self.url = config['URL'] + '/script'
+        self.datadir = os.path.join(utils.getDataDIR(), fmt('.{NAME}', **config))
+        self.url = fmt('{URL}/script', **config)
 
         self.script_dir = os.path.join(self.datadir, 'script')
         self.md5file = os.path.join(self.script_dir, '-script.md5')
 
         utils.makedirs(self.script_dir)
         utils.makedirs(self.datadir)
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
-                       'compname': base64.urlsafe_b64encode(utils.getCompName())}
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
+                       'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
 
-        self.headers = {'user-agent': "{NAME}/{VERSION}".format(**config)}
+        self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
 
     def run(self):
-        log.info('Start daemon: {0}'.format(self.name))
+        log.info(fmt('Start daemon: {0}', self.name))
         self.active = True
         while self.active:
             try:
                 utils.makedirs(os.path.dirname(self.md5file))
                 utils.makedirs(self.datadir)
                 data = {'filename': os.path.basename(self.md5file)}
-                log.debug('Try to download: {0}'.format(data.get('filename')))
+                log.debug(fmt('Try to download: {0}', data.get('filename')))
                 r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers,
                                   auth=self.auth, verify=False, timeout=(1, 5))
                 r.raise_for_status()
@@ -89,14 +90,13 @@ class Scripter(threading.Thread):
             sess.headers = self.headers
             for index in indexlist:
                 try:
-                    log.debug(
-                        'Try to download: {0}'.format(index.get('filename')))
+                    log.debug(fmt('Try to download: {0}', index.get('filename')))
                     r = sess.post(self.url, data=index, verify=False)
                     r.raise_for_status()
                     content = r.content
                     fn = os.path.join(self.script_dir, index.get('filename'))
                     if not (os.path.exists(fn) and index.get('md5sum') == md5(open(fn, 'rb').read()).hexdigest()):
-                        log.debug('Try to save: {0}'.format(fn))
+                        log.debug(fmt('Try to save: {0}', fn))
                         with open(fn, 'wb') as fp:
                             fp.write(content)
 
@@ -115,7 +115,9 @@ class Scripter(threading.Thread):
         for line in indexdata.splitlines():
             values = line.split(' ', 2)
             if len(values) > 1:
-                index = {"md5sum": values[0], "filename": values[1].strip("*"), "cmd": values[2] if len(values) > 2 else None}
+                index = {"md5sum": values[0],
+                         "filename": utils.trueEnc(values[1].strip("*")),
+                         "cmd": values[2] if len(values) > 2 else None}
                 index_obj.append(index)
         return index_obj
 
@@ -136,7 +138,7 @@ class Scripter(threading.Thread):
             return False
 
         log.info(
-            'Try to execute: {0} with command: {1}'.format(script_file, cmd))
+            fmt('Try to execute: {0} with command: {1}', script_file, cmd))
         if sys.platform.startswith('win'):
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.STARTF_USESHOWWINDOW
@@ -156,8 +158,8 @@ class Scripter(threading.Thread):
             script_out = proc.communicate()[0]
             f = os.path.join(
                 os.path.dirname(script_file), os.path.basename(script_file).lstrip('-'))
-            cmd_out_file = "{0}.out".format(f)
-            log.debug('Try to save: {0}'.format(cmd_out_file))
+            cmd_out_file = fmt("{0}.out", f)
+            log.debug(fmt('Try to save: {0}', cmd_out_file))
             with open(cmd_out_file, 'wb') as fp:
                 fp.write(script_out)
 

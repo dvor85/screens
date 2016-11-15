@@ -8,9 +8,11 @@ import sys
 from cgi import parse_qs, escape
 from UserDict import UserDict
 import re
+import string
 
 
 __denied_regex = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
+fmt = string.Formatter().format
 
 
 def GET(target, post=None, cookie=None, headers=None, trys=1):
@@ -53,7 +55,7 @@ class QueryParam(UserDict):
     def __getitem__(self, key):
         val = UserDict.__getitem__(self, key)[0]
         if self.safe:
-            return safe_str('', val)
+            return safe_str(val)
         return escape(val)
 
 
@@ -62,7 +64,7 @@ def safe_str(s):
     if not isinstance(res, unicode):
         res = res.decode('utf-8', errors='ignore')
 
-    return __denied_regex.sub('', res).encode('utf-8', errors='ignore')
+    return utf(__denied_regex.sub('', res))
 
 
 def parseStr(s):
@@ -107,7 +109,7 @@ def add_userinfo(src_url, username, password):
         params['port'] = ''
     else:
         params['port'] = ':%i' % url.port
-    return "{scheme}://{username}:{password}@{hostname}{port}{path}{query}".format(**params)
+    return fmt("{scheme}://{username}:{password}@{hostname}{port}{path}{query}", **params)
 
 
 def rListFiles(path):
@@ -120,25 +122,43 @@ def rListFiles(path):
     return files
 
 
-def getUserName():
+def uni(path):
+    if not isinstance(path, unicode):
+        path = path.decode(sys.getfilesystemencoding(), errors='ignore')
+    return path
+
+
+def utf(path):
+    if isinstance(path, unicode):
+        return path.encode('utf8', errors='ignore')
+    return path
+
+
+def trueEnc(path):
     if sys.platform.startswith('win'):
-        return os.getenv('USERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
-    else:
-        return os.getenv('USER')
+        return uni(path)
+    return utf(path)
+
+
+def getUserName():
+    __env_var = 'USER'
+    if sys.platform.startswith('win'):
+        __env_var = 'USERNAME'
+    return trueEnc(os.getenv(__env_var))
 
 
 def getCompName():
+    __env_var = 'HOSTNAME'
     if sys.platform.startswith('win'):
-        return os.getenv('COMPUTERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
-    else:
-        return os.getenv('HOSTNAME')
+        __env_var = 'COMPUTERNAME'
+    return trueEnc(os.getenv(__env_var))
 
 
 def getDataDIR():
+    __env_var = 'HOME'
     if sys.platform.startswith('win'):
-        return os.path.expandvars('%APPDATA%')
-    else:
-        return os.path.expanduser('~')
+        __env_var = 'APPDATA'
+    return trueEnc(os.getenv(__env_var))
 
 
 def makedirs(path, mode=0775):

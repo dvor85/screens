@@ -14,12 +14,13 @@ import utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class SPclient():
 
     def __init__(self):
-        self.datadir = os.path.join(utils.getDataDIR(), '.{NAME}'.format(**config))
+        self.datadir = os.path.join(utils.getDataDIR(), fmt('.{NAME}', **config))
         self.daemons = []
         signal.signal(signal.SIGTERM, self.signal_term)
 
@@ -30,7 +31,7 @@ class SPclient():
         utils.makedirs(self.datadir)
 
     def signal_term(self, signum, frame):
-        log.debug('Get Signal: {0}'.format(signum))
+        log.debug(fmt('Get Signal: {0}', signum))
         self.stop()
 
     def start(self):
@@ -51,7 +52,7 @@ class SPclient():
 
 
 if __name__ == '__main__':
-    log.debug("PID={0}".format(os.getpid()))
+    log.debug(fmt("PID={0}", os.getpid()))
     SPclient().start()
 
     log.debug('Exit')
