@@ -19,7 +19,7 @@ class Env(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.daemon = False
-        self.datadir = utils.getDataDIR()
+        self.datadir = os.path.join(utils.getDataDIR(), '.{NAME}'.format(**config))
         self.url = config['URL'] + '/env'
         self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName()),
                        'compname': base64.urlsafe_b64encode(utils.getCompName())}

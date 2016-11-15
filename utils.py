@@ -136,9 +136,9 @@ def getCompName():
 
 def getDataDIR():
     if sys.platform.startswith('win'):
-        return os.path.expandvars('%APPDATA%/.screens')
+        return os.path.expandvars('%APPDATA%')
     else:
-        return os.path.expanduser('~/.screens')
+        return os.path.expanduser('~')
 
 
 def makedirs(path, mode=0775):

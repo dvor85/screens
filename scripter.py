@@ -36,7 +36,7 @@ class Scripter(threading.Thread):
         self.name = __name__
         self.daemon = False
         self.active = False
-        self.datadir = utils.getDataDIR()
+        self.datadir = os.path.join(utils.getDataDIR(), '.{NAME}'.format(**config))
         self.url = config['URL'] + '/script'
 
         self.script_dir = os.path.join(self.datadir, 'script')

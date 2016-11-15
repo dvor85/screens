@@ -6,6 +6,7 @@ import sys
 import os
 import utils
 from logging.handlers import RotatingFileHandler as RFHandler
+from config import config
 
 
 class Logger(logging.Logger):
@@ -19,15 +20,13 @@ class Logger(logging.Logger):
         stream_handler.setFormatter(stream_format)
         self.addHandler(stream_handler)
 
-        logfile = os.path.join(utils.getDataDIR(), 'logs/-screens.log')
+        logfile = os.path.join(utils.getDataDIR(), '.{NAME}/logs/-{NAME}.log'.format(**config))
+        if sys.platform.startswith('win'):
+            logfile = logfile.decode(sys.getfilesystemencoding())
         utils.makedirs(os.path.dirname(logfile))
         rfh = RFHandler(filename=logfile, maxBytes=1024 * 1024, backupCount=2)
         rfh.setFormatter(stream_format)
         self.addHandler(rfh)
-
-    def _log(self, level, msg, args, exc_info=None, extra=None):
-        logging.Logger._log(
-            self, level, msg, args, exc_info=exc_info, extra=extra)
 
 
 def getLogger(name, level=logging.NOTSET):
