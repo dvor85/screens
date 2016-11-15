@@ -10,6 +10,7 @@ from core import logger, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class ImageStore():
@@ -20,13 +21,13 @@ class ImageStore():
         if not ('username' in self.cookie and 'compname' in self.cookie):
             raise Exception('Cookie not set')
         self.datadir = os.path.join(config['DATA_DIR'],
-                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)),
-                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))
+                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value))),
+                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value))))
         self.imagedir = os.path.join(self.datadir, 'images')
         self.params = utils.QueryParam(env)
 
     def store(self, data):
-        fn = os.path.join(self.imagedir, "{0}.jpg".format(time.time()))
+        fn = os.path.join(self.imagedir, fmt("{0}.jpg", time.time()))
         try:
             utils.makedirs(self.imagedir, mode=0775)
 

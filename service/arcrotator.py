@@ -10,6 +10,7 @@ from core import logger, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class ArchiveRotator(threading.Thread):
@@ -28,10 +29,10 @@ class ArchiveRotator(threading.Thread):
 
     def rotate(self):
         arch_size = self.calculate_arc_size()
-        log.info('Archive size = {} GB'.format(arch_size))
+        log.info(fmt('Archive size = {0} GB', arch_size))
         if arch_size > config['ARC_SIZE_GB']:
             dayslist = sorted(os.listdir(config['ARCHIVE_DIR']))
-            log.info('Delete day: {}'.format(dayslist[0]))
+            log.info(fmt('Delete day: {0}', dayslist[0]))
             shutil.rmtree(os.path.join(config['ARCHIVE_DIR'], dayslist[0]))
 
     def run(self):

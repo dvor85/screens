@@ -14,6 +14,7 @@ from core.init_core import Generator
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Starter():
@@ -27,7 +28,7 @@ class Starter():
         Generator().main()
 
     def signal_term(self, signum, frame):
-        log.debug('Get Signal: {0}'.format(signum))
+        log.debug(fmt('Get Signal: {0}', signum))
         self.stop()
 
     def start(self):
@@ -56,14 +57,14 @@ class Starter():
             self.sleep(1)
         for d in self.daemons:
             try:
-                log.debug('Wait for {}'.format(d.getName()))
+                log.debug(fmt('Wait for {0}', d.getName()))
                 d.join()
             except Exception as e:
                 log.exception(e)
 
 
 if __name__ == '__main__':
-    log.debug("PID={0}".format(os.getpid()))
+    log.debug(fmt("PID={0}", os.getpid()))
     starter = Starter()
     starter.start()
 

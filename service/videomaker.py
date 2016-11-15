@@ -11,7 +11,8 @@ from config import config
 from core import logger, utils
 
 
-log = logger.getLogger(config['NAME'], 0)
+log = logger.getLogger(config['NAME'])
+fmt = utils.fmt
 sema = multiprocessing.Semaphore(8)
 
 
@@ -24,7 +25,7 @@ class VideoProcess(multiprocessing.Process):
         self.user = user
 
     def make_video(self):
-        log.info('Make video: {}/{}'.format(self.comp, self.user))
+        log.info(fmt('Make video: {0}/{1}', self.comp, self.user))
         src_dir = os.path.join(config['DATA_DIR'], self.comp, self.user, 'images')
         im_list = sorted([float(os.path.splitext(f)[0]) for f in os.listdir(src_dir) if f.endswith('.jpg')])
 
@@ -35,7 +36,7 @@ class VideoProcess(multiprocessing.Process):
                            comp=self.comp)
 
             dst_file = os.path.join(
-                config['ARCHIVE_DIR'], '{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4'.format(**_params))
+                config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4', **_params))
             utils.makedirs(os.path.dirname(dst_file), mode=0775)
 
             proc = subprocess.Popen('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
@@ -46,7 +47,7 @@ class VideoProcess(multiprocessing.Process):
                 log.debug('Add images to process stdin')
                 for f in im_list:
                     try:
-                        proc.stdin.write(open(os.path.join(src_dir, "{}.jpg".format(f)), 'rb').read())
+                        proc.stdin.write(open(os.path.join(src_dir, fmt("{0}.jpg", f)), 'rb').read())
                     except Exception as e:
                         log.error(e)
             proc.wait()
@@ -55,7 +56,7 @@ class VideoProcess(multiprocessing.Process):
             log.debug('Delete images')
             for f in im_list:
                 try:
-                    os.unlink(os.path.join(src_dir, "{}.jpg".format(f)))
+                    os.unlink(os.path.join(src_dir, fmt("{0}.jpg", f)))
                 except Exception as e:
                     log.error(e)
 

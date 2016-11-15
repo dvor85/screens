@@ -11,6 +11,7 @@ from core import logger, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 def application(env, start_response):
@@ -38,7 +39,7 @@ def application(env, start_response):
 
         elif path_info == "/env":
             for k, v in env.items():
-                body += '{0}: {1}\n'.format(k, v)
+                body += fmt('{0}: {1}\n', k, v)
         else:
             status = '404 Error'
             body = status
@@ -53,8 +54,7 @@ def application(env, start_response):
     finally:
         if body is None:
             body = ''
-        elif isinstance(body, unicode):
-            body = body.encode('utf8')
+        body = utils.utf(body)
 
         start_response(status, [('Content-type', 'text/plain'),
                                 ('Content-Length', str(len(body)))])

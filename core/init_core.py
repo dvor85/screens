@@ -8,6 +8,7 @@ from core import logger, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Generator():
@@ -19,7 +20,7 @@ class Generator():
 
     def generate_file(self, filename, extra=None):
         generated_file = os.path.join(self.generated_dir, filename)
-        log.info('Generate file: {}'.format(generated_file))
+        log.info(fmt('Generate file: {0}', generated_file))
         try:
             with open(generated_file, 'w') as fp:
                 tmpl = Template(open(os.path.join(self.templates_dir, filename), 'r').read())
@@ -33,7 +34,7 @@ class Generator():
 
     def main(self):
         for filename in os.listdir(self.templates_dir):
-            self.generate_file(filename)
+            self.generate_file(utils.trueEnc(filename))
 
 
 if __name__ == '__main__':

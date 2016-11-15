@@ -9,6 +9,7 @@ from core import logger, utils, base
 
 
 log = logger.getLogger(config['NAME'])
+fmt = utils.fmt
 
 
 class AccessControl():
@@ -29,16 +30,16 @@ class AccessControl():
 
     def show_scheme(self, viewer):
         for line in self.db.get_scheme(viewer):
-            print u"{viewer} | {comp}/{user}".format(**line)
+            print fmt("{viewer} | {comp}/{user}", **line)
 
 
 def usage():
-    print """
+    print fmt("""
         Usage: {0}:
             <show> [viewer_name]
             <add> <viewer_name> <comp_name/user_name>
             <del> <viewer> [<comp_name>[/user_name]]
-        """.format(os.path.basename(sys.argv[0]))
+        """, os.path.basename(sys.argv[0]))
 
 
 if __name__ == '__main__':

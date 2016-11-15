@@ -9,6 +9,7 @@ from core import logger, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Script():
@@ -20,10 +21,10 @@ class Script():
         if not ('username' in self.cookie and 'compname' in self.cookie):
             raise Exception('Cookie not set')
         self.datadir = os.path.join(config['DATA_DIR'],
-                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)),
-                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))
+                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value))),
+                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value))))
         self.script_dir = os.path.join(self.datadir, 'script')
-        self.query_file = os.path.join(self.script_dir, utils.safe_str(self.params.get('filename')))
+        self.query_file = os.path.join(self.script_dir, utils.trueEnc(utils.safe_str(self.params.get('filename'))))
 
     def get(self):
         try:

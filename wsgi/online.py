@@ -8,6 +8,7 @@ from core import logger, base, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Online():
@@ -28,8 +29,9 @@ class Online():
                 allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])
 
                 if kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
-                    journal = sorted(["/data/{comp}/{user}/images/{}".format(f, **kwargs)
-                                      for f in os.listdir("{}/{comp}/{user}/images".format(config['DATA_DIR'], **kwargs))])[-1:]
+                    journal = sorted((fmt("/data/{comp}/{user}/images/{0}", f, **kwargs)
+                                      for f in os.listdir(utils.trueEnc(
+                                          fmt("{0}/{comp}/{user}/images", config['DATA_DIR'], **kwargs)))))[-1:]
         except Exception as e:
             log.error(e)
 

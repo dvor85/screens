@@ -8,6 +8,7 @@ from core import logger, base, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Archive():
@@ -31,8 +32,9 @@ class Archive():
                 if 'user' in kwargs and 'comp' in kwargs and 'date' in kwargs and \
                         kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
 
-                    journal = sorted(["/archive/{date}/{comp}/{user}/{}".format(f, **kwargs) for f
-                                      in os.listdir("{}/{date}/{comp}/{user}".format(config['ARCHIVE_DIR'], **kwargs))])
+                    journal = sorted((fmt("/archive/{date}/{comp}/{user}/{0}", f, **kwargs)
+                                      for f in os.listdir(utils.trueEnc(
+                                          fmt("{0}/{date}/{comp}/{user}", config['ARCHIVE_DIR'], **kwargs)))))
             elif self.action == 'get_users':
                 journal = allowed_users
             elif self.action == 'get_comps':

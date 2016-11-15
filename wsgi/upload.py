@@ -10,6 +10,7 @@ from core import logger, utils
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
+fmt = utils.fmt
 
 
 class Upload():
@@ -20,8 +21,8 @@ class Upload():
         if not ('username' in self.cookie and 'compname' in self.cookie):
             raise Exception('Cookie not set')
         self.datadir = os.path.join(config['DATA_DIR'],
-                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value)),
-                                    utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value)))
+                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value))),
+                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value))))
         self.params = utils.QueryParam(env)
 
     def store(self, filename, data):
@@ -39,7 +40,8 @@ class Upload():
 
     def main(self):
         if 'data' in self.params and 'filename' in self.params:
-            return self.store(os.path.join(self.datadir, urllib2.unquote(utils.safe_str(self.params.get('filename')))),
+            return self.store(os.path.join(self.datadir,
+                                           utils.trueEnc(utils.safe_str(self.params.get('filename')))),
                               self.params.get('data'))
         else:
             return ''

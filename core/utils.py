@@ -8,9 +8,12 @@ import sys
 from cgi import parse_qs, escape
 from UserDict import UserDict
 import re
+import pwd
+import string
 
 
-__denied_regex = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
+__denied_regex = re.compile(ur'[^\s./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
+fmt = string.Formatter().format
 
 
 def GET(target, post=None, cookie=None, headers=None, trys=1):
@@ -53,7 +56,7 @@ class QueryParam(UserDict):
     def __getitem__(self, key):
         val = UserDict.__getitem__(self, key)[0]
         if self.safe:
-            return safe_str('', val)
+            return safe_str(val)
         return escape(val)
 
 
@@ -62,7 +65,7 @@ def safe_str(s):
     if not isinstance(res, unicode):
         res = res.decode('utf-8', errors='ignore')
 
-    return __denied_regex.sub('', res).encode('utf-8', errors='ignore')
+    return utf(__denied_regex.sub('', res))
 
 
 def parseStr(s):
@@ -107,7 +110,7 @@ def add_userinfo(src_url, username, password):
         params['port'] = ''
     else:
         params['port'] = ':%i' % url.port
-    return "{scheme}://{username}:{password}@{hostname}{port}{path}{query}".format(**params)
+    return fmt("{scheme}://{username}:{password}@{hostname}{port}{path}{query}", **params)
 
 
 def rListFiles(path):
@@ -120,30 +123,104 @@ def rListFiles(path):
     return files
 
 
-def getUserName():
+def _get_uid(name):
+    """Returns a gid, given a group name."""
+    if name is None:
+        return None
+    try:
+        result = pwd.getpwnam(name).pw_uid
+    except AttributeError:
+        result = None
+    if result is not None:
+        return result[2]
+    return None
+
+
+def _get_gid(name):
+    """Returns a gid, given a group name."""
+    if name is None:
+        return None
+    try:
+        result = pwd.getpwnam(name).pw_gid
+    except AttributeError:
+        result = None
+    if result is not None:
+        return result[3]
+    return None
+
+
+def chown(path, user=None, group=None):
+    """Change owner user and group of the given path.
+    user and group can be the uid/gid or the user/group names, and in that case,
+    they are converted to their respective uid/gid.
+    """
+
+    _user = user
+    _group = group
+
+    # -1 means don't change it
+    if user is None:
+        _user = -1
+    # user can either be an int (the uid) or a string (the system username)
+    elif isinstance(user, basestring):
+        _user = _get_uid(user)
+        if _user is None:
+            raise LookupError("no such user: {!r}".format(user))
+
+    if group is None:
+        _group = -1
+    elif not isinstance(group, int):
+        _group = _get_gid(group)
+        if _group is None:
+            raise LookupError("no such group: {!r}".format(group))
+
+    os.chown(path, _user, _group)
+
+
+def makedirs(path, mode=0775, user=None, group=None):
+    if not os.path.isdir(path):
+        if not os.path.isdir(os.path.dirname(path)):
+            makedirs(os.path.dirname(path), mode, user, group)
+
+        os.mkdir(path)
+        os.chmod(path, mode)
+        chown(path, user, group)
+
+
+def uni(path):
+    if not isinstance(path, unicode):
+        path = path.decode(sys.getfilesystemencoding(), errors='ignore')
+    return path
+
+
+def utf(path):
+    if isinstance(path, unicode):
+        return path.encode('utf8', errors='ignore')
+    return path
+
+
+def trueEnc(path):
     if sys.platform.startswith('win'):
-        return os.getenv('USERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
-    else:
-        return os.getenv('USER')
+        return uni(path)
+    return utf(path)
+
+
+def getUserName():
+    __env_var = 'USER'
+    if sys.platform.startswith('win'):
+        __env_var = 'USERNAME'
+    return trueEnc(os.getenv(__env_var))
 
 
 def getCompName():
+    __env_var = 'HOSTNAME'
     if sys.platform.startswith('win'):
-        return os.getenv('COMPUTERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
-    else:
-        return os.getenv('HOSTNAME')
+        __env_var = 'COMPUTERNAME'
+    return trueEnc(os.getenv(__env_var))
 
 
 def getDataDIR():
+    __env_var = 'HOME'
     if sys.platform.startswith('win'):
-        return os.path.expandvars('%APPDATA%')
-    else:
-        return os.path.expanduser('~')
-
-
-def makedirs(path, mode=0775):
-    try:
-        if not os.path.exists(path):
-            os.makedirs(path, mode)
-    except Exception as e:
-        print e
+        __env_var = 'APPDATA'
+    return trueEnc(os.getenv(__env_var))
