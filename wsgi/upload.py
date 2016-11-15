@@ -2,8 +2,6 @@
 # from __future__ import unicode_literals
 
 import os
-import sys
-import time
 import base64
 import urllib2
 import Cookie

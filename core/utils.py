@@ -8,8 +8,6 @@ import sys
 from cgi import parse_qs, escape
 from UserDict import UserDict
 import re
-import shutil
-import pwd
 
 
 __denied_regex = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
@@ -49,12 +47,13 @@ class QueryParam(UserDict):
                 request_body_size = int(environ.get('CONTENT_LENGTH', 0))
             except (ValueError):
                 request_body_size = 0
-            self.data.update(parse_qs(environ['wsgi.input'].read(request_body_size)))
+            self.data.update(
+                parse_qs(environ['wsgi.input'].read(request_body_size)))
 
     def __getitem__(self, key):
         val = UserDict.__getitem__(self, key)[0]
         if self.safe:
-            return safe_str(val)
+            return safe_str('', val)
         return escape(val)
 
 
@@ -121,69 +120,11 @@ def rListFiles(path):
     return files
 
 
-def _get_uid(name):
-    """Returns a gid, given a group name."""
-    if name is None:
-        return None
-    try:
-        result = pwd.getpwnam(name).pw_uid
-    except AttributeError:
-        result = None
-    if result is not None:
-        return result[2]
-    return None
-
-
-def _get_gid(name):
-    """Returns a gid, given a group name."""
-    if name is None:
-        return None
-    try:
-        result = pwd.getpwnam(name).pw_gid
-    except AttributeError:
-        result = None
-    if result is not None:
-        return result[3]
-    return None
-
-
-def chown(path, user=None, group=None):
-    """Change owner user and group of the given path.
-
-    user and group can be the uid/gid or the user/group names, and in that case,
-    they are converted to their respective uid/gid.
-    """
-
-    _user = user
-    _group = group
-
-    # -1 means don't change it
-    if user is None:
-        _user = -1
-    # user can either be an int (the uid) or a string (the system username)
-    elif isinstance(user, basestring):
-        _user = _get_uid(user)
-        if _user is None:
-            raise LookupError("no such user: {!r}".format(user))
-
-    if group is None:
-        _group = -1
-    elif not isinstance(group, int):
-        _group = _get_gid(group)
-        if _group is None:
-            raise LookupError("no such group: {!r}".format(group))
-
-    os.chown(path, _user, _group)
-
-
-def makedirs(path, mode=0775, user=None, group=None):
-    if not os.path.isdir(path):
-        if not os.path.isdir(os.path.dirname(path)):
-            makedirs(os.path.dirname(path), mode, user, group)
-
-        os.mkdir(path)
-        os.chmod(path, mode)
-        chown(path, user, group)
+def getUserName():
+    if sys.platform.startswith('win'):
+        return os.getenv('USERNAME').decode(sys.getfilesystemencoding()).encode('utf8')
+    else:
+        return os.getenv('USER')
 
 
 def getCompName():
@@ -195,6 +136,14 @@ def getCompName():
 
 def getDataDIR():
     if sys.platform.startswith('win'):
-        return os.path.expandvars('%APPDATA%/.screens')
+        return os.path.expandvars('%APPDATA%')
     else:
-        return os.path.expanduser('~/.screens')
+        return os.path.expanduser('~')
+
+
+def makedirs(path, mode=0775):
+    try:
+        if not os.path.exists(path):
+            os.makedirs(path, mode)
+    except Exception as e:
+        print e

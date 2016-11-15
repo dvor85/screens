@@ -2,7 +2,6 @@
 # from __future__ import unicode_literals
 
 import os
-import sys
 from string import Template
 from config import config
 from core import logger, utils

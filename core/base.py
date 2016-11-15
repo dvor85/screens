@@ -4,7 +4,6 @@
 
 import sqlite3
 import os
-import sys
 from config import config
 from core import logger, utils
 

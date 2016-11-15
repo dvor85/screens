@@ -8,7 +8,7 @@ from config import config
 from core import logger, utils, base
 
 
-log = logger.getLogger(config['NAME'], 0)
+log = logger.getLogger(config['NAME'])
 
 
 class AccessControl():

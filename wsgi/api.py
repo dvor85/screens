@@ -53,6 +53,9 @@ def application(env, start_response):
     finally:
         if body is None:
             body = ''
+        elif isinstance(body, unicode):
+            body = body.encode('utf8')
+
         start_response(status, [('Content-type', 'text/plain'),
                                 ('Content-Length', str(len(body)))])
     return [body]

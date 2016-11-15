@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # from __future__ import unicode_literals
 
-import logging
-import logging.handlers
 import sys
+import logging
+from logging.handlers import SysLogHandler
 
 
 class Logger(logging.Logger):
@@ -17,12 +17,9 @@ class Logger(logging.Logger):
         self.addHandler(stream_handler)
 
         syslog_format = logging.Formatter(fmt="%(name)s: %(levelname)s: [%(module)s]: %(message)s")
-        syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+        syslog_handler = SysLogHandler(address='/dev/log')
         syslog_handler.setFormatter(syslog_format)
         self.addHandler(syslog_handler)
-
-    def _log(self, level, msg, args, exc_info=None, extra=None):
-        logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
 
 
 def getLogger(name, level=logging.NOTSET):

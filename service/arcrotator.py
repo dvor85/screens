@@ -2,7 +2,6 @@
 # from __future__ import unicode_literals
 
 import os
-import sys
 import time
 import threading
 import shutil
@@ -22,14 +21,14 @@ class ArchiveRotator(threading.Thread):
         self.active = False
 
     def calculate_arc_size(self):
-        total_size = 0
+        total_size = 0.0
         for f in utils.rListFiles(config['ARCHIVE_DIR']):
             total_size += os.path.getsize(os.path.join(config['ARCHIVE_DIR'], f))
         return total_size / (1024**3)
 
     def rotate(self):
         arch_size = self.calculate_arc_size()
-        log.info('Archive size = {}'.format(arch_size))
+        log.info('Archive size = {} GB'.format(arch_size))
         if arch_size > config['ARC_SIZE_GB']:
             dayslist = sorted(os.listdir(config['ARCHIVE_DIR']))
             log.info('Delete day: {}'.format(dayslist[0]))
