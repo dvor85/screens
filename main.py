@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # from __future__ import unicode_literals
 
@@ -22,6 +23,7 @@ class Starter():
     def __init__(self):
         signal.signal(signal.SIGTERM, self.signal_term)
         self.active = False
+#         self.parse_options()
         self.daemons = []
         self.daemons.append(VideoMaker())
         self.daemons.append(ArchiveRotator())
@@ -64,6 +66,7 @@ class Starter():
 
 
 if __name__ == '__main__':
+
     log.debug(fmt("PID={0}", os.getpid()))
     starter = Starter()
     starter.start()

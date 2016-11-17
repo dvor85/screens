@@ -7,6 +7,7 @@ var player = document.getElementById('player');
 
 var movies = [];
 var online_timeout_id = 0;
+var movies_timeout_id = 0;
 
 var loadingimg = new Image();
 loadingimg.src = 'media/loading.gif';
@@ -112,7 +113,6 @@ function show_elem(elem, visible) {
 }
 
 function get_xmlHttp_obj() {
-
 	var xmlHttp = null;
 	try { // Firefox, Opera 8.0+, Safari
 		xmlHttp = new XMLHttpRequest();
@@ -124,97 +124,101 @@ function get_xmlHttp_obj() {
 		}
 	}
 	return xmlHttp;
-};
+}
 
-function get_dates() {	
-	show_elem(onlineimg, false);
+function request(url, callback){
 	var xmlHttp = get_xmlHttp_obj();
-	xmlHttp.open('GET', '/api/archive' + '?act=get_dates', true);
+	xmlHttp.open('GET', url, true);
 	xmlHttp.onreadystatechange = function() {
 		if (xmlHttp.readyState == 4) {
 			xmlHttp.onreadystatechange = null; // plug memory leak
 			if (xmlHttp.status == 200) {
-				var html_data = '';
-				var obj_data = JSON.parse(xmlHttp.responseText);
-				for (var d of obj_data) {
-					html_data += '<option value="' + d	+ '">' + yyyymmdd_format(d) + '</option>';
+				if (callback) {
+					var obj_data = JSON.parse(xmlHttp.responseText);
+					callback(obj_data)
 				}
-				date_select.innerHTML = html_data;
 			}
-		};
+		}
 	}
 	xmlHttp.send(null);
+}
+
+function get_dates() {	
+	function fill_dates(obj_data) {
+		var html_data = '';
+		for (var d of obj_data) {
+			html_data += '<option value="' + d	+ '">' + yyyymmdd_format(d) + '</option>';
+		}
+		date_select.innerHTML = html_data;
+	}
+	
+	show_elem(onlineimg, false);
+	request('/api/archive' + 
+			'?act=get_dates', fill_dates)
 }
 
 function get_comps() {
-	show_elem(onlineimg, false);
-	var xmlHttp = get_xmlHttp_obj();
-	xmlHttp.open('GET', '/api/archive' + '?act=get_comps', true);
-	xmlHttp.onreadystatechange = function() {
-		if (xmlHttp.readyState == 4) {
-			xmlHttp.onreadystatechange = null; // plug memory leak
-			if (xmlHttp.status == 200) {
-				var html_data = '';
-				var obj_data = JSON.parse(xmlHttp.responseText);
-
-				for (var c of obj_data) {
-					html_data += '<option value="' + c + '">' + c + '</option>';
-				}
-				comp_select.innerHTML = html_data;
-				get_users();
-			}
+	function fill_comps(obj_data) {
+		var html_data = '';
+		for (var c of obj_data) {
+			html_data += '<option value="' + c + '">' + c + '</option>';
 		}
+		comp_select.innerHTML = html_data;
+		get_users();
 	}
-	xmlHttp.send(null);
+	show_elem(onlineimg, false);
+	request('/api/archive' + 
+			'?act=get_comps', fill_comps);
 }
 
 function get_users() {
-	show_elem(onlineimg, false);
-	var xmlHttp = get_xmlHttp_obj();	
-	xmlHttp.open('GET', '/api/archive' + '?act=get_users&' + '&comp=' + comp_select.value, true);
-	xmlHttp.onreadystatechange = function() {
-		if (xmlHttp.readyState == 4) {
-			xmlHttp.onreadystatechange = null; // plug memory leak
-			if (xmlHttp.status == 200) {
-				var html_data = '';
-				var obj_data = JSON.parse(xmlHttp.responseText);
-
-				for (var u of obj_data) {
-					html_data += '<option value="' + u + '">' + u + '</option>';
-				}
-				user_select.innerHTML = html_data;
-				get_movies();
-			}
+	function fill_users(obj_data) {
+		var html_data = '';
+		for (var u of obj_data) {
+			html_data += '<option value="' + u + '">' + u + '</option>';
 		}
+		user_select.innerHTML = html_data;
+		get_movies();
 	}
-	xmlHttp.send(null);
+	
+	show_elem(onlineimg, false);
+	request('/api/archive' + 
+			'?act=get_users&' + 
+			'&comp=' + comp_select.value, fill_users);
 }
 
 function get_movies() {
-	var xmlHttp = get_xmlHttp_obj();
-	movies.length = 0;
-	xmlHttp.open('GET', '/api/archive' + '?act=get_movies' + '&date=' + date_select.value + '&comp=' + comp_select.value + '&user=' + user_select.value, true);
-	xmlHttp.onreadystatechange = function() {
-		if (xmlHttp.readyState == 4) {
-			xmlHttp.onreadystatechange = null; // plug memory leak
-			if (xmlHttp.status == 200) {
-				var obj_data = JSON.parse(xmlHttp.responseText);
-				var html_data = '';
-				for (var i = 0; i < obj_data.length; i++) {
-					var start_end = /([^/.]+)\./.exec(obj_data[i])[1];
-					var title = [];
-					for (var t of start_end.split('-')) {
-						title.push(hhmmss_format(t));						
-					}
-					title = title.join(' - ');
-					movies[i] = obj_data[i];
-					html_data += '<span onclick="show_archive(' + i + ');">&nbsp;' + title + '&nbsp;<br></span>';
-				}
-				playlist.innerHTML = html_data;
+	function fill_movies(obj_data) {
+		var html_data = '';
+		for (var i = 0; i < obj_data.length; i++) {
+			var start_end = /([^/.]+)\./.exec(obj_data[i])[1];
+			var title = [];
+			for (var t of start_end.split('-')) {
+				title.push(hhmmss_format(t));						
 			}
+			title = title.join(' - ');
+			movies[i] = obj_data[i];
+			html_data += '<span onclick="show_archive(' + i + ');">&nbsp;' + title + '&nbsp;<br></span>';						
 		}
+		playlist.innerHTML = html_data;
+		var movie_index = videoPlayer.get_next_movie_id() - 1;
+		playlist_hlight(movie_index);
 	}
-	xmlHttp.send(null);		
+	
+	movies.length = 0;
+	if (mode_select.selectedIndex==1) {
+		videoPlayer.html5playerStop();
+		//show_archive();
+	}
+	clearTimeout(movies_timeout_id);
+	movies_timeout_id=setTimeout(function() {
+		request('/api/archive' + 
+				'?act=get_movies' + 
+				'&date=' + date_select.value + 
+				'&comp=' + comp_select.value + 
+				'&user=' + user_select.value, fill_movies);
+		setTimeout(arguments.callee, 60000);
+	}, 10);
 }
 
 
@@ -247,41 +251,31 @@ function show_archive(movie_index) {
 	player.innerHTML = "<div id='player_obj'></div>";
 	videoPlayer.set_video_player({
 		id : 'player_obj',
-		name : movies[movie_index],
+		src : movies[movie_index],
 		width : '100%',
 		height : '100%'
 	})	
-	if (document.getElementById('html5player')) {
-		var html5player = document.getElementById('html5player');
-		html5player.onloadeddata=html5VideoLoaded;				
-		html5player.onseeked=html5VideoScrolled;
-		html5player.ontimeupdate=html5VideoProgress;
-		html5player.onended=html5VideoFinished;
+	
+	var html5player = document.getElementById('html5player');
+	if (html5player) {
+		html5player.onloadeddata=videoPlayer.html5playerLoaded;				
+		html5player.onseeked=videoPlayer.html5playerScrolled;
+		html5player.ontimeupdate=videoPlayer.html5playerProgress;
+		html5player.onended=videoPlayer.html5playerFinished;
 		html5player = null;
 	}
 }
 
-function show_online() {	
-	function request() {
-		var xmlHttp = get_xmlHttp_obj();
-		xmlHttp.open('GET', '/api/online' + '?comp=' + comp_select.value + '&user=' + user_select.value, true);
-		xmlHttp.onreadystatechange = function() {
-			if (xmlHttp.readyState == 4) {
-				xmlHttp.onreadystatechange = null; // plug memory leak
-				if (xmlHttp.status == 200) {
-					var obj_data = JSON.parse(xmlHttp.responseText);
-					if (obj_data.length > 0) {
-						show_elem(onlineimg, true);
-						onlineimg.src=obj_data[0];						
-					} else {
-						show_elem(onlineimg, false);
-					}						
-				}
-			}
-			
-		}
-		xmlHttp.send(null);
+function show_online() {
+	function show(obj_data) {
+		if (obj_data.length > 0) {
+			show_elem(onlineimg, true);
+			onlineimg.src=obj_data[0];						
+		} else {
+			show_elem(onlineimg, false);
+		}		
 	}
+	
 	mode_select.selectedIndex = 0;
 	player.innerHTML = '';
 	player.appendChild(onlineimg);	
@@ -289,10 +283,12 @@ function show_online() {
 	clearTimeout(online_timeout_id);	
 	online_timeout_id=setTimeout(function() {
 		if (mode_select.selectedIndex==0) {
-			request();
-			setTimeout(arguments.callee,2000);
+			request('/api/online' + 
+					'?comp=' + comp_select.value + 
+					'&user=' + user_select.value, show);
+			setTimeout(arguments.callee, 2000);
 		}	
-	}, 2000);
+	}, 1000);
 }
 
 function change_mode() {
@@ -313,7 +309,7 @@ function init() {
 
 
 
-// /////////////////////////////
+///////////////////////////////
 
 
 videoPlayer = function() {
@@ -337,12 +333,16 @@ videoPlayer = function() {
         movie_duration = dur;
     }
     
+    function set_play_accel(accel) {
+        current_play_accel = accel;
+    }
+    
     function get_time() {
         return tm;
     }
     
-    function set_play_accel(accel) {
-        current_play_accel = accel;
+    function get_next_movie_id() {
+        return next_movie;
     }
     
     function ktVideoProgress(time) {
@@ -383,8 +383,8 @@ videoPlayer = function() {
     function ktPlayerLoaded() {
         tm=0;
         document.onkeydown = function(e) {
-            if (document.getElementById('flashplayer')) {			
-                var flashplayer=document.getElementById('flashplayer');
+        	var flashplayer=document.getElementById('flashplayer');
+            if (flashplayer) {			
                 switch (e.which) {
                 case 39:
                     if (flashplayer['jsScroll']) {
@@ -392,14 +392,14 @@ videoPlayer = function() {
                         if (tm<=movie_duration-1)
                             flashplayer.jsScroll(tm);
                     }
-                    break;
+                    return false;
                 case 37:
                     if (flashplayer['jsScroll']) {
                         tm-=1;	
                         if (tm>=1)
                             flashplayer.jsScroll(tm);
                     }
-                    break;
+                    return false;
                 case 32:
                     if (paused) {
                         if (flashplayer['jsPlay']) {
@@ -413,33 +413,29 @@ videoPlayer = function() {
                             paused=true;
                         }
                     }
-                    break;
+                    return false;
                 }                
                 flashplayer=null;
             }
         }
     }
     
-    function html5VideoProgress() {
-        if (document.getElementById('html5player')) {
-            var html5player=document.getElementById('html5player');
-            var rate=1;
-            if (current_play_accel<0)
-                rate=0.5;
-            else if (current_play_accel>1)
-                rate=2;
-                
-            html5player.playbackRate=rate;
-            tm=html5player.currentTime;
-            html5player=null;
-        }	
+    function html5playerProgress() {
+        var rate=1;
+        if (current_play_accel<0)
+            rate=0.5;
+        else if (current_play_accel>1)
+            rate=2;
+            
+        this.playbackRate=rate;
+        tm=this.currentTime;
     }
     
-    function html5VideoScrolled() {
+    function html5playerScrolled() {
         tm=this.currentTime;            
     }
     
-    function html5VideoFinished() {
+    function html5playerFinished() {
         tm=0;
         if (movies[next_movie]) {
         	this.src = movies[next_movie];
@@ -448,8 +444,8 @@ videoPlayer = function() {
     }
     
     function html5playerPlayPause() {
-        if (document.getElementById('html5player')) {
-            var html5player=document.getElementById('html5player');
+    	var html5player=document.getElementById('html5player'); 
+        if (html5player) {
             if (html5player.paused)
                 html5player.play();
             else
@@ -458,25 +454,35 @@ videoPlayer = function() {
         }	
     }
     
-    function html5VideoLoaded() {
+    function html5playerStop() {
+    	var html5player=document.getElementById('html5player');
+    	if (html5player) {
+    		html5player.src=undefined;
+    		//html5player.currentTime=html5player.duration;
+    		//tm=html5player.currentTime;
+    	}
+    	html5player=null;
+    }
+    
+    function html5playerLoaded() {
         document.onkeydown = function(e) {
-            if (document.getElementById('html5player')) {
-                var html5player=document.getElementById('html5player'); 
+        	var html5player=document.getElementById('html5player'); 
+            if (html5player) {
                 switch (e.which) {
                 case 39:
                     tm+=1;
                     if (tm<=html5player.duration-1)
                         html5player.currentTime=tm;
-                    break;
+                    return false;
                 case 37:
                     tm-=1;
                     if (tm>=1)
                         html5player.currentTime=tm;
-                    break;
+                    return false;
                 case 32:
-                    html5playerPlayPause();
+                	html5playerPlayPause();
                     tm=html5player.currentTime;
-                    break;
+                    return false;
                 }                
                 html5player=null;
             }
@@ -556,7 +562,7 @@ videoPlayer = function() {
 			}
 		}
 
-		var canplay = checkVideo(getFileExtension(params.name));
+		var canplay = checkVideo(getFileExtension(params.src));
 
 		if (canplay == "html5") {
 			document.getElementById(params.id).innerHTML = '<video id="html5player" width="'
@@ -566,22 +572,22 @@ videoPlayer = function() {
 					+ '" autoplay controls ></video>';
 
 			var html5player = document.getElementById('html5player');
-			html5player.innerHTML = "<p><a href=\"" + document.URL + params.name
+			html5player.innerHTML = "<p><a href=\"" + document.URL + params.src
 					+ "\" target='_blank'>DOWNLOAD: "
-					+ params.name.split(/(\\|\/)/g).pop() + "</a></p>";
+					+ params.src.split(/(\\|\/)/g).pop() + "</a></p>";
 
-			html5player.src = params.name;
+			html5player.src = params.src;
 		} else if (canplay == "flash") {
 			var id = ID();
 			document.getElementById(params.id).innerHTML = '<div id="' + id
 					+ '"> </div>';
 			document.getElementById(id).innerHTML = "<p><a href=\"" + document.URL
-					+ params.name + "\" target='_blank'>DOWNLOAD: "
-					+ params.name.split(/(\\|\/)/g).pop() + "</a></p>";
+					+ params.src + "\" target='_blank'>DOWNLOAD: "
+					+ params.src.split(/(\\|\/)/g).pop() + "</a></p>";
 
 			var flashvars = {
-				video_url : params.name,
-				permalink_url : document.URL + params.name,
+				video_url : params.src,
+				permalink_url : document.URL + params.src,
 				bt : 5,
 				scaling : 'fill',
 				hide_controlbar : 0,
@@ -605,8 +611,8 @@ videoPlayer = function() {
 					fattributes);
 		} else {
 			document.getElementById(params.id).innerHTML = "<p><a href=\""
-					+ document.URL + params.name + "\" target='_blank'>DOWNLOAD: "
-					+ params.name.split(/(\\|\/)/g).pop() + "</a></p>";
+					+ document.URL + params.src + "\" target='_blank'>DOWNLOAD: "
+					+ params.src.split(/(\\|\/)/g).pop() + "</a></p>";
 		}
 	}
 		
@@ -617,8 +623,10 @@ videoPlayer = function() {
         set_cur_event_secs: set_cur_event_secs,
         set_next_movie: set_next_movie,
         set_movie_duration: set_movie_duration,
-        get_time: get_time,
         set_play_accel: set_play_accel,
+        get_time: get_time,
+        get_next_movie_id: get_next_movie_id,
+        
         
         // /////////////////FLASHPLAYER EVENTS//////////////////////////////
 
@@ -632,11 +640,13 @@ videoPlayer = function() {
 
         // ///////////////HTML5PLAYER EVENTS/////////////////////////
 
-        html5VideoProgress: html5VideoProgress,
-        html5VideoScrolled: html5VideoScrolled,
-        html5VideoFinished: html5VideoFinished,
+        html5playerProgress: html5playerProgress,
+        html5playerScrolled: html5playerScrolled,
+        html5playerFinished: html5playerFinished,
         html5playerPlayPause: html5playerPlayPause,
-        html5VideoLoaded: html5VideoLoaded 
+        html5playerStop: html5playerStop,
+        html5playerLoaded: html5playerLoaded 
+        
     }
 }();
 
@@ -647,13 +657,9 @@ var ktVideoStarted = videoPlayer.ktVideoStarted;
 var ktVideoPaused = videoPlayer.ktVideoPaused;
 var ktVideoStopped = videoPlayer.ktVideoStopped;
 var ktPlayerLoaded = videoPlayer.ktPlayerLoaded;
-var html5VideoProgress = videoPlayer.html5VideoProgress;
-var html5VideoScrolled = videoPlayer.html5VideoScrolled;
-var html5VideoFinished = videoPlayer.html5VideoFinished;
-var html5playerPlayPause = videoPlayer.html5playerPlayPause;
-var html5VideoLoaded = videoPlayer.html5VideoLoaded;
 
-// ////////////////////////////
+
+//////////////////////////////
 
 
 

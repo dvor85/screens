@@ -6,6 +6,7 @@ import os
 import sys
 from config import config
 from core import logger, utils, base
+from optparse import OptionParser
 
 
 log = logger.getLogger(config['NAME'])
@@ -33,36 +34,46 @@ class AccessControl():
             print fmt("{viewer} | {comp}/{user}", **line)
 
 
-def usage():
-    print fmt("""
-        Usage: {0}:
-            <show> [viewer_name]
-            <add> <viewer_name> <comp_name/user_name>
-            <del> <viewer> [<comp_name>[/user_name]]
-        """, os.path.basename(sys.argv[0]))
+def main():
+    parser = OptionParser(conflict_handler="resolve",
+                          version=config['VERSION'],
+                          description=config['NAME'])
+    parser.add_option("--show",
+                      action="store_const", const="show", dest="action")
+    parser.add_option("--add",
+                      action="store_const", const="add", dest="action")
+    parser.add_option("--del",
+                      action="store_const", const="del", dest="action")
+
+    (options, arguments) = parser.parse_args()
+
+    actrl = AccessControl()
+    if options.action == 'show':
+        if len(arguments) > 0:
+            for arg in arguments:
+                actrl.show_scheme(arg)
+        else:
+            actrl.show_scheme('')
+    elif options.action == 'add':
+        if len(arguments) > 0:
+            viewer = arguments[0]
+        if len(arguments) == 2:
+            comp, user = arguments[1].split('/')
+        elif len(arguments) == 3:
+            comp, user = arguments[1:]
+        actrl.add_viewer(viewer, comp, user)
+    elif options.action == 'del':
+        comp, user = None, None
+        if len(arguments) > 0:
+            viewer = arguments[0]
+        if len(arguments) == 2:
+            comp_user = arguments[1].split('/')
+            comp = comp_user[0] if len(comp_user) > 0 else None
+            user = comp_user[1] if len(comp_user) > 1 else None
+        if len(arguments) == 3:
+            comp, user = arguments[1:]
+        actrl.del_viewer(viewer, comp, user)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        actrl = AccessControl()
-        cmd = sys.argv[1]
-        if cmd == 'show':
-            viewer = sys.argv[2] if len(sys.argv) > 2 else ''
-            actrl.show_scheme(viewer)
-        elif cmd == 'add':
-            viewer = sys.argv[2]
-            comp, user = sys.argv[3].split('/')
-            actrl.add_viewer(viewer, comp, user)
-        elif cmd == 'del':
-            viewer = sys.argv[2]
-            comp_user = []
-            if len(sys.argv) > 3:
-                comp_user = sys.argv[3].split('/')
-            comp = comp_user[0] if len(comp_user) > 0 else None
-            user = comp_user[1] if len(comp_user) > 1 else None
-            actrl.del_viewer(viewer, comp, user)
-
-        else:
-            usage()
-    else:
-        usage()
+    main()
