@@ -20,7 +20,7 @@ class Generator():
 
     def generate_file(self, filename, extra=None):
         generated_file = os.path.join(self.generated_dir, filename)
-        log.info(fmt('Generate file: {0}', generated_file))
+        log.info(fmt('Generate file: {gf}', gf=generated_file))
         try:
             with open(generated_file, 'w') as fp:
                 tmpl = Template(open(os.path.join(self.templates_dir, filename), 'r').read())

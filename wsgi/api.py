@@ -6,8 +6,8 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from config import config
-from core import logger, utils
+from config import config  # @IgnorePep8
+from core import logger, utils  # @IgnorePep8
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
@@ -43,9 +43,6 @@ def application(env, start_response):
         else:
             status = '404 Error'
             body = status
-
-        if body is None:
-            body = ''
 
     except Exception as e:
         status = '500 Error'

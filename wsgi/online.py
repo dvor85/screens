@@ -29,9 +29,9 @@ class Online():
                 allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])
 
                 if kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
-                    journal = sorted((fmt("/data/{comp}/{user}/images/{0}", f, **kwargs)
+                    journal = sorted((fmt("/data/{comp}/{user}/images/{fn}", fn=f, **kwargs)
                                       for f in os.listdir(utils.trueEnc(
-                                          fmt("{0}/{comp}/{user}/images", config['DATA_DIR'], **kwargs)))))[-1:]
+                                          fmt("{data_dir}/{comp}/{user}/images", data_dir=config['DATA_DIR'], **kwargs)))))[-1:]
         except Exception as e:
             log.error(e)
 

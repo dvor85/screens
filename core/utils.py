@@ -12,7 +12,8 @@ import pwd
 import string
 
 
-__denied_regex = re.compile(ur'[^\s./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
+__re_denied = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
+__re_spaces = re.compile(r'\s+')
 fmt = string.Formatter().format
 
 
@@ -65,7 +66,11 @@ def safe_str(s):
     if not isinstance(res, unicode):
         res = res.decode('utf-8', errors='ignore')
 
-    return utf(__denied_regex.sub('', res))
+    return utf(__re_denied.sub('', res))
+
+
+def split(s, num=0):
+    return __re_spaces.split(s, num)
 
 
 def parseStr(s):

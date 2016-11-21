@@ -25,7 +25,7 @@ class VideoProcess(multiprocessing.Process):
         self.user = user
 
     def make_video(self):
-        log.info(fmt('Make video: {0}/{1}', self.comp, self.user))
+        log.info(fmt('Make video: {comp}/{user}', comp=self.comp, user=self.user))
         src_dir = os.path.join(config['DATA_DIR'], self.comp, self.user, 'images')
         im_list = sorted([float(os.path.splitext(f)[0]) for f in os.listdir(src_dir) if f.endswith('.jpg')])
 
@@ -39,9 +39,9 @@ class VideoProcess(multiprocessing.Process):
                 config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4', **_params))
             utils.makedirs(os.path.dirname(dst_file), mode=0775)
 
-            proc = subprocess.Popen('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
-                                    -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
-                                    -profile:v baseline -b:v 100k -qp 28 -an -r 25 {}'.format(dst_file),
+            proc = subprocess.Popen(fmt('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
+                                        -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
+                                        -profile:v baseline -b:v 100k -qp 28 -an -r 25 {dst_file}', dst_file=dst_file),
                                     shell=True, close_fds=True, stdin=subprocess.PIPE)
             with proc.stdin:
                 log.debug('Add images to process stdin')
@@ -56,7 +56,7 @@ class VideoProcess(multiprocessing.Process):
             log.debug('Delete images')
             for f in im_list:
                 try:
-                    os.unlink(os.path.join(src_dir, fmt("{0}.jpg", f)))
+                    os.unlink(os.path.join(src_dir, fmt("{fn}.jpg", fn=f)))
                 except Exception as e:
                     log.error(e)
 
