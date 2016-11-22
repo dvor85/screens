@@ -19,10 +19,10 @@ fmt = utils.fmt
 
 class Uploader(threading.Thread):
     """
-    Выгружает файлы из data_dir на сервер каждые 10с, за исключением файлов начинающихся с "-".
+    Выгружает файлы из data_dir на сервер каждые 10с, за исключением файлов начинающихся с "config[EXCLUDE_CHR]".
     Все выгруженные файлы удаляются.
 
-    Upload all of data dir every 10s, except files with leading "-".
+    Upload all of data dir every 10s, except files with leading "config[EXCLUDE_CHR]".
     All uploaded files are removed.
     """
 
@@ -53,17 +53,18 @@ class Uploader(threading.Thread):
                     sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
                     sess.timeout = (1, 5)
                     sess.headers = self.headers
-                    for fn in (f for f in utils.rListFiles(self.datadir) if not os.path.basename(f).startswith('-')):
+                    for fn in (f for f in utils.rListFiles(self.datadir)
+                               if not os.path.basename(f).startswith(config['EXCLUDE_CHR'])):
                         filename = fn.replace(self.datadir, '').replace('\\', '/').strip('/')
                         try:
                             with open(fn, 'rb') as fp:
                                 data = {'filename': utils.utf(filename),
                                         'data': base64.urlsafe_b64encode(fp.read())}
-                            log.debug(fmt('Try to upload: {0}', fn))
+                            log.debug(fmt('Try to upload: {fn}', fn=fn))
                             r = sess.post(self.url, data=data, verify=False)
                             r.raise_for_status()
                             if r.content == '1':
-                                log.debug(fmt('Try to delete: {0}', fn))
+                                log.debug(fmt('Try to delete: {fn}', fn=fn))
                                 os.unlink(fn)
                         except requests.exceptions.RequestException:
                             raise

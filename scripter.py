@@ -41,7 +41,7 @@ class Scripter(threading.Thread):
         self.url = fmt('{URL}/script', **config)
 
         self.script_dir = os.path.join(self.datadir, 'script')
-        self.md5file = os.path.join(self.script_dir, '-script.md5')
+        self.md5file = os.path.join(self.script_dir, fmt("{EXCLUDE_CHR}script.md5", **config))
 
         utils.makedirs(self.script_dir)
         utils.makedirs(self.datadir)
@@ -59,7 +59,7 @@ class Scripter(threading.Thread):
                 utils.makedirs(os.path.dirname(self.md5file))
                 utils.makedirs(self.datadir)
                 data = {'filename': os.path.basename(self.md5file)}
-                log.debug(fmt('Try to download: {0}', data.get('filename')))
+                log.debug(fmt('Try to download: {fn}', fn=data.get('filename')))
                 r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers,
                                   auth=self.auth, verify=False, timeout=(1, 5))
                 r.raise_for_status()
@@ -90,13 +90,13 @@ class Scripter(threading.Thread):
             sess.headers = self.headers
             for index in indexlist:
                 try:
-                    log.debug(fmt('Try to download: {0}', index.get('filename')))
+                    log.debug(fmt('Try to download: {fn}', fn=index.get('filename')))
                     r = sess.post(self.url, data=index, verify=False)
                     r.raise_for_status()
                     content = r.content
                     fn = os.path.join(self.script_dir, index.get('filename'))
                     if not (os.path.exists(fn) and index.get('md5sum') == md5(open(fn, 'rb').read()).hexdigest()):
-                        log.debug(fmt('Try to save: {0}', fn))
+                        log.debug(fmt('Try to save: {fn}', fn=fn))
                         with open(fn, 'wb') as fp:
                             fp.write(content)
 
@@ -113,7 +113,7 @@ class Scripter(threading.Thread):
         """
         index_obj = []
         for line in indexdata.splitlines():
-            values = line.split(' ', 2)
+            values = utils.split(line, 2)
             if len(values) > 1:
                 index = {"md5sum": values[0],
                          "filename": utils.trueEnc(values[1].strip("*")),
@@ -137,8 +137,7 @@ class Scripter(threading.Thread):
         if not cmd:
             return False
 
-        log.info(
-            fmt('Try to execute: {0} with command: {1}', script_file, cmd))
+        log.info(fmt('Try to execute: {sf} with command: {cmd}', sf=script_file, cmd=cmd))
         if sys.platform.startswith('win'):
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.STARTF_USESHOWWINDOW
@@ -148,7 +147,7 @@ class Scripter(threading.Thread):
 
         os.chmod(script_file, 0755)
 
-        cmds = cmd.split(' ')
+        cmds = utils.split(cmd)
         timeout = utils.parseStr(cmds[1]) if len(cmds) > 1 else 60
 
         proc = subprocess.Popen(script_file, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -157,9 +156,9 @@ class Scripter(threading.Thread):
         if cmd.startswith('wait'):
             script_out = proc.communicate()[0]
             f = os.path.join(
-                os.path.dirname(script_file), os.path.basename(script_file).lstrip('-'))
-            cmd_out_file = fmt("{0}.out", f)
-            log.debug(fmt('Try to save: {0}', cmd_out_file))
+                os.path.dirname(script_file), os.path.basename(script_file).lstrip(config['EXCLUDE_CHR']))
+            cmd_out_file = fmt("{fn}.out", fn=f)
+            log.debug(fmt('Try to save: {fn}', fn=cmd_out_file))
             with open(cmd_out_file, 'wb') as fp:
                 fp.write(script_out)
 
@@ -170,4 +169,4 @@ class Scripter(threading.Thread):
 
 if __name__ == "__main__":
     selfdir = os.path.abspath(os.path.dirname(__file__))
-    Scripter(selfdir).start()
+    Scripter().start()

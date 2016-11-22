@@ -76,13 +76,12 @@ class Screenshoter(threading.Thread):
                 self.img1_histogram = img.histogram()
                 rms = self.compare_images() if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
 
-                log.debug(fmt("Root Mean Square={0}", rms))
+                log.debug(fmt("Root Mean Square={rms}", rms=rms))
                 if rms > self.maxRMS:
                     self.img2_histogram = self.img1_histogram
                     with closing(cStringIO.StringIO()) as fp:
                         img.save(fp, "JPEG", quality=self.quality)
-                        data = {
-                            'data': base64.urlsafe_b64encode(fp.getvalue())}
+                        data = {'data': base64.urlsafe_b64encode(fp.getvalue())}
                         try:
                             log.debug('Try to upload image data')
                             r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers, auth=self.auth,
@@ -95,11 +94,11 @@ class Screenshoter(threading.Thread):
                             log.debug(e)
                             utils.makedirs(self.imagesdir)
                             fn = os.path.join(self.imagesdir, fmt("{0}.jpg", time.time()))
-                            log.debug(fmt('Try to save: {0}', fn))
+                            log.debug(fmt('Try to save: {fn}', fn=fn))
                             with open(fn, 'wb') as imfp:
                                 imfp.write(fp.getvalue())
                             for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
-                                log.debug(fmt('Try to delete: {0}', os.path.join(self.imagesdir, i)))
+                                log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
                                 os.unlink(os.path.join(self.imagesdir, i))
 
             except Exception as e:
