@@ -85,6 +85,7 @@ def main():
     elif options.action == 'passwd':
         cmd = ['htdigest']
         if not os.path.lexists(config['PASSWORD_FILE']):
+            utils.makedirs(os.path.dirname(config['PASSWORD_FILE']))
             cmd.append('-c')
         cmd += [config['PASSWORD_FILE'], config['NAME'], options.viewer]
         subprocess.call(cmd)

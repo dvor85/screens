@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          spserver
+# Provides:          ${NAME}
 # Required-Start:    $syslog $remote_fs
 # Required-Stop:     $syslog $remote_fs
 # Should-Start:      
@@ -11,12 +11,11 @@
 # Description: 
 ### END INIT INFO
 
-#DAEMON=/usr/local/spserver/main.py
-DAEMON=/home/demon/Documents/eclipse/spserver/main.py
-NAME=spserver
+DAEMON=${SELF_DIR}/main.py
+NAME=${NAME}
 PIDFILE=/var/run/spserver/$NAME.pid
-DESC="spserver"
-USER=demon
+DESC="${NAME}"
+USER=${USER}
 
 unset TMPDIR
 
@@ -35,7 +34,7 @@ do_start()
 
 do_stop()
 {
-    start-stop-daemon --stop --retry 5 $OPTIONS --remove-pidfile
+    start-stop-daemon --stop --retry 5 $OPTIONS 
     rm -f $PIDFILE
     return $?
 }
