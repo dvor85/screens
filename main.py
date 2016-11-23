@@ -11,6 +11,7 @@ from uploader import Uploader
 import logger
 from config import config
 import utils
+import collectcfg
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
@@ -35,6 +36,7 @@ class SPclient():
         self.stop()
 
     def start(self):
+        collectcfg.Collector().save()
         for d in self.daemons:
             d.start()
 #         self.wait_termination()

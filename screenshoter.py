@@ -66,9 +66,9 @@ class Screenshoter(threading.Thread):
         log.info(fmt('Start daemon: {0}', self.name))
         from PIL import ImageGrab
         self.active = True
+        count_errors = 0
         while self.active:
             try:
-
                 utils.makedirs(self.datadir)
                 log.debug('Try to grab image')
 
@@ -101,8 +101,11 @@ class Screenshoter(threading.Thread):
                                 log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
                                 os.unlink(os.path.join(self.imagesdir, i))
 
+                count_errors = 0
             except Exception as e:
-                log.error(e)
+                if count_errors % 30 == 0:
+                    log.error(e)
+                count_errors += 1
 
             time.sleep(2)
 
