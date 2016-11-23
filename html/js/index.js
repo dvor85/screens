@@ -217,7 +217,8 @@ function get_movies() {
 				'&date=' + date_select.value + 
 				'&comp=' + comp_select.value + 
 				'&user=' + user_select.value, fill_movies);
-		setTimeout(arguments.callee, 60000);
+		clearTimeout(movies_timeout_id);
+		movies_timeout_id = setTimeout(arguments.callee, 60000);
 	}, 10);
 }
 
@@ -280,13 +281,15 @@ function show_online() {
 	player.innerHTML = '';
 	player.appendChild(onlineimg);	
 	player.appendChild(loadingimg);	
+	
 	clearTimeout(online_timeout_id);	
 	online_timeout_id=setTimeout(function() {
 		if (mode_select.selectedIndex==0) {
 			request('/api/online' + 
 					'?comp=' + comp_select.value + 
 					'&user=' + user_select.value, show);
-			setTimeout(arguments.callee, 2000);
+			clearTimeout(online_timeout_id);
+			online_timeout_id = setTimeout(arguments.callee, 2000);
 		}	
 	}, 1000);
 }
