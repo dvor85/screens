@@ -37,9 +37,9 @@ def application(env, start_response):
             from wsgi.archive import Archive
             body = Archive(env).main()
 
-        elif path_info == "/env":
-            for k, v in env.items():
-                body += fmt('{0}: {1}\n', k, v)
+#         elif path_info == "/env":
+#             for k, v in env.items():
+#                 body += fmt('{0}: {1}\n', k, v)
         else:
             status = '404 Error'
             body = status

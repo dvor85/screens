@@ -20,6 +20,7 @@ class VideoProcess(multiprocessing.Process):
 
     def __init__(self, sema, comp, user):
         multiprocessing.Process.__init__(self)
+        self.daemon = True
         self.sema = sema
         self.comp = comp
         self.user = user
@@ -27,16 +28,15 @@ class VideoProcess(multiprocessing.Process):
     def make_video(self):
         log.info(fmt('Make video: {comp}/{user}', comp=self.comp, user=self.user))
         src_dir = os.path.join(config['DATA_DIR'], self.comp, self.user, 'images')
-        im_list = sorted([float(os.path.splitext(f)[0]) for f in os.listdir(src_dir) if f.endswith('.jpg')])
+        im_list = sorted(float(os.path.splitext(f)[0]) for f in os.listdir(src_dir) if f.endswith('.jpg'))
 
         if len(im_list) > 15:
-            _params = dict(bt=datetime.datetime.fromtimestamp(im_list[0]),
-                           et=datetime.datetime.fromtimestamp(im_list[-1]),
-                           user=self.user,
-                           comp=self.comp)
-
             dst_file = os.path.join(
-                config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4', **_params))
+                config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4',
+                                           bt=datetime.datetime.fromtimestamp(im_list[0]),
+                                           et=datetime.datetime.fromtimestamp(im_list[-1]),
+                                           user=self.user,
+                                           comp=self.comp))
             utils.makedirs(os.path.dirname(dst_file), mode=0775)
 
             proc = subprocess.Popen(
@@ -93,7 +93,11 @@ class VideoMaker(threading.Thread):
                 for proc in processes:
                     proc.start()
                 for proc in processes:
-                    proc.join()
+                    try:
+                        proc.join(config['VIDEO_LENGTH'])
+                        proc.terminate()
+                    except Exception as e:
+                        log.error(e)
             except Exception as e:
                 log.exception(e)
             self.sleep(config['VIDEO_LENGTH'])
