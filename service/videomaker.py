@@ -39,10 +39,11 @@ class VideoProcess(multiprocessing.Process):
                 config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4', **_params))
             utils.makedirs(os.path.dirname(dst_file), mode=0775)
 
-            proc = subprocess.Popen(fmt('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
-                                        -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
-                                        -profile:v baseline -b:v 100k -qp 28 -an -r 25 {dst_file}', dst_file=dst_file),
-                                    shell=True, close_fds=True, stdin=subprocess.PIPE)
+            proc = subprocess.Popen(
+                fmt('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
+                    -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
+                    -profile:v baseline -b:v 100k -qp 28 -an -r 25 "{dst_file}"', dst_file=dst_file),
+                shell=True, close_fds=True, stdin=subprocess.PIPE)
             with proc.stdin:
                 log.debug('Add images to process stdin')
                 for f in im_list:
@@ -61,8 +62,11 @@ class VideoProcess(multiprocessing.Process):
                     log.error(e)
 
     def run(self):
-        with self.sema:
-            self.make_video()
+        try:
+            with self.sema:
+                self.make_video()
+        except Exception as e:
+            log.error(e)
 
 
 class VideoMaker(threading.Thread):
@@ -92,7 +96,7 @@ class VideoMaker(threading.Thread):
                     proc.join()
             except Exception as e:
                 log.exception(e)
-            self.sleep(60)
+            self.sleep(config['VIDEO_LENGTH'])
 
     def stop(self):
         log.info('Stop VideoMaker')

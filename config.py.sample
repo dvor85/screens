@@ -19,5 +19,6 @@ config = dict(
     WSGI_DIR=os.path.join(__SELF_DIR__, 'wsgi'),
     BASE_FILE=os.path.join(__SELF_DIR__, 'base/base.db'),
     PASSWORD_FILE=os.path.join(__SELF_DIR__, 'password/.htpasswd'),
+    VIDEO_LENGTH=120,
     ARC_SIZE_GB=1,
 )
