@@ -2,6 +2,7 @@
 *.pyo
 *.log
 *.db
+*.bin
 config.py
 data/
 venv/

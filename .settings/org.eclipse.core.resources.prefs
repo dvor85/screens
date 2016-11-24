@@ -1,10 +1,10 @@
 eclipse.preferences.version=1
-encoding/collectcfg.py=utf8
+encoding//services/collector.py=utf8
+encoding//services/env.py=utf-8
+encoding//services/screenshoter.py=utf-8
+encoding//services/scripter.py=utf-8
+encoding//services/uploader.py=utf-8
 encoding/config.py=utf-8
-encoding/env.py=utf-8
 encoding/logger.py=utf-8
 encoding/main.py=utf-8
-encoding/screenshoter.py=utf-8
-encoding/scripter.py=utf-8
-encoding/uploader.py=utf-8
 encoding/utils.py=utf-8

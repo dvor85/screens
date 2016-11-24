@@ -23,7 +23,7 @@ class Logger(logging.Logger):
         stream_handler.setFormatter(stream_format)
         self.addHandler(stream_handler)
 
-        logfile = os.path.join(utils.getDataDIR(), fmt('.{NAME}/logs/{EXCLUDE_CHR}{NAME}.log', **config))
+        logfile = os.path.join(utils.getDataDIR(), fmt('{NAME}/logs/{EXCLUDE_CHR}{NAME}.log', **config))
         utils.makedirs(os.path.dirname(logfile))
         rfh = RFHandler(filename=logfile, maxBytes=1024 * 1024, backupCount=2)
         rfh.setFormatter(stream_format)

