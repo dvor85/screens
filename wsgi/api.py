@@ -36,6 +36,9 @@ def application(env, start_response):
         elif path_info == "/archive":
             from wsgi.archive import Archive
             body = Archive(env).main()
+        elif path_info == "/hello":
+            from wsgi.hello import Hello
+            body = Hello(env).main()
 
 #         elif path_info == "/env":
 #             for k, v in env.items():

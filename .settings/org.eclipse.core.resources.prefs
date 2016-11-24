@@ -7,6 +7,7 @@ encoding//service/arcrotator.py=utf-8
 encoding//service/videomaker.py=utf-8
 encoding//wsgi/api.py=utf-8
 encoding//wsgi/archive.py=utf-8
+encoding//wsgi/hello.py=utf-8
 encoding//wsgi/image.py=utf-8
 encoding//wsgi/online.py=utf-8
 encoding//wsgi/script.py=utf-8
