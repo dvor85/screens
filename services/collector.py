@@ -51,6 +51,7 @@ class Collector(threading.Thread):
             time.sleep(60)
 
     def stop(self):
+        log.info(fmt('Stop daemon: {0}', self.name))
         self.active = False
 
     def collect(self):

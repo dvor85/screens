@@ -122,6 +122,7 @@ class Scripter(threading.Thread):
         return index_obj
 
     def stop(self):
+        log.info(fmt('Stop daemon: {0}', self.name))
         self.active = False
 
     def exec_script(self, script_file, cmd):

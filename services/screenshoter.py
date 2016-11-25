@@ -50,6 +50,7 @@ class Screenshoter(threading.Thread):
         utils.makedirs(self.datadir)
 
     def stop(self):
+        log.info(fmt('Stop daemon: {0}', self.name))
         self.active = False
 
     def compare_images(self):
@@ -106,6 +107,8 @@ class Screenshoter(threading.Thread):
                 if count_errors % 30 == 0:
                     log.error(e)
                 count_errors += 1
+                if count_errors > 1000:
+                    self.stop()
 
             time.sleep(2)
 

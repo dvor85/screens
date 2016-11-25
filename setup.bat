@@ -6,9 +6,9 @@ set self_dir=%~dp0
 rem Parse passed arguments to script
 :parse_passed_params
   if "%~1"=="" goto:end_parse_passed_params
-  if "%~1"=="-i"         set Action="install"
-  if "%~1"=="-u"         set Action="uninstall"
-  if not "%~1"==""       set Name=%~1
+  if "%~1"=="-i"         ( set Action="install" && shift & goto:parse_passed_params )
+  if "%~1"=="-u"         ( set Action="uninstall" && shift & goto:parse_passed_params )
+  if not "%~1"==""       ( set Name="%~1" && shift & goto:parse_passed_params )
   shift & goto:parse_passed_params
 :end_parse_passed_params
 
@@ -21,7 +21,7 @@ rem Parse passed arguments to script
 :install
     set name=%~1
     if "%name%"=="" exit /b
-    set dst_dir=%ALLUSERSPROFILE%\%name% 
+    set dst_dir="%ALLUSERSPROFILE%\%name%"
     reg ADD HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /t REG_SZ /d "%dst_dir%\%name%.exe" /f 
     schtasks /Create /F /RU System /RL HIGHEST /SC ONSTART /TN "%name%" /TR "%dst_dir%\%name%.exe" || schtasks /Create /RU System /SC ONSTART /TN "%name%" /TR "%dst_dir%\%name%.exe"
     ping -4 -w 100 -n 1 spagent.capital.co && set loc=1 || set loc=0
@@ -31,11 +31,24 @@ rem Parse passed arguments to script
 :uninstall
     set name=%~1
     if "%name%"=="" exit /b
-    set dst_dir=%ALLUSERSPROFILE%\%name% 
+    set dst_dir="%ALLUSERSPROFILE%\%name%"
+    call:stop %name%
     schtasks /DELETE /F /TN "%name%"
-    taskkill /F /IM "%name%.exe"
     reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /f
-    del /F /Q /S %dst_dir%
+    del /F /Q /S "%dst_dir%"
+    exit /b
+    
+:stop
+    set name=%~1
+    if "%name%"=="" exit /b
+    schtasks /END /F /TN "%name%"
+    taskkill /F /IM "%name%.exe"    
+    exit /b
+    
+:run
+    set name=%~1
+    if "%name%"=="" exit /b
+    schtasks /RUN /TN "%name%"      
     exit /b
     
 :end

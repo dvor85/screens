@@ -78,6 +78,7 @@ class Uploader(threading.Thread):
             time.sleep(10)
 
     def stop(self):
+        log.info(fmt('Stop daemon: {0}', self.name))
         self.active = False
 
 
