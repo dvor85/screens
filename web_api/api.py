@@ -21,24 +21,12 @@ def application(env, start_response):
         body = ''
         path_info = escape(env['PATH_INFO'])
 
-        if path_info == "/image":
-            from wsgi.image import ImageStore
-            body = ImageStore(env).main()
-        elif path_info == "/script":
-            from wsgi.script import Script
-            body = Script(env).main()
-        elif path_info == "/upload":
-            from wsgi.upload import Upload
-            body = Upload(env).main()
-        elif path_info == "/online":
-            from wsgi.online import Online
+        if path_info == "/online":
+            from web_api.online import Online
             body = Online(env).main()
         elif path_info == "/archive":
-            from wsgi.archive import Archive
+            from web_api.archive import Archive
             body = Archive(env).main()
-        elif path_info == "/hello":
-            from wsgi.hello import Hello
-            body = Hello(env).main()
 
 #         elif path_info == "/env":
 #             for k, v in env.items():

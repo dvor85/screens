@@ -153,7 +153,7 @@ function get_dates() {
 	}
 	
 	show_elem(onlineimg, false);
-	request('/api/archive' + 
+	request('/web/archive' + 
 			'?act=get_dates', fill_dates)
 }
 
@@ -167,7 +167,7 @@ function get_comps() {
 		get_users();
 	}
 	show_elem(onlineimg, false);
-	request('/api/archive' + 
+	request('/web/archive' + 
 			'?act=get_comps', fill_comps);
 }
 
@@ -182,7 +182,7 @@ function get_users() {
 	}
 	
 	show_elem(onlineimg, false);
-	request('/api/archive' + 
+	request('/web/archive' + 
 			'?act=get_users&' + 
 			'&comp=' + comp_select.value, fill_users);
 }
@@ -212,7 +212,7 @@ function get_movies() {
 	}
 	clearTimeout(movies_timeout_id);
 	movies_timeout_id=setTimeout(function() {
-		request('/api/archive' + 
+		request('/web/archive' + 
 				'?act=get_movies' + 
 				'&date=' + date_select.value + 
 				'&comp=' + comp_select.value + 
@@ -285,7 +285,7 @@ function show_online() {
 	clearTimeout(online_timeout_id);	
 	online_timeout_id=setTimeout(function() {
 		if (mode_select.selectedIndex==0) {
-			request('/api/online' + 
+			request('/web/online' + 
 					'?comp=' + comp_select.value + 
 					'&user=' + user_select.value, show);
 			clearTimeout(online_timeout_id);
