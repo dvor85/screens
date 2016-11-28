@@ -37,7 +37,7 @@ class Scripter(threading.Thread):
         self.name = __name__
         self.daemon = True
         self.active = False
-        self.datadir = os.path.join(utils.getDataDIR(), fmt('{NAME}', **config))
+        self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
         self.url = fmt('{URL}/script', **config)
 
         self.script_dir = os.path.join(self.datadir, 'script')
@@ -156,8 +156,7 @@ class Scripter(threading.Thread):
         threading.Timer(timeout, proc.kill).start()
         if cmd.startswith('wait'):
             script_out = proc.communicate()[0]
-            f = os.path.join(
-                os.path.dirname(script_file), os.path.basename(script_file).lstrip(config['EXCLUDE_CHR']))
+            f = os.path.join(os.path.dirname(script_file), os.path.basename(script_file).lstrip(config['EXCLUDE_CHR']))
             cmd_out_file = fmt("{fn}.out", fn=f)
             log.debug(fmt('Try to save: {fn}', fn=cmd_out_file))
             with open(cmd_out_file, 'wb') as fp:

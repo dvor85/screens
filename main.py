@@ -21,7 +21,7 @@ fmt = utils.fmt
 class SPclient():
 
     def __init__(self):
-        self.datadir = os.path.join(utils.getDataDIR(), fmt('{NAME}', **config))
+        self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
         self.daemons = []
         signal.signal(signal.SIGTERM, self.signal_term)
 

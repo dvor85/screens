@@ -35,7 +35,7 @@ class Screenshoter(threading.Thread):
         self.daemon = True
         self.active = False
 
-        self.datadir = os.path.join(utils.getDataDIR(), fmt('{NAME}', **config))
+        self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
         self.imagesdir = os.path.join(self.datadir, 'images')
         self.url = fmt('{URL}/image', **config)
         self.quality = config['SCR_QUALITY']
