@@ -21,7 +21,7 @@ test -x $DAEMON || exit 0
 
 . /lib/lsb/init-functions
 
-OPTIONS="--quiet --oknodo --pidfile $PIDFILE"
+OPTIONS="--quiet --pidfile $PIDFILE"
 
 do_start()
 {
@@ -32,8 +32,7 @@ do_start()
 
 do_stop()
 {
-    start-stop-daemon --stop --retry=TERM/30/KILL/5 $OPTIONS 
-    rm -f $PIDFILE
+    start-stop-daemon --stop --retry=TERM/30/KILL/5 $OPTIONS && rm -f $PIDFILE
     return $?
 }
 
@@ -57,9 +56,7 @@ case "$1" in
     ;;
   restart|force-reload)
     log_begin_msg "Restarting $DESC: $NAME"
-    if do_stop; then
-	do_start
-    fi
+    do_stop && do_start
     log_end_msg $?
     ;;
   status)
