@@ -38,6 +38,7 @@ class Collector(threading.Thread):
         self.active = True
         self.info = self.collect()
         data = {'data': base64.urlsafe_b64encode(self.info)}
+        prev_timeout, timeout = 13, 21
         while self.active:
             try:
                 r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers, auth=self.auth,
@@ -47,8 +48,11 @@ class Collector(threading.Thread):
                     raise requests.exceptions.HTTPError
                 self.stop()
             except Exception as e:
+                if timeout < 60:
+                    prev_timeout, timeout = timeout, prev_timeout + timeout
                 log.debug(e)
-            time.sleep(60)
+
+            time.sleep(timeout)
 
     def stop(self):
         log.info(fmt('Stop daemon: {0}', self.name))
@@ -58,5 +62,4 @@ class Collector(threading.Thread):
         info = {}
         info.update(config)
         del info['AUTH']
-        info['DATA_DIR'] = self.datadir
         return "\n".join(fmt('{k} = {v}', k=k, v=v) for k, v in info.iteritems())

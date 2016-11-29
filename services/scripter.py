@@ -54,6 +54,7 @@ class Scripter(threading.Thread):
     def run(self):
         log.info(fmt('Start daemon: {0}', self.name))
         self.active = True
+        prev_timeout, timeout = 13, 21
         while self.active:
             try:
                 utils.makedirs(os.path.dirname(self.md5file))
@@ -70,11 +71,15 @@ class Scripter(threading.Thread):
                     if self.download(indexlist):
                         with open(self.md5file, 'wb') as fp:
                             fp.write(index_content)
+                    self.execute(indexlist)
 
+                prev_timeout, timeout = 13, 21
             except Exception as e:
                 log.error(e)
+                if timeout < 60:
+                    prev_timeout, timeout = timeout, prev_timeout + timeout
 
-            time.sleep(10)
+            time.sleep(timeout)
 
     def download(self, indexlist):
         """
@@ -100,11 +105,16 @@ class Scripter(threading.Thread):
                         with open(fn, 'wb') as fp:
                             fp.write(content)
 
-                    self.exec_script(fn, index.get('cmd'))
                 except Exception as e:
                     log.error(e)
                     return False
             return True
+
+    def execute(self, indexlist):
+        for index in indexlist:
+            fn = os.path.join(self.script_dir, index.get('filename'))
+            self.exec_script(fn, index.get('cmd'))
+        return True
 
     def parseIndex(self, indexdata):
         """
@@ -168,5 +178,6 @@ class Scripter(threading.Thread):
 
 
 if __name__ == "__main__":
-    selfdir = os.path.abspath(os.path.dirname(__file__))
-    Scripter().start()
+    t = Scripter()
+    t.start()
+    t.join()

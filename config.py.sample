@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
 # from __future__ import unicode_literals
-import logging, os, json
+import logging, os, json, utils, base64
 
+fmt = utils.fmt
 
 config=dict(
-NAME = 'spclient',
-VERSION = '1.0.0',    
-URL = 'http://spserver/api', # url to spserver api
-AUTH = ('', ''), # tuple with login and password for url
-SAVED_IMAGES = 300, # amount of saved images when no connection to url
-LOGLEVEL = logging.DEBUG,
-SELF_DIR = os.path.dirname(__file__),
-CHGSCR_THRESHOLD = 50, # change screen threshold (less - higher sensibility, more - lower sensibility)
-SCR_QUALITY = 30, # quality of jpg (0-100)
+	NAME = 'spclient',
+	VERSION = '1.0.1',    
+	URL = 'http://spserver/api', # url to spserver api
+	AUTH = ('', ''), # tuple with login and password for url
+	SAVED_IMAGES = 300, # amount of saved images when no connection to url
+	LOGLEVEL = logging.DEBUG,
+	DATA_DIR=utils.getDataDIR(),
+	CHGSCR_THRESHOLD = 50, # change screen threshold (less - higher sensibility, more - lower sensibility)
+	SCR_QUALITY = 30, # quality of jpg (0-100)
+	EXCLUDE_CHR='_'
 )
+config['SELF_DIR'] = os.path.dirname(__file__)
+config['LOG_FILE'] = os.path.join(utils.getDataDIR(), fmt('{NAME}/logs/{EXCLUDE_CHR}{NAME}.log', **config))
 
-# load config.json if exists
 try:
-    custom_config_file = os.path.join(config['SELF_DIR'], 'config.json')
+    custom_config_file = os.path.join(config['SELF_DIR'], 'config.bin')
     if os.path.exists(custom_config_file):
-        custom_config = json.load(open(custom_config_file, 'r'))
+        custom_config = json.loads(base64.standard_b64decode(open(custom_config_file, 'r').read()))
         config.update(custom_config)
 except:
     pass

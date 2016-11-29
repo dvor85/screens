@@ -45,6 +45,7 @@ class Uploader(threading.Thread):
     def run(self):
         log.info(fmt('Start daemon: {0}', self.name))
         self.active = True
+        prev_timeout, timeout = 13, 21
         while self.active:
             try:
                 utils.makedirs(self.datadir)
@@ -72,10 +73,13 @@ class Uploader(threading.Thread):
                             log.error(e)
 
                         time.sleep(0.1)
+                prev_timeout, timeout = 13, 21
             except Exception as e:
+                if timeout < 60:
+                    prev_timeout, timeout = timeout, prev_timeout + timeout
                 log.error(e)
 
-            time.sleep(10)
+            time.sleep(timeout)
 
     def stop(self):
         log.info(fmt('Stop daemon: {0}', self.name))
@@ -83,8 +87,6 @@ class Uploader(threading.Thread):
 
 
 if __name__ == "__main__":
-    selfdir = os.path.abspath(os.path.dirname(__file__))
-    Uploader(selfdir).start()
-#     for f in utils.rListFiles(selfdir):
-#         log.debug(f)
-#     print Uploader(selfdir).rgetFiles(selfdir)
+    t = Uploader()
+    t.start()
+    t.join()

@@ -63,17 +63,68 @@ class Screenshoter(threading.Thread):
         rms = math.sqrt(sum(map(lambda a, b: (a - b) ** 2, h1, h2)) / len(h1))
         return rms
 
+    def grabImage_PIL(self):
+        """
+        Делает скриншот с помощью Pillow библиотеки.
+        ImageGrab.grab() порождает большую утечку памяти, если при вызове произошла ошибка.
+        """
+        bt = time.time()
+        from PIL import ImageGrab
+        try:
+            return ImageGrab.grab()
+        finally:
+            log.debug(fmt("time of execution = {t}", t=time.time() - bt))
+
+    def grabImage_win32(self):
+        """
+        Делает скриншот с помощью win32 api.
+        """
+        bt = time.time()
+        import win32gui
+        import win32ui
+        import win32con
+        import win32api
+        from PIL import Image
+        bmp = win32ui.CreateBitmap()
+        try:
+            CAPTUREBLT = 0x40000000
+            hwin = win32gui.GetDesktopWindow()
+            width = win32api.GetSystemMetrics(win32con.SM_CXVIRTUALSCREEN)
+            height = win32api.GetSystemMetrics(win32con.SM_CYVIRTUALSCREEN)
+            left = win32api.GetSystemMetrics(win32con.SM_XVIRTUALSCREEN)
+            top = win32api.GetSystemMetrics(win32con.SM_YVIRTUALSCREEN)
+            hwindc = win32gui.GetWindowDC(hwin)
+            srcdc = win32ui.CreateDCFromHandle(hwindc)
+            memdc = srcdc.CreateCompatibleDC()
+            bmp.CreateCompatibleBitmap(srcdc, width, height)
+            memdc.SelectObject(bmp)
+            memdc.BitBlt((0, 0), (width, height), srcdc, (left, top), win32con.SRCCOPY | CAPTUREBLT)
+
+            bmpinfo = bmp.GetInfo()
+            bmpstr = bmp.GetBitmapBits(True)
+            return Image.frombuffer(
+                'RGB', (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
+                bmpstr,
+                'raw', 'BGRX', 0, 1)
+        finally:
+            memdc.DeleteDC()
+            srcdc.DeleteDC()
+            win32gui.ReleaseDC(hwin, hwindc)
+            win32gui.DeleteObject(bmp.GetHandle())
+            log.debug(fmt("time of execution = {t}", t=time.time() - bt))
+
     def run(self):
         log.info(fmt('Start daemon: {0}', self.name))
-        from PIL import ImageGrab
+
         self.active = True
-        count_errors = 0
+        prev_timeout, timeout = 1, 2
         while self.active:
             try:
                 utils.makedirs(self.datadir)
                 log.debug('Try to grab image')
 
-                img = ImageGrab.grab()
+                img = self.grabImage_win32()
+#                 img = self.grabImage_PIL()
                 self.img1_histogram = img.histogram()
                 rms = self.compare_images() if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
 
@@ -102,15 +153,15 @@ class Screenshoter(threading.Thread):
                                 log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
                                 os.unlink(os.path.join(self.imagesdir, i))
 
-                count_errors = 0
+                prev_timeout, timeout = 1, 2
             except Exception as e:
-                if count_errors % 30 == 0:
-                    log.error(e)
-                count_errors += 1
-                if count_errors > 1000:
-                    self.stop()
+                if timeout < 3600:
+                    prev_timeout, timeout = timeout, prev_timeout + timeout
+                log.error(e)
 
-            time.sleep(2)
+            time.sleep(timeout)
 
 if __name__ == "__main__":
-    Screenshoter().start()
+    t = Screenshoter()
+    t.start()
+    t.join()

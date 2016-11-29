@@ -6,16 +6,19 @@ set self_dir=%~dp0
 rem Parse passed arguments to script
 :parse_passed_params
   if "%~1"=="" goto:end_parse_passed_params
-  if "%~1"=="-i"         ( set Action="install" && shift & goto:parse_passed_params )
-  if "%~1"=="-u"         ( set Action="uninstall" && shift & goto:parse_passed_params )
-  if not "%~1"==""       ( set Name="%~1" && shift & goto:parse_passed_params )
+  if "%~1"=="install"           ( set Action="%~1" && shift & goto:parse_passed_params )
+  if "%~1"=="uninstall"         ( set Action="%~1" && shift & goto:parse_passed_params )
+  if "%~1"=="stop"              ( set Action="%~1" && shift & goto:parse_passed_params )
+  if "%~1"=="run"               ( set Action="%~1" && shift & goto:parse_passed_params )
+  if not "%~1"==""              ( set Name="%~1" && shift & goto:parse_passed_params )
   shift & goto:parse_passed_params
 :end_parse_passed_params
 
 :begin
     if %Action%=="install"   call:install %Name%
     if %Action%=="uninstall" call:uninstall %Name%
-    
+    if %Action%=="stop"      call:stop %Name%
+    if %Action%=="run"       call:run %Name%
     goto:end
 
 :install
@@ -41,7 +44,7 @@ rem Parse passed arguments to script
 :stop
     set name=%~1
     if "%name%"=="" exit /b
-    schtasks /END /F /TN "%name%"
+    schtasks /END /TN "%name%"
     taskkill /F /IM "%name%.exe"    
     exit /b
     
