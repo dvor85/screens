@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # from __future__ import unicode_literals
 
-import urllib
-import urllib2
 import os
 import sys
 from cgi import parse_qs, escape
@@ -15,30 +13,6 @@ import string
 __re_denied = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
 __re_spaces = re.compile(r'\s+')
 fmt = string.Formatter().format
-
-
-def GET(target, post=None, cookie=None, headers=None, trys=1):
-    if not target:
-        return
-    if not headers:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) \
-            Chrome/45.0.2454.99 Safari/537.36'}
-    req = urllib2.Request(url=target, headers=headers)
-
-    if post:
-        req.add_header("Content-type", "application/x-www-form-urlencoded")
-        req.add_data(urllib.urlencode(post))
-    if cookie:
-        for coo in cookie.items():
-            req.add_header('Cookie', "=".join(coo))
-
-    resp = urllib2.urlopen(req, timeout=6)
-    try:
-        http = resp.read()
-        return http
-    finally:
-        resp.close()
 
 
 class QueryParam(UserDict):
@@ -90,32 +64,8 @@ def parseStr(s):
 def uniq(seq):
     # order preserving
     noDupes = []
-    [noDupes.append(i) for i in seq if noDupes.count(i) == 0]
+    [noDupes.append(i) for i in seq if i not in noDupes]
     return noDupes
-
-
-def add_userinfo(src_url, username, password):
-    from urlparse import urlsplit
-
-    url = urlsplit(src_url)
-    params = {'scheme': url.scheme, 'hostname': url.hostname, 'path': url.path}
-    if url.query == '':
-        params['query'] = ''
-    else:
-        params['query'] = '?%s' % url.query
-    if url.username is None:
-        params['username'] = username
-    else:
-        params['username'] = url.username
-    if url.password is None:
-        params['password'] = password
-    else:
-        params['password'] = url.password
-    if url.port is None:
-        params['port'] = ''
-    else:
-        params['port'] = ':%i' % url.port
-    return fmt("{scheme}://{username}:{password}@{hostname}{port}{path}{query}", **params)
 
 
 def rListFiles(path):

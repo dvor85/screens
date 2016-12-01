@@ -3,7 +3,6 @@
 
 import os
 import base64
-import urllib2
 import Cookie
 from config import config
 from core import logger, utils

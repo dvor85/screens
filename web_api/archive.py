@@ -2,10 +2,12 @@
 # from __future__ import unicode_literals
 
 import os
-import json
 from config import config
 from core import logger, base, utils
-
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 fmt = utils.fmt

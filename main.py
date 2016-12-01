@@ -3,9 +3,7 @@
 # from __future__ import unicode_literals
 
 import os
-import sys
 import time
-import threading
 import signal
 from config import config
 from core import logger, utils
