@@ -11,10 +11,10 @@ import time
 import logger
 from config import config
 import requests
+from utils import fmt
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
-fmt = utils.fmt
 
 
 class Uploader(threading.Thread):

@@ -7,9 +7,7 @@ import os
 import utils
 from logging.handlers import RotatingFileHandler as RFHandler
 from config import config
-
-
-fmt = utils.fmt
+from utils import fmt
 
 
 class Logger(logging.Logger):

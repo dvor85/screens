@@ -9,10 +9,10 @@ import time
 import requests
 import base64
 from config import config
+from utils import fmt
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
-fmt = utils.fmt
 
 
 class Env(threading.Thread):

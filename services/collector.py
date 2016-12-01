@@ -8,9 +8,9 @@ import logger
 import threading
 import requests
 import time
+from utils import fmt
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
-fmt = utils.fmt
 
 
 class Collector(threading.Thread):

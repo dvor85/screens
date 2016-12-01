@@ -12,21 +12,21 @@ from hashlib import md5
 import logger
 from config import config
 import requests
+from utils import fmt
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
-fmt = utils.fmt
 
 
 class Scripter(threading.Thread):
     """
-    Скачивает -script.md5 со списком файлов каждые 10с.
-        Формат -script.md5:
-        md5sum filename command
+    Скачивает config[EXCLUDE_CHR]script.md5 со списком файлов каждые 10с.
+        Формат config[EXCLUDE_CHR]script.md5:
+            md5sum filename command
         Command = [wait [timeout]|nowait|None]
     Если command = wait, то запускается filename и ожидает завершения timeout или 60с если не задан.
 
-    Download -script.md5 with list of files every 10s.
+    Download config[EXCLUDE_CHR]script.md5 with list of files every 10s.
         Format: md5sum filename command
         Command = [wait [timeout]|nowait|None]
     If command is "wait" then exec filename and wait for complete timeout or 60 seconds if not specified

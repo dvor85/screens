@@ -13,10 +13,10 @@ import logger
 from config import config
 import requests
 import math
+from utils import fmt
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
-fmt = utils.fmt
 
 
 class Screenshoter(threading.Thread):

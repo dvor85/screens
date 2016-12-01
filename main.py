@@ -12,10 +12,10 @@ from services.collector import Collector
 import logger
 from config import config
 import utils
+from utils import fmt
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
-fmt = utils.fmt
 
 
 class SPclient():
