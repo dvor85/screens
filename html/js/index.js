@@ -4,6 +4,7 @@ var date_select = document.getElementById('date_select');
 var user_select = document.getElementById('user_select');
 var playlist = document.getElementById('playlist');
 var player = document.getElementById('player');
+var api_url = '/web';
 
 var movies = [];
 var online_timeout_id = 0;
@@ -126,21 +127,34 @@ function get_xmlHttp_obj() {
 	return xmlHttp;
 }
 
-function request(url, callback){
+function json_request(url, json, callback){
 	var xmlHttp = get_xmlHttp_obj();
-	xmlHttp.open('GET', url, true);
+	var jreq = json;
+	var json = JSON.stringify(jreq);
+	xmlHttp.open('POST', url, true);
+	xmlHttp.setRequestHeader("Content-type", "application/json");
 	xmlHttp.onreadystatechange = function() {
 		if (xmlHttp.readyState == 4) {
 			xmlHttp.onreadystatechange = null; // plug memory leak
 			if (xmlHttp.status == 200) {
 				if (callback) {
-					var obj_data = JSON.parse(xmlHttp.responseText);
-					callback(obj_data)
+					var jres = JSON.parse(xmlHttp.responseText);
+					if (jres.id != jreq.id){
+						console.log("Invalid ID");
+						return false;
+					}
+					if (jres.error) {
+						console.log(jres.error.message);
+						return false;
+					}
+					
+					callback(jres.result);
+					return true;
 				}
 			}
 		}
-	}
-	xmlHttp.send(null);
+	}	
+	xmlHttp.send(json);
 }
 
 function get_dates() {	
@@ -153,8 +167,8 @@ function get_dates() {
 	}
 	
 	show_elem(onlineimg, false);
-	request('/web/archive' + 
-			'?act=get_dates', fill_dates)
+	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_dates"} }
+	json_request(api_url, jreq, fill_dates)
 }
 
 function get_comps() {
@@ -167,8 +181,8 @@ function get_comps() {
 		get_users();
 	}
 	show_elem(onlineimg, false);
-	request('/web/archive' + 
-			'?act=get_comps', fill_comps);
+	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_comps"} }
+	json_request(api_url, jreq, fill_comps);
 }
 
 function get_users() {
@@ -182,9 +196,8 @@ function get_users() {
 	}
 	
 	show_elem(onlineimg, false);
-	request('/web/archive' + 
-			'?act=get_users&' + 
-			'&comp=' + comp_select.value, fill_users);
+	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_users", comp: comp_select.value} }
+	json_request(api_url, jreq, fill_users);
 }
 
 function get_movies() {
@@ -212,11 +225,13 @@ function get_movies() {
 	}
 	clearTimeout(movies_timeout_id);
 	movies_timeout_id=setTimeout(function() {
-		request('/web/archive' + 
-				'?act=get_movies' + 
-				'&date=' + date_select.value + 
-				'&comp=' + comp_select.value + 
-				'&user=' + user_select.value, fill_movies);
+		var _params = {act: "get_movies", 
+					   comp: comp_select.value,
+					   user: user_select.value,
+					   date: date_select.value					   
+		}
+		var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: _params}
+		json_request(api_url, jreq, fill_movies);
 		clearTimeout(movies_timeout_id);
 		movies_timeout_id = setTimeout(arguments.callee, 60000);
 	}, 10);
@@ -285,9 +300,11 @@ function show_online() {
 	clearTimeout(online_timeout_id);	
 	online_timeout_id=setTimeout(function() {
 		if (mode_select.selectedIndex==0) {
-			request('/web/online' + 
-					'?comp=' + comp_select.value + 
-					'&user=' + user_select.value, show);
+			var _params = {comp: comp_select.value,
+						   user: user_select.value,						   					   
+			}
+			var jreq = {jsonrpc: '2.0', method: 'online', id: Math.random(), params: _params}
+			json_request(api_url, jreq, show);
 			clearTimeout(online_timeout_id);
 			online_timeout_id = setTimeout(arguments.callee, 2000);
 		}	
@@ -460,7 +477,7 @@ videoPlayer = function() {
     function html5playerStop() {
     	var html5player=document.getElementById('html5player');
     	if (html5player) {
-    		html5player.src=undefined;
+    		html5player.src=null;
     		//html5player.currentTime=html5player.duration;
     		//tm=html5player.currentTime;
     	}

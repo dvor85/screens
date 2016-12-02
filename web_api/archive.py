@@ -4,10 +4,7 @@
 import os
 from config import config
 from core import logger, base, utils
-try:
-    import simplejson as json
-except ImportError:
-    import json
+
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 fmt = utils.fmt
@@ -16,37 +13,49 @@ fmt = utils.fmt
 class Archive():
 
     def __init__(self, env):
-        self.env = env
+        try:
+            self.env = env
+            self.username = utils.trueEnc(utils.safe_str(env.get('REMOTE_USER')))
+            self.allowed_comps = []
+            self.allowed_users = []
+            self.db = base.Base()
+        except Exception as e:
+            log.error(e)
 
-        self.params = utils.QueryParam(env, safe=True)
-        self.username = env['REMOTE_USER']
-        self.action = self.params['act']
-        self.db = base.Base()
-
-    def get(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         journal = []
         try:
-            allowed_comps = self.db.get_allowed_comps(self.username)
-            if 'comp' in kwargs:
-                allowed_users = self.db.get_allowed_users(self.username, kwargs['comp'])
+            self.action = utils.trueEnc(utils.safe_str(kwargs.get('act')))
+
+            _params = dict(
+                comp=utils.trueEnc(utils.safe_str(kwargs.get('comp', ''))),
+                user=utils.trueEnc(utils.safe_str(kwargs.get('user', ''))),
+                date=utils.trueEnc(utils.safe_str(kwargs.get('date', '')))
+            )
+
+            if len(self.username) > 0:
+                self.allowed_comps = self.db.get_allowed_comps(self.username)
+            if len(_params['comp']) > 0:
+                self.allowed_users = self.db.get_allowed_users(self.username, _params['comp'])
 
             if self.action == 'get_movies':
-                if 'user' in kwargs and 'comp' in kwargs and 'date' in kwargs and \
-                        kwargs['user'] in allowed_users and kwargs['comp'] in allowed_comps:
+                for p in _params.itervalues():
+                    if len(p) <= 0:
+                        return journal
 
-                    journal = sorted((fmt("/archive/{date}/{comp}/{user}/{0}", f, **kwargs)
-                                      for f in os.listdir(utils.trueEnc(
-                                          fmt("{0}/{date}/{comp}/{user}", config['ARCHIVE_DIR'], **kwargs)))))
+                if _params['user'] in self.allowed_users and _params['comp'] in self.allowed_comps:
+                    movies_dir = utils.trueEnc(fmt("{data_dir}/{date}/{comp}/{user}", data_dir=config['ARCHIVE_DIR'], **_params))
+                    if os.path.isdir(movies_dir):
+                        journal = sorted(
+                            fmt("/archive/{date}/{comp}/{user}/{fn}", fn=f, **_params) for f in os.listdir(movies_dir)
+                        )
             elif self.action == 'get_users':
-                journal = allowed_users
+                journal = self.allowed_users
             elif self.action == 'get_comps':
-                journal = allowed_comps
+                journal = self.allowed_comps
             elif self.action == 'get_dates':
                 journal = sorted(os.listdir(config['ARCHIVE_DIR']), reverse=True)
         except Exception as e:
             log.error(e)
 
-        return json.dumps(journal)
-
-    def main(self):
-        return self.get(**self.params)
+        return journal

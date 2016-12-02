@@ -2,10 +2,9 @@
 # from __future__ import unicode_literals
 
 import os
-import base64
-import Cookie
 from config import config
 from core import logger, utils
+import base64
 
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
@@ -15,24 +14,24 @@ fmt = utils.fmt
 class Script():
 
     def __init__(self, env):
-        self.env = env
-        self.params = utils.QueryParam(env)
-        self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE'))
-        if not ('username' in self.cookie and 'compname' in self.cookie):
-            raise Exception('Cookie not set')
-        self.datadir = os.path.join(config['DATA_DIR'],
-                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['compname'].value))),
-                                    utils.trueEnc(utils.safe_str(base64.urlsafe_b64decode(self.cookie['username'].value))))
-        self.script_dir = os.path.join(self.datadir, 'script')
-        self.query_file = os.path.join(self.script_dir, utils.trueEnc(utils.safe_str(self.params.get('filename'))))
+        try:
+            self.env = env
+        except Exception as e:
+            log.error(e)
 
     def get(self):
         try:
             with open(self.query_file, 'rb') as fp:
-                return fp.read()
+                return base64.b64encode(fp.read())
 
         except:
             return ''
 
-    def main(self):
-        return self.get()
+    def __call__(self, *args, **kwargs):
+        compname = utils.trueEnc(utils.safe_str(kwargs.get('compname')))
+        username = utils.trueEnc(utils.safe_str(kwargs.get('username')))
+        filename = utils.trueEnc(utils.safe_str(kwargs.get('filename')))
+        if len(compname) > 0 and len(username) > 0 and len(filename) > 0:
+            self.datadir = os.path.join(config['DATA_DIR'], compname, username)
+            self.query_file = os.path.join(self.datadir, 'script', filename)
+            return self.get()

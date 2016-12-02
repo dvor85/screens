@@ -4,8 +4,8 @@
 <path>/${PROJECT_DIR_NAME}</path>
 <path>/${PROJECT_DIR_NAME}/core</path>
 <path>/${PROJECT_DIR_NAME}/service</path>
-<path>/${PROJECT_DIR_NAME}/web_wsgi</path>
-<path>/${PROJECT_DIR_NAME}/client_wsgi</path>
+<path>/${PROJECT_DIR_NAME}/client_api</path>
+<path>/${PROJECT_DIR_NAME}/web_api</path>
 </pydev_pathproperty>
 <pydev_property name="org.python.pydev.PYTHON_PROJECT_VERSION">python 2.7</pydev_property>
 <pydev_property name="org.python.pydev.PYTHON_PROJECT_INTERPRETER">Default</pydev_property>
