@@ -38,18 +38,25 @@ class Scripter(threading.Thread):
         self.daemon = True
         self.active = False
         self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
-        self.url = fmt('{URL}/script', **config)
 
         self.script_dir = os.path.join(self.datadir, 'script')
         self.md5file = os.path.join(self.script_dir, fmt("{EXCLUDE_CHR}script.md5", **config))
 
         utils.makedirs(self.script_dir)
         utils.makedirs(self.datadir)
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
-                       'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
+        self.params = {"username": utils.utf(utils.getUserName()),
+                       'compname': utils.utf(utils.getCompName())}
+        self.jreq = {'jsonrpc': '2.0', 'method': 'script', 'id': __name__, 'params': self.params}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
 
         self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
+
+    def _check_jres(self, jres):
+        if self.jreq['id'] != jres['id']:
+            raise ValueError('Invalid ID')
+        if 'error' in jres:
+            raise Exception(jres['error']['message'])
+        return jres
 
     def run(self):
         log.info(fmt('Start daemon: {0}', self.name))
@@ -59,12 +66,15 @@ class Scripter(threading.Thread):
             try:
                 utils.makedirs(os.path.dirname(self.md5file))
                 utils.makedirs(self.datadir)
-                data = {'filename': os.path.basename(self.md5file)}
-                log.debug(fmt('Try to download: {fn}', fn=data.get('filename')))
-                r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers,
+                self.params['filename'] = os.path.basename(self.md5file)
+                self.jreq['params'] = self.params
+                self.jreq['id'] = time.time()
+                log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
+                r = requests.post(config['URL'], json=self.jreq, headers=self.headers,
                                   auth=self.auth, verify=False, timeout=(1, 5))
                 r.raise_for_status()
-                index_content = r.content
+                jres = self._check_jres(r.json())
+                index_content = base64.b64decode(jres['result'])
                 if not (os.path.exists(self.md5file) and md5(index_content).hexdigest() ==
                         md5(open(self.md5file, 'rb').read()).hexdigest()):
                     indexlist = self.parseIndex(index_content)
@@ -90,16 +100,19 @@ class Scripter(threading.Thread):
             return False
         with requests.Session() as sess:
             sess.auth = self.auth
-            sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
             sess.timeout = (1, 5)
             sess.headers = self.headers
             for index in indexlist:
                 try:
-                    log.debug(fmt('Try to download: {fn}', fn=index.get('filename')))
-                    r = sess.post(self.url, data=index, verify=False)
+                    self.params['filename'] = index.get('filename')
+                    self.jreq['params'] = self.params
+                    self.jreq['id'] = time.time()
+                    log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
+                    r = sess.post(config['URL'], json=self.jreq, verify=False)
                     r.raise_for_status()
-                    content = r.content
-                    fn = os.path.join(self.script_dir, index.get('filename'))
+                    jres = self._check_jres(r.json())
+                    content = base64.b64decode(jres['result'])
+                    fn = os.path.join(self.script_dir, self.params['filename'])
                     if not (os.path.exists(fn) and index.get('md5sum') == md5(open(fn, 'rb').read()).hexdigest()):
                         log.debug(fmt('Try to save: {fn}', fn=fn))
                         with open(fn, 'wb') as fp:

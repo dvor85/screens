@@ -2,11 +2,9 @@
 # from __future__ import unicode_literals
 
 import os
-import sys
 import threading
 import base64
 import utils
-import urllib2
 import time
 import logger
 from config import config
@@ -33,14 +31,21 @@ class Uploader(threading.Thread):
         self.active = False
 
         self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
-        self.url = fmt('{URL}/upload', **config)
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
-                       'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
+        self.params = {"username": utils.utf(utils.getUserName()),
+                       'compname': utils.utf(utils.getCompName())}
+        self.jreq = {'jsonrpc': '2.0', 'method': 'upload', 'id': __name__, 'params': self.params}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
 
         self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
 
         utils.makedirs(self.datadir)
+
+    def _check_jres(self, jres):
+        if self.jreq['id'] != jres['id']:
+            raise ValueError('Invalid ID')
+        if 'error' in jres:
+            raise Exception(jres['error']['message'])
+        return jres
 
     def run(self):
         log.info(fmt('Start daemon: {0}', self.name))
@@ -51,20 +56,22 @@ class Uploader(threading.Thread):
                 utils.makedirs(self.datadir)
                 with requests.Session() as sess:
                     sess.auth = self.auth
-                    sess.cookies = requests.utils.cookiejar_from_dict(self.cookie)
                     sess.timeout = (1, 5)
                     sess.headers = self.headers
                     for fn in (f for f in utils.rListFiles(self.datadir)
                                if not os.path.basename(f).startswith(config['EXCLUDE_CHR'])):
-                        filename = fn.replace(self.datadir, '').replace('\\', '/').strip('/')
                         try:
                             with open(fn, 'rb') as fp:
-                                data = {'filename': utils.utf(filename),
-                                        'data': base64.urlsafe_b64encode(fp.read())}
+                                self.params['filename'] = utils.utf(
+                                    fn.replace(self.datadir, '').replace('\\', '/').strip('/'))
+                                self.params['data'] = base64.b64encode(fp.read())
+                            self.jreq['params'] = self.params
+                            self.jreq['id'] = time.time()
+
                             log.debug(fmt('Try to upload: {fn}', fn=fn))
-                            r = sess.post(self.url, data=data, verify=False)
-                            r.raise_for_status()
-                            if r.content == '1':
+                            r = sess.post(config['URL'], json=self.jreq, verify=False)
+                            jres = self._check_jres(r.json())
+                            if jres['result'] == 1:
                                 log.debug(fmt('Try to delete: {fn}', fn=fn))
                                 os.unlink(fn)
                         except requests.exceptions.RequestException:

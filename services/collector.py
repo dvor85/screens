@@ -25,26 +25,37 @@ class Collector(threading.Thread):
         self.daemon = True
         self.active = False
         self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
-        self.url = fmt('{URL}/hello', **config)
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
-                       'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
+
+        self.params = {"username": utils.utf(utils.getUserName()),
+                       'compname': utils.utf(utils.getCompName())}
+        self.jreq = {'jsonrpc': '2.0', 'method': 'hello', 'id': __name__, 'params': self.params}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
 
         utils.makedirs(self.datadir)
 
+    def _check_jres(self, jres):
+        if self.jreq['id'] != jres['id']:
+            raise ValueError('Invalid ID')
+        if 'error' in jres:
+            raise Exception(jres['error']['message'])
+        return jres
+
     def run(self):
         log.info(fmt('Start daemon: {0}', self.name))
         self.active = True
         self.info = self.collect()
-        data = {'data': base64.urlsafe_b64encode(self.info)}
+        self.params['data'] = base64.b64encode(self.info)
+        self.jreq['params'] = self.params
         prev_timeout, timeout = 13, 21
         while self.active:
             try:
-                r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers, auth=self.auth,
+                self.jreq['id'] = time.time()
+                r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
                                   timeout=(1, 5), verify=False)
                 r.raise_for_status()
-                if r.content != '1':
+                jres = self._check_jres(r.json())
+                if jres['result'] != 1:
                     raise requests.exceptions.HTTPError
                 self.stop()
             except Exception as e:
@@ -63,3 +74,8 @@ class Collector(threading.Thread):
         info.update(config)
         del info['AUTH']
         return "\n".join(fmt('{k} = {v}', k=k, v=v) for k, v in info.iteritems())
+
+if __name__ == '__main__':
+    t = Collector()
+    t.start()
+    t.join()

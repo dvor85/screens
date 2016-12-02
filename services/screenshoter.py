@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # from __future__ import unicode_literals
 
-import sys
 import os
 import cStringIO
 import time
@@ -37,13 +36,13 @@ class Screenshoter(threading.Thread):
 
         self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
         self.imagesdir = os.path.join(self.datadir, 'images')
-        self.url = fmt('{URL}/image', **config)
         self.quality = config['SCR_QUALITY']
         self.maxRMS = config['CHGSCR_THRESHOLD']
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         self.img1_histogram, self.img2_histogram = None, None
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.utf(utils.getUserName())),
-                       'compname': base64.urlsafe_b64encode(utils.utf(utils.getCompName()))}
+        self.params = {"username": utils.utf(utils.getUserName()),
+                       'compname': utils.utf(utils.getCompName())}
+        self.jreq = {'jsonrpc': '2.0', 'method': 'image', 'id': __name__, 'params': self.params}
 
         self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
 
@@ -113,6 +112,13 @@ class Screenshoter(threading.Thread):
             win32gui.DeleteObject(bmp.GetHandle())
             log.debug(fmt("time of execution = {t}", t=time.time() - bt))
 
+    def _check_jres(self, jres):
+        if self.jreq['id'] != jres['id']:
+            raise ValueError('Invalid ID')
+        if 'error' in jres:
+            raise Exception(jres['error']['message'])
+        return jres
+
     def run(self):
         log.info(fmt('Start daemon: {0}', self.name))
 
@@ -133,25 +139,28 @@ class Screenshoter(threading.Thread):
                     self.img2_histogram = self.img1_histogram
                     with closing(cStringIO.StringIO()) as fp:
                         img.save(fp, "JPEG", quality=self.quality)
-                        data = {'data': base64.urlsafe_b64encode(fp.getvalue())}
-                        try:
-                            log.debug('Try to upload image data')
-                            r = requests.post(self.url, data=data, cookies=self.cookie, headers=self.headers, auth=self.auth,
-                                              timeout=(1, 5), verify=False)
-                            r.raise_for_status()
-                            if r.content != '1':
-                                raise requests.exceptions.HTTPError
+                        self.params['data'] = base64.b64encode(fp.getvalue())
 
-                        except Exception as e:
-                            log.debug(e)
-                            utils.makedirs(self.imagesdir)
-                            fn = os.path.join(self.imagesdir, fmt("{0}.jpg", time.time()))
-                            log.debug(fmt('Try to save: {fn}', fn=fn))
-                            with open(fn, 'wb') as imfp:
-                                imfp.write(fp.getvalue())
-                            for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
-                                log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
-                                os.unlink(os.path.join(self.imagesdir, i))
+                    self.jreq['params'] = self.params
+                    self.jreq['id'] = time.time()
+                    try:
+                        log.debug('Try to upload image data')
+                        r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
+                                          timeout=(1, 5), verify=False)
+                        jres = self._check_jres(r.json())
+                        if jres['result'] != 1:
+                            raise requests.exceptions.HTTPError
+
+                    except Exception as e:
+                        log.debug(e)
+                        utils.makedirs(self.imagesdir)
+                        fn = os.path.join(self.imagesdir, fmt("{0}.jpg", self.jreq['id']))
+                        log.debug(fmt('Try to save: {fn}', fn=fn))
+                        with open(fn, 'wb') as imfp:
+                            imfp.write(self.params['data'])
+                        for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
+                            log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
+                            os.unlink(os.path.join(self.imagesdir, i))
 
                 prev_timeout, timeout = 1, 2
             except Exception as e:
