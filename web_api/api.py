@@ -4,7 +4,8 @@ import os
 import sys
 from jsonrpc2 import JsonRpcApplication
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from config import config  # @IgnorePep8
 from core import logger, utils  # @IgnorePep8
@@ -15,8 +16,8 @@ fmt = utils.fmt
 
 
 def application(env, start_response):
-    from web_api.archive import Archive
-    from web_api.online import Online
+    from archive import Archive
+    from online import Online
     app = JsonRpcApplication(rpcs=dict(archive=Archive(env),
                                        online=Online(env)))
     return app(env, start_response)

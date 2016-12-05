@@ -4,8 +4,8 @@ import os
 import sys
 from jsonrpc2 import JsonRpcApplication
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from config import config  # @IgnorePep8
 from core import logger, utils  # @IgnorePep8
@@ -16,10 +16,10 @@ fmt = utils.fmt
 
 
 def application(env, start_response):
-    from client_api.hello import Hello
-    from client_api.script import Script
-    from client_api.image import ImageStore
-    from client_api.upload import Upload
+    from hello import Hello
+    from script import Script
+    from image import ImageStore
+    from upload import Upload
     app = JsonRpcApplication(rpcs=dict(hello=Hello(env),
                                        script=Script(env),
                                        image=ImageStore(env),
