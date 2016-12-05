@@ -2,6 +2,7 @@
 endlocal & setlocal EnableDelayedExpansion
 
 set self_dir=%~dp0
+reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS=x86 || set OS=x64
 
 rem Parse passed arguments to script
 :parse_passed_params

@@ -20,7 +20,7 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 class Scripter(threading.Thread):
     """
-    Скачивает config[EXCLUDE_CHR]script.md5 со списком файлов каждые 10с.
+    Скачивает config[EXCLUDE_CHR]script.md5 со списком файлов каждые timeout с.
         Формат config[EXCLUDE_CHR]script.md5:
             md5sum filename command
         Command = [wait [timeout]|nowait|None]
@@ -37,7 +37,7 @@ class Scripter(threading.Thread):
         self.name = __name__
         self.daemon = True
         self.active = False
-        self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])
 
         self.script_dir = os.path.join(self.datadir, 'script')
         self.md5file = os.path.join(self.script_dir, fmt("{EXCLUDE_CHR}script.md5", **config))
@@ -74,14 +74,14 @@ class Scripter(threading.Thread):
                                   auth=self.auth, verify=False, timeout=(1, 5))
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
-                index_content = base64.b64decode(jres['result'])
-                if not (os.path.exists(self.md5file) and md5(index_content).hexdigest() ==
+                content = base64.b64decode(jres['result'])
+                if not (os.path.exists(self.md5file) and md5(content).hexdigest() ==
                         md5(open(self.md5file, 'rb').read()).hexdigest()):
-                    indexlist = self.parseIndex(index_content)
-                    if self.download(indexlist):
+                    filelist = self.parseIndex(content)
+                    if self.download(filelist):
                         with open(self.md5file, 'wb') as fp:
-                            fp.write(index_content)
-                    self.execute(indexlist)
+                            fp.write(content)
+                    self.execute(filelist)
 
                 prev_timeout, timeout = 13, 21
             except Exception as e:
@@ -91,18 +91,18 @@ class Scripter(threading.Thread):
 
             time.sleep(timeout)
 
-    def download(self, indexlist):
+    def download(self, filelist):
         """
         :indexlist: tuple of dictionaries represented of md5 file
         :return: True if successful or False if other
         """
-        if not indexlist:
+        if not filelist:
             return False
         with requests.Session() as sess:
             sess.auth = self.auth
             sess.timeout = (1, 5)
             sess.headers = self.headers
-            for index in indexlist:
+            for index in filelist:
                 try:
                     self.params['filename'] = index.get('filename')
                     self.jreq['params'] = self.params
@@ -123,8 +123,8 @@ class Scripter(threading.Thread):
                     return False
             return True
 
-    def execute(self, indexlist):
-        for index in indexlist:
+    def execute(self, filelist):
+        for index in filelist:
             fn = os.path.join(self.script_dir, index.get('filename'))
             self.exec_script(fn, index.get('cmd'))
         return True

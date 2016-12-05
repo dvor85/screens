@@ -30,7 +30,7 @@ class Uploader(threading.Thread):
         self.daemon = True
         self.active = False
 
-        self.datadir = os.path.join(config['DATA_DIR'], config['NAME'])
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])
         self.params = {"username": utils.utf(utils.getUserName()),
                        'compname': utils.utf(utils.getCompName())}
         self.jreq = {'jsonrpc': '2.0', 'method': 'upload', 'id': __name__, 'params': self.params}

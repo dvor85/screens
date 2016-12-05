@@ -109,7 +109,7 @@ def getCompName():
     return trueEnc(os.getenv(__env_var))
 
 
-def getDataDIR():
+def getHomeDIR():
     __env_var = 'HOME'
     if sys.platform.startswith('win'):
         __env_var = 'APPDATA'
