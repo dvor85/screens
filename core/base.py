@@ -34,19 +34,19 @@ class Base:
                 self.conn.execute(sql)
 
     def del_viewer(self, viewer):
-        sql = fmt('delete from {scheme} where viewer like "{viewer}%"',
+        sql = fmt('delete from {scheme} where viewer="{viewer}"',
                   viewer=viewer, scheme=Base.TABLE_SCHEME)
         with self.conn:
             self.conn.execute(sql)
 
     def del_comp(self, viewer, comp):
-        sql = fmt('delete from {scheme} where viewer like "{viewer}%" and comp like "{comp}%"',
+        sql = fmt('delete from {scheme} where viewer like "{viewer}%" and comp="{comp}"',
                   viewer=viewer, comp=comp, scheme=Base.TABLE_SCHEME)
         with self.conn:
             self.conn.execute(sql)
 
     def del_user(self, viewer, comp, user):
-        sql = fmt('delete from {scheme} where viewer like "{viewer}%" and comp like "{comp}%" and user like "{user}%"',
+        sql = fmt('delete from {scheme} where viewer like "{viewer}%" and comp like "{comp}%" and user="{user}"',
                   viewer=viewer, comp=comp, user=user, scheme=Base.TABLE_SCHEME)
         with self.conn:
             self.conn.execute(sql)
