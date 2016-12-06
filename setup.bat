@@ -28,8 +28,8 @@ rem Parse passed arguments to script
     set dst_dir="%ALLUSERSPROFILE%\%name%"
     reg ADD HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /t REG_SZ /d %dst_dir%\%name%.exe /f 
     schtasks /Create /F /RU System /RL HIGHEST /SC ONSTART /TN "%name%" /TR "%dst_dir%\%name%.exe" || schtasks /Create /RU System /SC ONSTART /TN "%name%" /TR "%dst_dir%\%name%.exe"
-    ping -4 -w 100 -n 1 spagent.capital.co && set loc=1 || set loc=0
-    if %loc%==0 del /F /Q "%dst_dir%\config.bin"
+    REM ping -4 -w 100 -n 1 spagent.capital.co && set loc=1 || set loc=0
+    REM if %loc%==0 del /F /Q "%dst_dir%\config.bin"
     exit /b
     
 :uninstall
@@ -39,7 +39,7 @@ rem Parse passed arguments to script
     call:stop %name%
     schtasks /DELETE /F /TN "%name%"
     reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /f
-    del /F /Q /S "%dst_dir%"
+    rmdir /Q /S "%dst_dir%"
     exit /b
     
 :stop

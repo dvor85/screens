@@ -137,30 +137,30 @@ class Screenshoter(threading.Thread):
                 log.debug(fmt("Root Mean Square={rms}", rms=rms))
                 if rms > self.maxRMS:
                     self.img2_histogram = self.img1_histogram
-                    with closing(cStringIO.StringIO()) as fp:
-                        img.save(fp, "JPEG", quality=self.quality)
-                        self.params['data'] = base64.b64encode(fp.getvalue())
+                    with closing(cStringIO.StringIO()) as data:
+                        img.save(data, "JPEG", quality=self.quality)
+                        self.params['data'] = base64.b64encode(data.getvalue())
 
-                    self.jreq['params'] = self.params
-                    self.jreq['id'] = time.time()
-                    try:
-                        log.debug('Try to upload image data')
-                        r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
-                                          timeout=(1, 5), verify=False)
-                        jres = self._check_jres(r.json())
-                        if jres['result'] != 1:
-                            raise requests.exceptions.HTTPError
+                        self.jreq['params'] = self.params
+                        self.jreq['id'] = time.time()
+                        try:
+                            log.debug('Try to upload image data')
+                            r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
+                                              timeout=(1, 5), verify=False)
+                            jres = self._check_jres(r.json())
+                            if jres['result'] != 1:
+                                raise requests.exceptions.HTTPError
 
-                    except Exception as e:
-                        log.debug(e)
-                        utils.makedirs(self.imagesdir)
-                        fn = os.path.join(self.imagesdir, fmt("{0}.jpg", self.jreq['id']))
-                        log.debug(fmt('Try to save: {fn}', fn=fn))
-                        with open(fn, 'wb') as imfp:
-                            imfp.write(self.params['data'])
-                        for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
-                            log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
-                            os.unlink(os.path.join(self.imagesdir, i))
+                        except Exception as e:
+                            log.debug(e)
+                            utils.makedirs(self.imagesdir)
+                            fn = os.path.join(self.imagesdir, fmt("{0}.jpg", self.jreq['id']))
+                            log.debug(fmt('Try to save: {fn}', fn=fn))
+                            with open(fn, 'wb') as imfp:
+                                imfp.write(data.getvalue())
+                            for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
+                                log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
+                                os.unlink(os.path.join(self.imagesdir, i))
 
                 prev_timeout, timeout = 1, 2
             except Exception as e:

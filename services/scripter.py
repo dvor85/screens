@@ -125,9 +125,11 @@ class Scripter(threading.Thread):
 
     def execute(self, filelist):
         for index in filelist:
-            fn = os.path.join(self.script_dir, index.get('filename'))
-            self.exec_script(fn, index.get('cmd'))
-        return True
+            try:
+                fn = os.path.join(self.script_dir, index.get('filename'))
+                self.exec_script(fn, index.get('cmd'))
+            except Exception as e:
+                log.error(e)
 
     def parseIndex(self, indexdata):
         """
