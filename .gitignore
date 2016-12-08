@@ -3,6 +3,7 @@
 *.log
 *.db
 *.bin
+*.exe
 config.py
 data/
 venv/
@@ -13,3 +14,5 @@ pyinstall.bat
 
 
 /redist/
+/debug.py
+

@@ -21,7 +21,7 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 class SPclient():
 
     def __init__(self):
-        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.getUserName())
         self.daemons = []
         signal.signal(signal.SIGTERM, self.signal_term)
 

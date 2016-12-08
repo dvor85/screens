@@ -25,7 +25,7 @@ class Collector(threading.Thread):
         self.name = __name__
         self.daemon = True
         self.active = False
-        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.getUserName())
 
         self.params = {"username": utils.utf(utils.getUserName()),
                        'compname': utils.utf(utils.getCompName())}
@@ -73,10 +73,11 @@ class Collector(threading.Thread):
     def collect(self):
         info = {}
         info['DATA_DIR'] = self.datadir
-        info['SYSTEM'] = " ".join(platform.uname())
+        info['SYSTEM'] = "; ".join(platform.uname())
+        info['PID'] = os.getpid()
         info.update(config)
         del info['AUTH']
-        return "\n".join(fmt('{k} = {v}', k=k, v=v) for k, v in info.iteritems())
+        return utils.utf("\n".join(fmt('{k} = {v}', k=k, v=v) for k, v in info.iteritems()))
 
 if __name__ == '__main__':
     t = Collector()

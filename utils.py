@@ -7,6 +7,7 @@ from cgi import parse_qs, escape
 from UserDict import UserDict
 import re
 import string
+from sys import stderr
 
 
 __re_denied = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
@@ -99,7 +100,35 @@ def getUserName():
     __env_var = 'USER'
     if sys.platform.startswith('win'):
         __env_var = 'USERNAME'
+    sessuser = getUserOfSession()
+    if sessuser is not None:
+        return trueEnc(sessuser)
     return trueEnc(os.getenv(__env_var))
+
+
+def getSessionOfPid(pid):
+    if sys.platform.startswith('win'):
+        from subprocess import check_output
+        tasklist = check_output(fmt('tasklist /fi "PID eq {pid}" /fo csv /nh', pid=pid), shell=True).split(',')
+        if len(tasklist) == 5:
+            return int(tasklist[3].strip('"'))
+
+
+def getUserOfSession():
+    try:
+        if sys.platform.startswith('win'):
+            import winreg
+            sess = getSessionOfPid(os.getpid())
+            if sess is not None:
+                branch = fmt(
+                    'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\{sess}', sess=sess)
+                t = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, branch)
+                try:
+                    return os.path.basename(winreg.QueryValueEx(t, 'LoggedOnUsername')[0])
+                finally:
+                    winreg.CloseKey(t)
+    except Exception as e:
+        pass
 
 
 def getCompName():

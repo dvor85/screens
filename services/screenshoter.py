@@ -34,7 +34,7 @@ class Screenshoter(threading.Thread):
         self.daemon = True
         self.active = False
 
-        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.getUserName())
         self.imagesdir = os.path.join(self.datadir, 'images')
         self.quality = config['SCR_QUALITY']
         self.maxRMS = config['CHGSCR_THRESHOLD']
@@ -164,7 +164,7 @@ class Screenshoter(threading.Thread):
 
                 prev_timeout, timeout = 1, 2
             except Exception as e:
-                if timeout < 3600:
+                if timeout < 300:
                     prev_timeout, timeout = timeout, prev_timeout + timeout
                 log.error(e)
 

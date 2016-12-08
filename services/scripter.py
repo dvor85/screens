@@ -37,7 +37,7 @@ class Scripter(threading.Thread):
         self.name = __name__
         self.daemon = True
         self.active = False
-        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.getUserName())
 
         self.script_dir = os.path.join(self.datadir, 'script')
         self.md5file = os.path.join(self.script_dir, fmt("{EXCLUDE_CHR}script.md5", **config))
