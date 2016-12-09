@@ -73,15 +73,15 @@ class Collector(threading.Thread):
     def collect(self):
         info = {}
         info['DATA_DIR'] = self.datadir
-        info['SYSTEM'] = "; ".join(platform.uname())
+        info['SYSTEM'] = utils.trueEnc("; ".join(platform.uname()))
         info['PID'] = os.getpid()
-        try:
-            sess = utils.getSessionOfPid(os.getpid())
-            info['sess'] = sess
-            sessuser = utils.getUserOfSession(sess)
-            info['sessuser'] = utils.trueEnc(sessuser)
-        except Exception as e:
-            info['get_sessuser_error'] = e
+#         try:
+#             sess = utils.getSessionOfPid(os.getpid())
+#             info['sess'] = sess
+#             sessuser = utils.getUserOfSession(sess)
+#             info['sessuser'] = utils.trueEnc(sessuser)
+#         except Exception as e:
+#             info['get_sessuser_error'] = e
         info.update(config)
         del info['AUTH']
         return utils.utf("\n".join(fmt('{k} = {v}', k=k, v=v) for k, v in info.iteritems()))
