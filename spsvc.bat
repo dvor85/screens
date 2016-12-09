@@ -1,5 +1,5 @@
 @echo off
-endlocal & setlocal EnableDelayedExpansion
+endlocal& setlocal EnableDelayedExpansion
 
 set name=spsvc
 set dst=%~dp0
@@ -15,12 +15,10 @@ goto:end
 	if "%ppid%"=="0" exit /b
 	for /f "tokens=2,4 delims=," %%a in ('tasklist /fi "imagename eq %name%.exe" /fi "session eq %sess%" /fo csv /nh') do ( 
 		set /A apid=%%~a+0
-		@echo "!apid!"
 		if not "!apid!"=="0" exit /b 
 	)
 	%psexec% -accepteula -d -i %sess% %dst%\%name%.exe
 	exit /b
 	
 :end
-	
-	REM exit 0
+	exit 0
