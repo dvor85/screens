@@ -78,7 +78,7 @@ def rListFiles(path):
 
 
 def uni(path):
-    if not isinstance(path, unicode):
+    if isinstance(path, str):
         path = path.decode(sys.getfilesystemencoding(), errors='ignore')
     return path
 
@@ -123,12 +123,13 @@ def getSessionOfPid(pid):
 def getUserOfSession(sess):
     if sys.platform.startswith('win'):
         import winreg
-        branch = fmt(
-            'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\{sess}',
-            sess=sess)
+        branch = fmt('SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\{sess}',
+                     sess=sess)
         t = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, branch, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
         try:
             return os.path.basename(winreg.QueryValueEx(t, 'LoggedOnUsername')[0])
+        except:
+            return os.path.basename(winreg.QueryValueEx(t, 'LoggedOnUser')[0])
         finally:
             winreg.CloseKey(t)
 

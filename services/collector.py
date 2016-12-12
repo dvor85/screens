@@ -72,19 +72,31 @@ class Collector(threading.Thread):
 
     def collect(self):
         info = {}
-        info['DATA_DIR'] = self.datadir
-        info['SYSTEM'] = utils.trueEnc("; ".join(platform.uname()))
-        info['PID'] = os.getpid()
-#         try:
-#             sess = utils.getSessionOfPid(os.getpid())
-#             info['sess'] = sess
-#             sessuser = utils.getUserOfSession(sess)
-#             info['sessuser'] = utils.trueEnc(sessuser)
-#         except Exception as e:
-#             info['get_sessuser_error'] = e
-        info.update(config)
-        del info['AUTH']
-        return utils.utf("\n".join(fmt('{k} = {v}', k=k, v=v) for k, v in info.iteritems()))
+        res = ''
+        try:
+            info['DATA_DIR'] = self.datadir
+            info['SYSTEM'] = "; ".join(platform.uname())
+            info['PID'] = os.getpid()
+            info.update(config)
+            del info['AUTH']
+
+            try:
+                sess = utils.getSessionOfPid(os.getpid())
+                info['SESSION'] = sess
+                sessuser = utils.getUserOfSession(sess)
+                info['LOGGEDONUSER'] = sessuser
+            except Exception as e:
+                info['ERROR_GET_LOGGEDONUSER'] = e
+            for k, v in info.iteritems():
+                try:
+                    res += fmt('{k} = {v}\n', k=k, v=utils.trueEnc(v))
+                except Exception as e:
+                    res += fmt('ERROR_{k} = {v}\n', k=k, v=e)
+
+        except Exception as e:
+            log.error(e)
+
+        return utils.utf(res)
 
 if __name__ == '__main__':
     t = Collector()
