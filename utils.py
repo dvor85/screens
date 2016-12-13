@@ -46,7 +46,7 @@ def split(s, num=0):
     return __re_spaces.split(s, num)
 
 
-def parseStr(s):
+def parse_str(s):
     try:
         return int(s)
     except:
@@ -58,6 +58,16 @@ def parseStr(s):
             elif s.lower() == "false":
                 return False
     return s
+
+
+def str2num(s):
+    try:
+        return int(s)
+    except:
+        try:
+            return float(s)
+        except:
+            return 0
 
 
 def uniq(seq):

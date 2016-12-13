@@ -8,10 +8,10 @@ import utils
 import time
 import subprocess
 import base64
-from hashlib import md5
 import logger
-from config import config
 import requests
+from config import config
+from hashlib import md5
 from utils import fmt
 
 
@@ -77,7 +77,7 @@ class Scripter(threading.Thread):
                 content = base64.b64decode(jres['result'])
                 if not (os.path.exists(self.md5file) and md5(content).hexdigest() ==
                         md5(open(self.md5file, 'rb').read()).hexdigest()):
-                    filelist = self.parseIndex(content)
+                    filelist = self.parse_index(content)
                     if self.download(filelist):
                         with open(self.md5file, 'wb') as fp:
                             fp.write(content)
@@ -90,6 +90,10 @@ class Scripter(threading.Thread):
                     prev_timeout, timeout = timeout, prev_timeout + timeout
 
             time.sleep(timeout)
+
+    def stop(self):
+        log.info(fmt('Stop daemon: {0}', self.name))
+        self.active = False
 
     def download(self, filelist):
         """
@@ -131,7 +135,7 @@ class Scripter(threading.Thread):
             except Exception as e:
                 log.error(e)
 
-    def parseIndex(self, indexdata):
+    def parse_index(self, indexdata):
         """
         :indexdata: raw data of md5 file
         :return: tuple of dictionaries represented of md5 file
@@ -146,18 +150,31 @@ class Scripter(threading.Thread):
                 index_obj.append(index)
         return index_obj
 
-    def stop(self):
-        log.info(fmt('Stop daemon: {0}', self.name))
-        self.active = False
+    def parse_cmd(self, cmds):
+        res = dict(wait=False,
+                   timeout=300)
+        try:
+            pos = cmds.index('wait')
+            res['wait'] = True
+            if pos < len(cmds) - 1:
+                res['timeout'] = int(cmds[pos + 1])
+        except:
+            pass
+        try:
+            pos = cmds.index('exec')
+            if pos < len(cmds) - 1:
+                res['timeout'] = int(cmds[pos + 1])
+        except:
+            pass
+        return res
 
     def exec_script(self, script_file, cmd):
         """
         :script_file: Filename to execute
-        :cmd: Если command = wait, то запускается script_file и ожидает завершения timeout или 60с если не задан.
+        :cmd: Если command = wait, то запускается script_file и ожидает завершения timeout или 300с если не задан.
         По окончании пишет out file, который будет загружен на сервер модулем uploader.
+        Если command = exec, то запускается script_file на timeout или 300с если не задан без ожидания завершения.
 
-        Command. If None then return. If it's "wait" then wait for complete and write out file,
-        which will be upload to server.
         :raise  CalledProcessError if return code is not zero
         """
         if not cmd:
@@ -173,13 +190,11 @@ class Scripter(threading.Thread):
 
         os.chmod(script_file, 0755)
 
-        cmds = utils.split(cmd)
-        timeout = utils.parseStr(cmds[1]) if len(cmds) > 1 else 60
-
+        cmd_opt = self.parse_cmd(utils.split(cmd))
         proc = subprocess.Popen(script_file, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 shell=False, cwd=os.path.dirname(script_file), startupinfo=si)
-        threading.Timer(timeout, proc.kill).start()
-        if cmd.startswith('wait'):
+        threading.Timer(cmd_opt['timeout'], proc.kill).start()
+        if cmd_opt['wait']:
             script_out = proc.communicate()[0]
             f = os.path.join(os.path.dirname(script_file), os.path.basename(script_file).lstrip(config['EXCLUDE_CHR']))
             cmd_out_file = fmt("{fn}.out", fn=f)
