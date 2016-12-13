@@ -37,15 +37,15 @@ class Scripter(threading.Thread):
         self.name = __name__
         self.daemon = True
         self.active = False
-        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.getUserName())
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
 
         self.script_dir = os.path.join(self.datadir, 'script')
         self.md5file = os.path.join(self.script_dir, fmt("{EXCLUDE_CHR}script.md5", **config))
 
         utils.makedirs(self.script_dir)
         utils.makedirs(self.datadir)
-        self.params = {"username": utils.utf(utils.getUserName()),
-                       'compname': utils.utf(utils.getCompName())}
+        self.params = {"username": utils.utf(utils.get_user_name()),
+                       'compname': utils.utf(utils.get_comp_name())}
         self.jreq = {'jsonrpc': '2.0', 'method': 'script', 'id': __name__, 'params': self.params}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
 
@@ -141,7 +141,7 @@ class Scripter(threading.Thread):
             values = utils.split(line, 2)
             if len(values) > 1:
                 index = {"md5sum": values[0],
-                         "filename": utils.trueEnc(values[1].strip("*")),
+                         "filename": utils.true_enc(values[1].strip("*")),
                          "cmd": values[2] if len(values) > 2 else None}
                 index_obj.append(index)
         return index_obj

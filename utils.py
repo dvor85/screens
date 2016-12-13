@@ -89,38 +89,41 @@ def utf(path):
     return path
 
 
-def trueEnc(path):
+def true_enc(path):
     if sys.platform.startswith('win'):
         return uni(path)
     return utf(path)
 
 
-def getUserName():
+def get_user_name():
     __env_var = 'USER'
     if sys.platform.startswith('win'):
         __env_var = 'USERNAME'
-    try:
-        sess = getSessionOfPid(os.getpid())
-        sessuser = getUserOfSession(sess)
-        if len(sessuser) > 0:
-            return trueEnc(sessuser)
-    except Exception as e:
-        pass
-    return trueEnc(os.getenv(__env_var))
+        try:
+            sess = _get_session_of_pid(os.getpid())
+            sessuser = _get_user_of_session(sess)
+            if len(sessuser) > 0:
+                return true_enc(sessuser)
+        except Exception as e:
+            pass
+    return true_enc(os.getenv(__env_var))
 
 
-def getSessionOfPid(pid):
+def _get_session_of_pid(pid):
     if sys.platform.startswith('win'):
         from subprocess import check_output
         tasklist = check_output(fmt('tasklist /fi "PID eq {pid}" /fo csv /nh', pid=pid), shell=True).splitlines()
         for t in tasklist:
-            task = t.replace('"', '').split(',')
-            if int(task[1]) == int(pid):
-                return int(task[3])
+            try:
+                task = t.replace('"', '').split(',')
+                if int(task[1]) == int(pid):
+                    return int(task[3])
+            except:
+                pass
         raise Exception(fmt('Session id of "{pid}" not defined', pid))
 
 
-def getUserOfSession(sess):
+def _get_user_of_session(sess):
     if sys.platform.startswith('win'):
         import winreg
         branch = fmt('SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\{sess}',
@@ -132,20 +135,21 @@ def getUserOfSession(sess):
             return os.path.basename(winreg.QueryValueEx(t, 'LoggedOnUser')[0])
         finally:
             winreg.CloseKey(t)
+        raise Exception(fmt('Session user of "{sess}" not defined', sess))
 
 
-def getCompName():
+def get_comp_name():
     __env_var = 'HOSTNAME'
     if sys.platform.startswith('win'):
         __env_var = 'COMPUTERNAME'
-    return trueEnc(os.getenv(__env_var))
+    return true_enc(os.getenv(__env_var))
 
 
-def getHomeDIR():
+def get_home_dir():
     __env_var = 'HOME'
     if sys.platform.startswith('win'):
         __env_var = 'APPDATA'
-    return trueEnc(os.getenv(__env_var))
+    return true_enc(os.getenv(__env_var))
 
 
 def makedirs(path, mode=0775):

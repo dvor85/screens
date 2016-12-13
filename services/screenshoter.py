@@ -34,14 +34,14 @@ class Screenshoter(threading.Thread):
         self.daemon = True
         self.active = False
 
-        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.getUserName())
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
         self.imagesdir = os.path.join(self.datadir, 'images')
         self.quality = config['SCR_QUALITY']
         self.maxRMS = config['CHGSCR_THRESHOLD']
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         self.img1_histogram, self.img2_histogram = None, None
-        self.params = {"username": utils.utf(utils.getUserName()),
-                       'compname': utils.utf(utils.getCompName())}
+        self.params = {"username": utils.utf(utils.get_user_name()),
+                       'compname': utils.utf(utils.get_comp_name())}
         self.jreq = {'jsonrpc': '2.0', 'method': 'image', 'id': __name__, 'params': self.params}
 
         self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}

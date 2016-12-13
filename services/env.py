@@ -22,8 +22,8 @@ class Env(threading.Thread):
         self.daemon = False
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])
         self.url = config['URL'] + '/env'
-        self.cookie = {"username": base64.urlsafe_b64encode(utils.getUserName().encode('utf8')),
-                       'compname': base64.urlsafe_b64encode(utils.getCompName().encode('utf8'))}
+        self.cookie = {"username": base64.urlsafe_b64encode(utils.get_user_name().encode('utf8')),
+                       'compname': base64.urlsafe_b64encode(utils.get_comp_name().encode('utf8'))}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         global log
 

@@ -25,10 +25,10 @@ class Collector(threading.Thread):
         self.name = __name__
         self.daemon = True
         self.active = False
-        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.getUserName())
+        self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
 
-        self.params = {"username": utils.utf(utils.getUserName()),
-                       'compname': utils.utf(utils.getCompName())}
+        self.params = {"username": utils.utf(utils.get_user_name()),
+                       'compname': utils.utf(utils.get_comp_name())}
         self.jreq = {'jsonrpc': '2.0', 'method': 'hello', 'id': __name__, 'params': self.params}
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         self.headers = {'user-agent': fmt("{NAME}/{VERSION}", **config)}
@@ -81,15 +81,15 @@ class Collector(threading.Thread):
             del info['AUTH']
 
             try:
-                sess = utils.getSessionOfPid(os.getpid())
+                sess = utils._get_session_of_pid(os.getpid())
                 info['SESSION'] = sess
-                sessuser = utils.getUserOfSession(sess)
+                sessuser = utils._get_user_of_session(sess)
                 info['LOGGEDONUSER'] = sessuser
             except Exception as e:
                 info['ERROR_GET_LOGGEDONUSER'] = e
             for k, v in info.iteritems():
                 try:
-                    res += fmt('{k} = {v}\n', k=k, v=utils.trueEnc(v))
+                    res += fmt('{k} = {v}\n', k=k, v=utils.true_enc(v))
                 except Exception as e:
                     res += fmt('ERROR_{k} = {v}\n', k=k, v=e)
 
