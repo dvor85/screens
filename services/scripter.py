@@ -75,9 +75,10 @@ class Scripter(threading.Thread):
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
                 content = base64.b64decode(jres['result'])
+                filelist = self.parse_index(content)
+                self.check_out_files(filelist)
                 if not (os.path.exists(self.md5file) and md5(content).hexdigest() ==
                         md5(open(self.md5file, 'rb').read()).hexdigest()):
-                    filelist = self.parse_index(content)
                     if self.download(filelist):
                         with open(self.md5file, 'wb') as fp:
                             fp.write(content)
@@ -144,15 +145,16 @@ class Scripter(threading.Thread):
         for line in indexdata.splitlines():
             values = utils.split(line, 2)
             if len(values) > 1:
-                index = {"md5sum": values[0],
-                         "filename": utils.true_enc(values[1].strip("*")),
-                         "cmd": values[2] if len(values) > 2 else None}
+                index = dict(md5sum=values[0],
+                             filename=utils.true_enc(values[1].strip("*")),
+                             cmd=self.parse_cmd(values[2]) if len(values) > 2 else None)
                 index_obj.append(index)
         return index_obj
 
-    def parse_cmd(self, cmds):
+    def parse_cmd(self, cmd):
         res = dict(wait=False,
-                   timeout=300)
+                   timeout=120)
+        cmds = utils.split(cmd)
         try:
             pos = cmds.index('wait')
             res['wait'] = True
@@ -168,19 +170,63 @@ class Scripter(threading.Thread):
             pass
         return res
 
-    def exec_script(self, script_file, cmd):
+    def check_out_files(self, filelist):
+        for index in filelist:
+            try:
+                fn = os.path.join(self.script_dir, index.get('filename'))
+                out_file = fmt("{fn}.out", fn=fn)
+                timeout = index['cmd'].get('timeout') if index['cmd'] is not None else 120
+                self.check_out_file(out_file, timeout)
+            except Exception as e:
+                log.error(e)
+
+    def check_out_file(self, cmd_out_file, timeout=120):
+        """
+        Проверяет, существует ли cmd_out_file. Если существует и время последней модификации < timeout c.
+        то вызывается исключение, если нет то вызывается kill_proc.
+        :cmd_out_file: filename
+        :timeout: default 120 c
+        """
+
+        log.info(fmt("Check out_file: {f}", f=cmd_out_file))
+        if os.path.isfile(cmd_out_file):
+            if time.time() - os.path.getmtime(cmd_out_file) < timeout:
+                raise Exception(fmt('Process may be still running. {f} is lock.', f=cmd_out_file))
+            else:
+                self.kill_proc(cmd_out_file, None)
+
+    def kill_proc(self, cmd_out_file, proc=None):
+        """
+        Завершает процесс proc.
+        Если cmd_out_file существует, то переименовывает его удаляя config[EXCLUDE_CHR] из начала имени для выгрузки на сервер.
+        :cmd_out_file: filename
+        :proc: process
+        """
+
+        if proc:
+            log.debug(fmt("Kill process {pid}", pid=proc.pid))
+            proc.kill()
+        if os.path.isfile(cmd_out_file):
+            f = os.path.join(os.path.dirname(cmd_out_file), os.path.basename(cmd_out_file).lstrip(config['EXCLUDE_CHR']))
+            if os.path.isfile(f):
+                log.debug(fmt("Delete file {f}", f=f))
+                os.unlink(f)
+            log.debug(fmt('Rename file: "{old}" to "{new}"', old=cmd_out_file, new=f))
+            os.rename(cmd_out_file, f)
+
+    def exec_script(self, script_file, cmd_opt):
         """
         :script_file: Filename to execute
         :cmd: Если command = wait, то запускается script_file и ожидает завершения timeout или 300с если не задан.
-        По окончании пишет out file, который будет загружен на сервер модулем uploader.
         Если command = exec, то запускается script_file на timeout или 300с если не задан без ожидания завершения.
+        Пишет out file, который будет загружен на сервер модулем uploader.
 
         :raise  CalledProcessError if return code is not zero
         """
-        if not cmd:
+        if cmd_opt is None:
             return False
 
-        log.info(fmt('Try to execute: {sf} with command: {cmd}', sf=script_file, cmd=cmd))
+        log.info(fmt('Try to execute: {sf}', sf=script_file))
         if sys.platform.startswith('win'):
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.STARTF_USESHOWWINDOW
@@ -190,21 +236,16 @@ class Scripter(threading.Thread):
 
         os.chmod(script_file, 0755)
 
-        cmd_opt = self.parse_cmd(utils.split(cmd))
-        proc = subprocess.Popen(script_file, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        cmd_out_file = fmt("{fn}.out", fn=script_file)
+        self.check_out_file(cmd_out_file, cmd_opt['timeout'])
+        proc = subprocess.Popen(script_file, stdout=open(cmd_out_file, 'wb'), stderr=subprocess.STDOUT,
                                 shell=False, cwd=os.path.dirname(script_file), startupinfo=si)
-        threading.Timer(cmd_opt['timeout'], proc.kill).start()
+        proc_timer = threading.Timer(cmd_opt['timeout'], self.kill_proc, args=[cmd_out_file, proc])
+        proc_timer.start()
         if cmd_opt['wait']:
-            script_out = proc.communicate()[0]
-            f = os.path.join(os.path.dirname(script_file), os.path.basename(script_file).lstrip(config['EXCLUDE_CHR']))
-            cmd_out_file = fmt("{fn}.out", fn=f)
-            log.debug(fmt('Try to save: {fn}', fn=cmd_out_file))
-            with open(cmd_out_file, 'wb') as fp:
-                fp.write(script_out)
-
-            if proc.returncode != 0:
-                raise subprocess.CalledProcessError(
-                    returncode=proc.returncode, cmd=script_file, output=script_out)
+            proc.wait()
+            proc_timer.cancel()
+            self.kill_proc(cmd_out_file, proc)
 
 
 if __name__ == "__main__":
