@@ -5,9 +5,9 @@ import logging
 import sys
 import os
 import utils
-from logging.handlers import RotatingFileHandler as RFHandler
 from config import config
 from utils import fmt
+from logging.handlers import RotatingFileHandler as RFHandler
 
 
 class Logger(logging.Logger):
@@ -26,6 +26,16 @@ class Logger(logging.Logger):
         rfh = RFHandler(filename=logfile, maxBytes=1024 * 1024, backupCount=2)
         rfh.setFormatter(stream_format)
         self.addHandler(rfh)
+
+        self.close_handlers()
+
+    def close_handlers(self):
+        """
+        It is need for rotating without errors in windows
+        """
+        if sys.platform.startswith('win'):
+            for h in self.handlers:
+                h.close()
 
 
 def getLogger(name, level=logging.NOTSET):
