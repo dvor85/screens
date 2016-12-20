@@ -12,6 +12,7 @@ config = dict(
     USER='user',
     LOGLEVEL=logging.DEBUG,
     PORT=80,
+    SSL_PORT=443,
     DATA_DIR='/tmp/.spserver/data',
     ARCHIVE_DIR='/tmp/.spserver/archive',
     SELF_DIR=__SELF_DIR__,
