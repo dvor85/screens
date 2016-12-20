@@ -57,6 +57,7 @@ class Uploader(threading.Thread):
                 with requests.Session() as sess:
                     sess.auth = self.auth
                     sess.timeout = (1, 5)
+                    sess.verify = config['CERT']
                     sess.headers = self.headers
                     for fn in (f for f in utils.rListFiles(self.datadir)
                                if not os.path.basename(f).startswith(config['EXCLUDE_CHR'])):
@@ -69,7 +70,7 @@ class Uploader(threading.Thread):
                             self.jreq['id'] = time.time()
 
                             log.debug(fmt('Try to upload: {fn}', fn=fn))
-                            r = sess.post(config['URL'], json=self.jreq, verify=False)
+                            r = sess.post(config['URL'], json=self.jreq)
                             jres = self._check_jres(r.json())
                             if jres['result'] == 1:
                                 log.debug(fmt('Try to delete: {fn}', fn=fn))

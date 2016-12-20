@@ -71,7 +71,7 @@ class Scripter(threading.Thread):
                 self.jreq['id'] = time.time()
                 log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
                 r = requests.post(config['URL'], json=self.jreq, headers=self.headers,
-                                  auth=self.auth, verify=False, timeout=(1, 5))
+                                  auth=self.auth, verify=config['CERT'], timeout=(1, 5))
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
                 content = base64.b64decode(jres['result'])
@@ -106,6 +106,7 @@ class Scripter(threading.Thread):
         with requests.Session() as sess:
             sess.auth = self.auth
             sess.timeout = (1, 5)
+            sess.verify = config['CERT']
             sess.headers = self.headers
             for index in filelist:
                 try:
@@ -113,7 +114,7 @@ class Scripter(threading.Thread):
                     self.jreq['params'] = self.params
                     self.jreq['id'] = time.time()
                     log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
-                    r = sess.post(config['URL'], json=self.jreq, verify=False)
+                    r = sess.post(config['URL'], json=self.jreq)
                     r.raise_for_status()
                     jres = self._check_jres(r.json())
                     content = base64.b64decode(jres['result'])

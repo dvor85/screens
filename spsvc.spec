@@ -6,7 +6,8 @@ block_cipher = None
 added_files = [
          ( 'setup.bat', '.' ),
          ( 'spsvc.bat', '.' ),
-         ( 'psexec.exe', '.' )
+         ( 'psexec.exe', '.' ),
+         ( 'requests/spserver.pem', 'requests' )
          ]
 
 

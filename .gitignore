@@ -15,3 +15,4 @@ pyinstall.bat
 /redist/
 /debug.py
 
+/requests/

@@ -145,9 +145,11 @@ class Screenshoter(threading.Thread):
                         self.jreq['id'] = time.time()
                         try:
                             log.debug('Try to upload image data')
+                            bt = time.time()
                             r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
-                                              timeout=(1, 5), verify=False)
+                                              timeout=(1, 5), verify=config['CERT'])
                             jres = self._check_jres(r.json())
+                            log.debug(fmt("time of request = {t}", t=time.time() - bt))
                             if jres['result'] != 1:
                                 raise requests.exceptions.HTTPError
 

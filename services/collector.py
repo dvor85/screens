@@ -53,7 +53,7 @@ class Collector(threading.Thread):
             try:
                 self.jreq['id'] = time.time()
                 r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
-                                  timeout=(1, 5), verify=False)
+                                  timeout=(1, 5), verify=config['CERT'])
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
                 if jres['result'] != 1:
