@@ -21,7 +21,6 @@ class Starter():
     def __init__(self):
         signal.signal(signal.SIGTERM, self.signal_term)
         self.active = False
-#         self.parse_options()
         self.daemons = []
         self.daemons.append(VideoMaker())
         self.daemons.append(ArchiveRotator())

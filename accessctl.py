@@ -55,7 +55,7 @@ def createParser():
 
     rename_parser = subparsers.add_parser('rename', description='Rename values.')
     rename_parser.add_argument('--viewer', '-v', help='Rename VIEWER to NEW value')
-    rename_parser.add_argument('--comp', '-c', help='Rename COMP to NEW value', default='')
+    rename_parser.add_argument('--comp', '-c', help='Set COMP title to NEW value', default='')
     rename_parser.add_argument('--user', '-u', help='''Rename USER to NEW value.
                                                  If COMP is not set, then rename on all computers''')
     rename_parser.add_argument('new', help='New value', metavar='NEW')
@@ -73,10 +73,10 @@ def main():
     db = base.Base()
 
     if options.action == 'show':
-        print fmt("{0:10s} | {1:10s} | {2:10s}", 'VIEWER', 'COMP', 'USER')
-        print fmt('{0:-^35s}', '-')
+        print fmt("{0:10s} | {1:10s} | {2:10s} | {3:10s}", 'VIEWER', 'COMP', 'TITLE', 'USER')
+        print fmt('{0:-^45s}', '-')
         for line in db.get_scheme(options.viewer):
-            print fmt("{viewer:10s}|{comp:10s}|{user:10s}", **line)
+            print fmt("{viewer:10s} | {comp:10s} | {title:10s} | {user:10s}", **line)
 
     elif options.action == 'add':
         db.add_scheme(options.viewer, options.comp, options.user)
@@ -98,8 +98,8 @@ def main():
             db.rename_user(options.comp, options.user, options.new)
             rename_user_arch(options.comp, options.user, options.new)
         elif options.comp != '':
-            db.rename_comp(options.comp, options.new)
-            rename_comp_arch(options.comp, options.new)
+            db.set_comp_title(options.comp, options.new)
+#             rename_comp_arch(options.comp, options.new)
 
     elif options.action == 'passwd':
         cmd = ['htdigest']

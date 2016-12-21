@@ -21,6 +21,7 @@ class Script():
 
     def get(self):
         try:
+            utils.makedirs(os.path.dirname(self.query_file))
             with open(self.query_file, 'rb') as fp:
                 return base64.b64encode(fp.read())
 
@@ -28,9 +29,9 @@ class Script():
             return ''
 
     def __call__(self, *args, **kwargs):
-        compname = utils.trueEnc(utils.safe_str(kwargs.get('compname')))
-        username = utils.trueEnc(utils.safe_str(kwargs.get('username')))
-        filename = utils.trueEnc(utils.safe_str(kwargs.get('filename')))
+        compname = utils.true_enc(utils.safe_str(kwargs.get('compname')))
+        username = utils.true_enc(utils.safe_str(kwargs.get('username')))
+        filename = utils.true_enc(utils.safe_str(kwargs.get('filename')))
         if len(compname) > 0 and len(username) > 0 and len(filename) > 0:
             self.datadir = os.path.join(config['DATA_DIR'], compname, username)
             self.query_file = os.path.join(self.datadir, 'script', filename)

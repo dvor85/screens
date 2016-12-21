@@ -174,8 +174,10 @@ function get_dates() {
 function get_comps() {
 	function fill_comps(obj_data) {
 		var html_data = '';
-		for (var c of obj_data) {
-			html_data += '<option value="' + c + '">' + c + '</option>';
+		for (var c in obj_data) {
+			if (obj_data.hasOwnProperty(c)) {
+				html_data += '<option value="' + c + '">' + obj_data[c] + '</option>';
+			}
 		}
 		comp_select.innerHTML = html_data;
 		get_users();
@@ -221,7 +223,7 @@ function get_movies() {
 	movies.length = 0;
 	if (mode_select.selectedIndex==1) {
 		videoPlayer.html5playerStop();
-		//show_archive();
+		// show_archive();
 	}
 	clearTimeout(movies_timeout_id);
 	movies_timeout_id=setTimeout(function() {
@@ -329,7 +331,7 @@ function init() {
 
 
 
-///////////////////////////////
+// /////////////////////////////
 
 
 videoPlayer = function() {
@@ -478,8 +480,8 @@ videoPlayer = function() {
     	var html5player=document.getElementById('html5player');
     	if (html5player) {
     		html5player.src=null;
-    		//html5player.currentTime=html5player.duration;
-    		//tm=html5player.currentTime;
+    		// html5player.currentTime=html5player.duration;
+    		// tm=html5player.currentTime;
     	}
     	html5player=null;
     }
@@ -679,7 +681,7 @@ var ktVideoStopped = videoPlayer.ktVideoStopped;
 var ktPlayerLoaded = videoPlayer.ktPlayerLoaded;
 
 
-//////////////////////////////
+// ////////////////////////////
 
 
 

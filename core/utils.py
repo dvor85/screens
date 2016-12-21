@@ -47,7 +47,7 @@ def split(s, num=0):
     return __re_spaces.split(s, num)
 
 
-def parseStr(s):
+def parse_str(s):
     try:
         return int(s)
     except:
@@ -59,6 +59,16 @@ def parseStr(s):
             elif s.lower() == "false":
                 return False
     return s
+
+
+def str2num(s):
+    try:
+        return int(s)
+    except:
+        try:
+            return float(s)
+        except:
+            return 0
 
 
 def uniq(seq):
@@ -143,7 +153,7 @@ def makedirs(path, mode=0775, user=None, group=None):
 
 
 def uni(path):
-    if not isinstance(path, unicode):
+    if isinstance(path, str):
         path = path.decode(sys.getfilesystemencoding(), errors='ignore')
     return path
 
@@ -154,28 +164,28 @@ def utf(path):
     return path
 
 
-def trueEnc(path):
+def true_enc(path):
     if sys.platform.startswith('win'):
         return uni(path)
     return utf(path)
 
 
-def getUserName():
+def get_user_name():
     __env_var = 'USER'
     if sys.platform.startswith('win'):
         __env_var = 'USERNAME'
-    return trueEnc(os.getenv(__env_var))
+    return true_enc(os.getenv(__env_var))
 
 
-def getCompName():
+def get_comp_name():
     __env_var = 'HOSTNAME'
     if sys.platform.startswith('win'):
         __env_var = 'COMPUTERNAME'
-    return trueEnc(os.getenv(__env_var))
+    return true_enc(os.getenv(__env_var))
 
 
-def getDataDIR():
+def get_data_dir():
     __env_var = 'HOME'
     if sys.platform.startswith('win'):
         __env_var = 'APPDATA'
-    return trueEnc(os.getenv(__env_var))
+    return true_enc(os.getenv(__env_var))

@@ -15,7 +15,7 @@ class Archive():
     def __init__(self, env):
         try:
             self.env = env
-            self.username = utils.trueEnc(utils.safe_str(env.get('REMOTE_USER')))
+            self.username = utils.true_enc(utils.safe_str(env.get('REMOTE_USER')))
             self.allowed_comps = []
             self.allowed_users = []
             self.db = base.Base()
@@ -25,12 +25,12 @@ class Archive():
     def __call__(self, *args, **kwargs):
         journal = []
         try:
-            self.action = utils.trueEnc(utils.safe_str(kwargs.get('act')))
+            self.action = utils.true_enc(utils.safe_str(kwargs.get('act')))
 
             _params = dict(
-                comp=utils.trueEnc(utils.safe_str(kwargs.get('comp', ''))),
-                user=utils.trueEnc(utils.safe_str(kwargs.get('user', ''))),
-                date=utils.trueEnc(utils.safe_str(kwargs.get('date', '')))
+                comp=utils.true_enc(utils.safe_str(kwargs.get('comp', ''))),
+                user=utils.true_enc(utils.safe_str(kwargs.get('user', ''))),
+                date=utils.true_enc(utils.safe_str(kwargs.get('date', '')))
             )
 
             if len(self.username) > 0:
@@ -43,8 +43,8 @@ class Archive():
                     if len(p) <= 0:
                         return journal
 
-                if _params['user'] in self.allowed_users and _params['comp'] in self.allowed_comps:
-                    movies_dir = utils.trueEnc(fmt("{data_dir}/{date}/{comp}/{user}", data_dir=config['ARCHIVE_DIR'], **_params))
+                if _params['user'] in self.allowed_users and _params['comp'] in self.allowed_comps.iterkeys():
+                    movies_dir = utils.true_enc(fmt("{data_dir}/{date}/{comp}/{user}", data_dir=config['ARCHIVE_DIR'], **_params))
                     if os.path.isdir(movies_dir):
                         journal = sorted(
                             fmt("/archive/{date}/{comp}/{user}/{fn}", fn=f, **_params) for f in os.listdir(movies_dir)

@@ -36,8 +36,8 @@ class ImageStore():
             return str(e)
 
     def __call__(self, *args, **kwargs):
-        compname = utils.trueEnc(utils.safe_str(kwargs.get('compname')))
-        username = utils.trueEnc(utils.safe_str(kwargs.get('username')))
+        compname = utils.true_enc(utils.safe_str(kwargs.get('compname')))
+        username = utils.true_enc(utils.safe_str(kwargs.get('username')))
         data = base64.b64decode(kwargs.get('data'))
         if len(compname) > 0 and len(username) > 0 and len(data) > 0:
             self.datadir = os.path.join(config['DATA_DIR'], compname, username)

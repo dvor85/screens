@@ -34,7 +34,7 @@ class Generator():
 
     def main(self):
         for filename in os.listdir(self.templates_dir):
-            self.generate_file(utils.trueEnc(filename))
+            self.generate_file(utils.true_enc(filename))
 
 
 if __name__ == '__main__':
