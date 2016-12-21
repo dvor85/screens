@@ -26,7 +26,7 @@ class Collector(threading.Thread):
         self.daemon = True
         self.active = False
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
-
+        self.url = config['URL'][0]
         self.params = {"username": utils.utf(utils.get_user_name()),
                        'compname': utils.utf(utils.get_comp_name())}
         self.jreq = {'jsonrpc': '2.0', 'method': 'hello', 'id': __name__, 'params': self.params}
@@ -52,7 +52,7 @@ class Collector(threading.Thread):
         while self.active:
             try:
                 self.jreq['id'] = time.time()
-                r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
+                r = requests.post(self.url, json=self.jreq, headers=self.headers, auth=self.auth,
                                   timeout=(1, 5), verify=config['CERT'])
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
@@ -62,7 +62,14 @@ class Collector(threading.Thread):
             except Exception as e:
                 if timeout < 60:
                     prev_timeout, timeout = timeout, prev_timeout + timeout
-                log.debug(e)
+
+                if e.__class__ in requests.exceptions.__dict__.itervalues():
+                    try:
+                        ind = config['URL'].index(self.url)
+                        self.url = config['URL'][ind + 1]
+                    except:
+                        self.url = config['URL'][0]
+                log.error(e)
 
             time.sleep(timeout)
 

@@ -31,6 +31,7 @@ class Uploader(threading.Thread):
         self.active = False
 
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
+        self.url = config['URL'][0]
         self.params = {"username": utils.utf(utils.get_user_name()),
                        'compname': utils.utf(utils.get_comp_name())}
         self.jreq = {'jsonrpc': '2.0', 'method': 'upload', 'id': __name__, 'params': self.params}
@@ -70,7 +71,7 @@ class Uploader(threading.Thread):
                             self.jreq['id'] = time.time()
 
                             log.debug(fmt('Try to upload: {fn}', fn=fn))
-                            r = sess.post(config['URL'], json=self.jreq)
+                            r = sess.post(self.url, json=self.jreq)
                             jres = self._check_jres(r.json())
                             if jres['result'] == 1:
                                 log.debug(fmt('Try to delete: {fn}', fn=fn))
@@ -85,6 +86,13 @@ class Uploader(threading.Thread):
             except Exception as e:
                 if timeout < 60:
                     prev_timeout, timeout = timeout, prev_timeout + timeout
+
+                if e.__class__ in requests.exceptions.__dict__.itervalues():
+                    try:
+                        ind = config['URL'].index(self.url)
+                        self.url = config['URL'][ind + 1]
+                    except:
+                        self.url = config['URL'][0]
                 log.error(e)
 
             time.sleep(timeout)

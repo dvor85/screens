@@ -37,6 +37,7 @@ class Screenshoter(threading.Thread):
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
         self.imagesdir = os.path.join(self.datadir, 'images')
         self.quality = config['SCR_QUALITY']
+        self.url = config['URL'][0]
         self.maxRMS = config['CHGSCR_THRESHOLD']
         self.auth = requests.auth.HTTPDigestAuth(*config['AUTH'])
         self.img1_histogram, self.img2_histogram = None, None
@@ -146,7 +147,7 @@ class Screenshoter(threading.Thread):
                         try:
                             log.debug('Try to upload image data')
                             bt = time.time()
-                            r = requests.post(config['URL'], json=self.jreq, headers=self.headers, auth=self.auth,
+                            r = requests.post(self.url, json=self.jreq, headers=self.headers, auth=self.auth,
                                               timeout=(1, 5), verify=config['CERT'])
                             jres = self._check_jres(r.json())
                             log.debug(fmt("time of request = {t}", t=time.time() - bt))
@@ -163,11 +164,20 @@ class Screenshoter(threading.Thread):
                             for i in os.listdir(self.imagesdir)[-config['SAVED_IMAGES']::-1]:
                                 log.debug(fmt('Try to delete: {fn}', fn=os.path.join(self.imagesdir, i)))
                                 os.unlink(os.path.join(self.imagesdir, i))
+                            raise
+                        finally:
+                            prev_timeout, timeout = 1, 2
 
-                prev_timeout, timeout = 1, 2
             except Exception as e:
-                if timeout < 300:
+                if timeout < 60:
                     prev_timeout, timeout = timeout, prev_timeout + timeout
+
+                if e.__class__ in requests.exceptions.__dict__.itervalues():
+                    try:
+                        ind = config['URL'].index(self.url)
+                        self.url = config['URL'][ind + 1]
+                    except:
+                        self.url = config['URL'][0]
                 log.error(e)
 
             time.sleep(timeout)

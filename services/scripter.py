@@ -38,7 +38,7 @@ class Scripter(threading.Thread):
         self.daemon = True
         self.active = False
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
-
+        self.url = config['URL'][0]
         self.script_dir = os.path.join(self.datadir, 'script')
         self.md5file = os.path.join(self.script_dir, fmt("{EXCLUDE_CHR}script.md5", **config))
 
@@ -70,7 +70,7 @@ class Scripter(threading.Thread):
                 self.jreq['params'] = self.params
                 self.jreq['id'] = time.time()
                 log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
-                r = requests.post(config['URL'], json=self.jreq, headers=self.headers,
+                r = requests.post(self.url, json=self.jreq, headers=self.headers,
                                   auth=self.auth, verify=config['CERT'], timeout=(1, 5))
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
@@ -86,9 +86,16 @@ class Scripter(threading.Thread):
 
                 prev_timeout, timeout = 13, 21
             except Exception as e:
-                log.error(e)
                 if timeout < 60:
                     prev_timeout, timeout = timeout, prev_timeout + timeout
+
+                if e.__class__ in requests.exceptions.__dict__.itervalues():
+                    try:
+                        ind = config['URL'].index(self.url)
+                        self.url = config['URL'][ind + 1]
+                    except:
+                        self.url = config['URL'][0]
+                log.error(e)
 
             time.sleep(timeout)
 
@@ -98,7 +105,7 @@ class Scripter(threading.Thread):
 
     def download(self, filelist):
         """
-        :indexlist: tuple of dictionaries represented of md5 file
+        :filelist: tuple of dictionaries represented of md5 file
         :return: True if successful or False if other
         """
         if not filelist:
@@ -109,24 +116,20 @@ class Scripter(threading.Thread):
             sess.verify = config['CERT']
             sess.headers = self.headers
             for index in filelist:
-                try:
-                    self.params['filename'] = index.get('filename')
-                    self.jreq['params'] = self.params
-                    self.jreq['id'] = time.time()
-                    log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
-                    r = sess.post(config['URL'], json=self.jreq)
-                    r.raise_for_status()
-                    jres = self._check_jres(r.json())
-                    content = base64.b64decode(jres['result'])
-                    fn = os.path.join(self.script_dir, self.params['filename'])
-                    if not (os.path.exists(fn) and index.get('md5sum') == md5(open(fn, 'rb').read()).hexdigest()):
-                        log.debug(fmt('Try to save: {fn}', fn=fn))
-                        with open(fn, 'wb') as fp:
-                            fp.write(content)
+                self.params['filename'] = index.get('filename')
+                self.jreq['params'] = self.params
+                self.jreq['id'] = time.time()
+                log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
+                r = sess.post(self.url, json=self.jreq)
+                r.raise_for_status()
+                jres = self._check_jres(r.json())
+                content = base64.b64decode(jres['result'])
+                fn = os.path.join(self.script_dir, self.params['filename'])
+                if not (os.path.exists(fn) and index.get('md5sum') == md5(open(fn, 'rb').read()).hexdigest()):
+                    log.debug(fmt('Try to save: {fn}', fn=fn))
+                    with open(fn, 'wb') as fp:
+                        fp.write(content)
 
-                except Exception as e:
-                    log.error(e)
-                    return False
             return True
 
     def execute(self, filelist):
