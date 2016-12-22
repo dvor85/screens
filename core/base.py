@@ -125,6 +125,16 @@ class Base:
                 cur = self.conn.execute(sql[1])
             return cur.rowcount
 
+    def rename_comp(self, oldcomp, newcomp):
+        sql = []
+        sql.append(fmt('update {base} set comp="{new}" where comp="{old}"',
+                       new=newcomp, old=oldcomp, base=Base.TABLE_SCHEME))
+        sql.append(fmt('update {base} set comp="{new}" where comp="{old}"',
+                       new=newcomp, old=oldcomp, base=Base.TABLE_COMPTITLE))
+        with self.conn:
+            for s in sql:
+                self.conn.execute(s)
+
     def rename_user(self, comp, olduser, newuser):
         sql = fmt('update {scheme} set user="{new}" where user="{old}" and comp like "{comp}%"',
                   new=newuser, old=olduser, comp=comp, scheme=Base.TABLE_SCHEME)

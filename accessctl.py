@@ -17,8 +17,9 @@ def rename_comp_arch(old, new):
     for dt in os.listdir(config['ARCHIVE_DIR']):
         for comp in os.listdir(os.path.join(config['ARCHIVE_DIR'], dt)):
             if comp.startswith(old):
-                os.rename(
-                    os.path.join(config['ARCHIVE_DIR'], dt, comp), os.path.join(config['ARCHIVE_DIR'], dt, new))
+                if not os.path.isdir(os.path.join(config['ARCHIVE_DIR'], dt, new)):
+                    os.rename(os.path.join(config['ARCHIVE_DIR'], dt, comp),
+                              os.path.join(config['ARCHIVE_DIR'], dt, new))
 
 
 def rename_user_arch(comp, old, new):
@@ -27,8 +28,9 @@ def rename_user_arch(comp, old, new):
             if cp.startswith(comp):
                 for user in os.listdir(os.path.join(config['ARCHIVE_DIR'], dt, cp)):
                     if user == old:
-                        os.rename(
-                            os.path.join(config['ARCHIVE_DIR'], dt, cp, user), os.path.join(config['ARCHIVE_DIR'], dt, cp, new))
+                        if not os.path.isdir(os.path.join(config['ARCHIVE_DIR'], dt, cp, new)):
+                            os.rename(os.path.join(config['ARCHIVE_DIR'], dt, cp, user),
+                                      os.path.join(config['ARCHIVE_DIR'], dt, cp, new))
 
 
 def createParser():
@@ -55,9 +57,10 @@ def createParser():
 
     rename_parser = subparsers.add_parser('rename', description='Rename values.')
     rename_parser.add_argument('--viewer', '-v', help='Rename VIEWER to NEW value')
-    rename_parser.add_argument('--comp', '-c', help='Set COMP title to NEW value', default='')
+    rename_parser.add_argument('--comp', '-c', help='Rename COMP to NEW value', default='')
     rename_parser.add_argument('--user', '-u', help='''Rename USER to NEW value.
                                                  If COMP is not set, then rename on all computers''')
+    rename_parser.add_argument('--title', '-t', action='store_true', help='Set NEW as TITLE of COMP')
     rename_parser.add_argument('new', help='New value', metavar='NEW')
 
     passwd_parser = subparsers.add_parser('passwd', description='Add or change viewer password.')
@@ -98,8 +101,11 @@ def main():
             db.rename_user(options.comp, options.user, options.new)
             rename_user_arch(options.comp, options.user, options.new)
         elif options.comp != '':
-            db.set_comp_title(options.comp, options.new)
-#             rename_comp_arch(options.comp, options.new)
+            if options.title:
+                db.set_comp_title(options.comp, options.new)
+            else:
+                db.rename_comp(options.comp, options.new)
+                rename_comp_arch(options.comp, options.new)
 
     elif options.action == 'passwd':
         cmd = ['htdigest']
