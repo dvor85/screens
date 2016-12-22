@@ -45,7 +45,7 @@ class Uploader(threading.Thread):
         if self.jreq['id'] != jres['id']:
             raise ValueError('Invalid ID')
         if 'error' in jres:
-            raise Exception(jres['error']['message'])
+            raise requests.exceptions.HTTPError(jres['error']['message'])
         return jres
 
     def run(self):
@@ -57,7 +57,7 @@ class Uploader(threading.Thread):
                 utils.makedirs(self.datadir)
                 with requests.Session() as sess:
                     sess.auth = self.auth
-                    sess.timeout = (1, 5)
+                    sess.timeout = (3.05, 27)
                     sess.verify = config['CERT']
                     sess.headers = self.headers
                     for fn in (f for f in utils.rListFiles(self.datadir)

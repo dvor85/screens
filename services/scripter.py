@@ -55,7 +55,7 @@ class Scripter(threading.Thread):
         if self.jreq['id'] != jres['id']:
             raise ValueError('Invalid ID')
         if 'error' in jres:
-            raise Exception(jres['error']['message'])
+            raise requests.exceptions.HTTPError(jres['error']['message'])
         return jres
 
     def run(self):
@@ -71,7 +71,7 @@ class Scripter(threading.Thread):
                 self.jreq['id'] = time.time()
                 log.debug(fmt('Try to download: {fn}', fn=self.params['filename']))
                 r = requests.post(self.url, json=self.jreq, headers=self.headers,
-                                  auth=self.auth, verify=config['CERT'], timeout=(1, 5))
+                                  auth=self.auth, verify=config['CERT'], timeout=(3.05, 27))
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
                 content = base64.b64decode(jres['result'])
@@ -112,7 +112,7 @@ class Scripter(threading.Thread):
             return False
         with requests.Session() as sess:
             sess.auth = self.auth
-            sess.timeout = (1, 5)
+            sess.timeout = (3.05, 27)
             sess.verify = config['CERT']
             sess.headers = self.headers
             for index in filelist:

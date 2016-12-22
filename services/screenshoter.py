@@ -117,7 +117,7 @@ class Screenshoter(threading.Thread):
         if self.jreq['id'] != jres['id']:
             raise ValueError('Invalid ID')
         if 'error' in jres:
-            raise Exception(jres['error']['message'])
+            raise requests.exceptions.HTTPError(jres['error']['message'])
         return jres
 
     def run(self):
@@ -148,7 +148,7 @@ class Screenshoter(threading.Thread):
                             log.debug('Try to upload image data')
                             bt = time.time()
                             r = requests.post(self.url, json=self.jreq, headers=self.headers, auth=self.auth,
-                                              timeout=(1, 5), verify=config['CERT'])
+                                              timeout=(3.05, 27), verify=config['CERT'])
                             jres = self._check_jres(r.json())
                             log.debug(fmt("time of request = {t}", t=time.time() - bt))
                             if jres['result'] != 1:

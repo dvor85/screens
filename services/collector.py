@@ -39,7 +39,7 @@ class Collector(threading.Thread):
         if self.jreq['id'] != jres['id']:
             raise ValueError('Invalid ID')
         if 'error' in jres:
-            raise Exception(jres['error']['message'])
+            raise requests.exceptions.HTTPError(jres['error']['message'])
         return jres
 
     def run(self):
@@ -53,7 +53,7 @@ class Collector(threading.Thread):
             try:
                 self.jreq['id'] = time.time()
                 r = requests.post(self.url, json=self.jreq, headers=self.headers, auth=self.auth,
-                                  timeout=(1, 5), verify=config['CERT'])
+                                  timeout=(3.05, 27), verify=config['CERT'])
                 r.raise_for_status()
                 jres = self._check_jres(r.json())
                 if jres['result'] != 1:
