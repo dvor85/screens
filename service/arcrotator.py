@@ -57,6 +57,7 @@ class ArchiveRotator(threading.Thread):
         while self.active and t < timeout:
             t += precision
             time.sleep(precision)
+        return self.active
 
 
 if __name__ == '__main__':

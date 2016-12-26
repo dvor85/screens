@@ -76,10 +76,10 @@ def main():
     db = base.Base()
 
     if options.action == 'show':
-        print fmt("{0:10s} | {1:10s} | {2:10s} | {3:10s}", 'VIEWER', 'COMP', 'TITLE', 'USER')
-        print fmt('{0:-^45s}', '-')
+        print fmt("{0:10s} | {1:20s} | {2:45s} | {3:20s}", 'VIEWER', 'COMP', 'TITLE', 'USER')
+        print fmt('{0:-^100s}', '-')
         for line in db.get_scheme(options.viewer):
-            print fmt("{viewer:10s} | {comp:10s} | {title:10s} | {user:10s}", **line)
+            print fmt("{viewer:10s} | {comp:20s} | {title:45s} | {user:20s}", **line)
 
     elif options.action == 'add':
         db.add_scheme(options.viewer, options.comp, options.user)

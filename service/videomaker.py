@@ -30,36 +30,49 @@ class VideoProcess(multiprocessing.Process):
         src_dir = os.path.join(config['DATA_DIR'], self.comp, self.user, 'images')
         im_list = sorted(float(os.path.splitext(f)[0]) for f in os.listdir(src_dir) if f.endswith('.jpg'))
 
-        if len(im_list) > 15:
-            dst_file = os.path.join(
-                config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4',
-                                           bt=datetime.datetime.fromtimestamp(im_list[0]),
-                                           et=datetime.datetime.fromtimestamp(im_list[-1]),
-                                           user=self.user,
-                                           comp=self.comp))
-            utils.makedirs(os.path.dirname(dst_file), mode=0775)
+        if len(im_list) > 0:
+            _params = dict(
+                bt=datetime.datetime.fromtimestamp(im_list[0]),
+                et=datetime.datetime.fromtimestamp(im_list[-1]),
+                user=self.user,
+                comp=self.comp)
 
-            proc = subprocess.Popen(
-                fmt('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
-                    -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
-                    -profile:v baseline -b:v 100k -qp 28 -an -r 25 "{dst_file}"', dst_file=dst_file),
-                shell=True, close_fds=True, stdin=subprocess.PIPE)
-            with proc.stdin:
-                log.debug('Add images to process stdin')
+            is_same_date = _params['et'].date() == datetime.date.today()
+
+            if is_same_date:
+                im_list = im_list[:-1]
+
+            if not is_same_date or len(im_list) > 14:
+                dst_file = os.path.join(
+                    config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4', **_params))
+                utils.makedirs(os.path.dirname(dst_file), mode=0775)
+
+                proc = subprocess.Popen(
+                    fmt('avconv -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
+                        -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
+                        -profile:v baseline -b:v 100k -qp 28 -an -r 25 "{dst_file}"', dst_file=dst_file),
+                    shell=True, close_fds=True, stdin=subprocess.PIPE)
+                with proc.stdin:
+                    log.info(fmt('Add images: {comp}/{user}', comp=self.comp, user=self.user))
+                    for f in im_list:
+                        try:
+                            fn = os.path.join(src_dir, fmt("{fn}.jpg", fn=f))
+                            log.debug(fmt('Add: {fn}', fn=fn))
+                            proc.stdin.write(open(fn, 'rb').read())
+                        except Exception as e:
+                            log.error(e)
+                proc.wait()
+                if proc.returncode != 0:
+                    log.error(fmt('Process of {comp}/{user} return {code}', comp=self.comp, user=self.user, code=proc.returncode))
+    #                 raise subprocess.CalledProcessError(proc.returncode, str(proc.pid))
+                log.info(fmt('Delete images: {comp}/{user}', comp=self.comp, user=self.user))
                 for f in im_list:
                     try:
-                        proc.stdin.write(open(os.path.join(src_dir, fmt("{0}.jpg", f)), 'rb').read())
+                        fn = os.path.join(src_dir, fmt("{fn}.jpg", fn=f))
+                        log.debug(fmt('Delete: {fn}', fn=fn))
+                        os.unlink(fn)
                     except Exception as e:
                         log.error(e)
-            proc.wait()
-            if proc.returncode != 0:
-                raise subprocess.CalledProcessError(proc.returncode, str(proc.pid))
-            log.debug('Delete images')
-            for f in im_list:
-                try:
-                    os.unlink(os.path.join(src_dir, fmt("{fn}.jpg", fn=f)))
-                except Exception as e:
-                    log.error(e)
 
     def run(self):
         try:
@@ -113,7 +126,10 @@ class VideoMaker(threading.Thread):
         while self.active and t < timeout:
             t += precision
             time.sleep(precision)
+        return self.active
 
 
 if __name__ == '__main__':
-    VideoMaker().start()
+    vm = VideoMaker()
+    vm.start()
+    vm.join()

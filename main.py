@@ -49,11 +49,12 @@ class Starter():
         while self.active and t < timeout:
             t += precision
             time.sleep(precision)
+        return self.active
 
     def wait_termination(self):
         log.debug('Wait for termination')
-        while self.active:
-            self.sleep(1)
+        while self.sleep(1):
+            pass
         for d in self.daemons:
             try:
                 log.debug(fmt('Wait for {0}', d.getName()))

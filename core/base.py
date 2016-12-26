@@ -16,6 +16,7 @@ class Base:
 
     TABLE_SCHEME = 'scheme'
     TABLE_COMPTITLE = 'comptitle'
+    TABLE_VERSION = 'version'
 
     def __init__(self):
         utils.makedirs(os.path.dirname(config['BASE_FILE']), mode=0775)
@@ -28,8 +29,10 @@ class Base:
                     (viewer varchar(32) NOT NULL, comp varchar(32) NOT NULL, user varchar(32) NOT NULL)",
                 scheme=Base.TABLE_SCHEME))
         sql.append(
-            fmt("create table if not exists {base} (comp varchar(32) PRIMARY KEY, title varchar(32) NOT NULL)",
+            fmt("create table if not exists {base} \
+                    (comp varchar(32) PRIMARY KEY, title varchar(32) NOT NULL)",
                 base=Base.TABLE_COMPTITLE))
+
         with self.conn:
             for s in sql:
                 self.conn.execute(s)
@@ -145,4 +148,4 @@ class Base:
 
 if __name__ == "__main__":
     db = Base()
-    print db.get_comp_titles('')
+#     print db.get_comp_titles('')
