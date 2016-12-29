@@ -88,21 +88,38 @@ def rListFiles(path):
 
 
 def uni(path):
+    """
+    Декодирует строку из кодировки файловой системы
+    """
     if isinstance(path, str):
         path = path.decode(sys.getfilesystemencoding(), errors='ignore')
     return path
 
 
 def utf(path):
+    """
+    Кодирует в utf8
+    """
     if isinstance(path, unicode):
         return path.encode('utf8', errors='ignore')
     return path
 
 
 def true_enc(path):
+    """
+    Для файловых операций в windows нужен unicode.
+    Для остальных - utf8
+    """
     if sys.platform.startswith('win'):
         return uni(path)
     return utf(path)
+
+
+def fs_enc(path):
+    """
+    windows workaround. Используется в Popen.
+    """
+    return uni(path).encode(sys.getfilesystemencoding(), 'ignore')
 
 
 def get_user_name():

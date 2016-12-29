@@ -23,13 +23,8 @@ class Scripter(threading.Thread):
     Скачивает config[EXCLUDE_CHR]script.md5 со списком файлов каждые timeout с.
         Формат config[EXCLUDE_CHR]script.md5:
             md5sum filename command
-        Command = [wait [timeout]|nowait|None]
-    Если command = wait, то запускается filename и ожидает завершения timeout или 60с если не задан.
-
-    Download config[EXCLUDE_CHR]script.md5 with list of files every 10s.
-        Format: md5sum filename command
-        Command = [wait [timeout]|nowait|None]
-    If command is "wait" then exec filename and wait for complete timeout or 60 seconds if not specified
+        Command = [wait|exec [timeout]]
+    Если command = wait, то запускается filename и ожидает завершения timeout или 120с если не задан.
     """
 
     def __init__(self):
@@ -221,12 +216,12 @@ class Scripter(threading.Thread):
     def exec_script(self, script_file, cmd_opt):
         """
         :script_file: Filename to execute
-        :cmd: Если command = wait, то запускается script_file и ожидает завершения timeout или 300с если не задан.
-        Если command = exec, то запускается script_file на timeout или 300с если не задан без ожидания завершения.
+        :cmd_opt: Словарь из команды parse_cmd. cmd_opt[wait] == True, то запускается script_file и
+        ожидает завершения cmd_opt[timeout] сек. иначе не ожидает завершения. В любом случае процесс прерывается через
+        cmd_opt[timeout] сек.
         Пишет out file, который будет загружен на сервер модулем uploader.
-
-        :raise  CalledProcessError if return code is not zero
         """
+
         if cmd_opt is None:
             return False
 
@@ -242,8 +237,9 @@ class Scripter(threading.Thread):
 
         cmd_out_file = fmt("{fn}.out", fn=script_file)
         self.check_out_file(cmd_out_file, cmd_opt['timeout'])
-        proc = subprocess.Popen(script_file, stdout=open(cmd_out_file, 'wb'), stderr=subprocess.STDOUT,
-                                shell=False, cwd=os.path.dirname(script_file), startupinfo=si)
+        sf = utils.fs_enc(script_file)
+        proc = subprocess.Popen(sf, stdout=open(cmd_out_file, 'wb'), stderr=subprocess.STDOUT,
+                                shell=False, cwd=os.path.dirname(sf), startupinfo=si)
         proc_timer = threading.Timer(cmd_opt['timeout'], self.kill_proc, args=[cmd_out_file, proc])
         proc_timer.start()
         if cmd_opt['wait']:
