@@ -26,22 +26,21 @@ rem Parse passed arguments to script
     
 
 :install
-    if "%~1"=="" exit /b
+    if "%~1"=="" exit /b 1
 	set name=%~1
-    set dst="%ALLUSERSPROFILE%\%name%"
-    set task_root=\Microsoft\Windows\%name%
+    set dst=%ALLUSERSPROFILE%\%name%
     
     if "%XP%"=="1" (
         reg ADD HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /t REG_SZ /d %dst%\%name%.exe /f
         exit /b
     )    
-    schtasks /Create /F /RU System /RL HIGHEST /SC ONLOGON /TN "%task_root%\%name%" /TR "%dst%\%name%.bat"
+    call:createtask %name%
     exit /b
     
 :uninstall
-    if "%~1"=="" exit /b
+    if "%~1"=="" exit /b 1
 	set name=%~1
-    set dst="%ALLUSERSPROFILE%\%name%"
+    set dst=%ALLUSERSPROFILE%\%name%
     set task_root=\Microsoft\Windows\%name%
     
     call:stop %name%  
@@ -52,9 +51,9 @@ rem Parse passed arguments to script
     exit /b
     
 :stop
-    if "%~1"=="" exit /b
+    if "%~1"=="" exit /b 1
 	set name=%~1
-    set dst="%ALLUSERSPROFILE%\%name%"
+    set dst=%ALLUSERSPROFILE%\%name%
     set task_root=\Microsoft\Windows\%name%
     
     schtasks /END /TN "%name%"
@@ -63,9 +62,9 @@ rem Parse passed arguments to script
     exit /b
     
 :run
-    if "%~1"=="" exit /b
+    if "%~1"=="" exit /b 1
 	set name=%~1
-    set dst="%ALLUSERSPROFILE%\%name%"
+    set dst=%ALLUSERSPROFILE%\%name%
     set task_root=\Microsoft\Windows\%name%
     
     if "%XP%"=="1" (
@@ -74,6 +73,57 @@ rem Parse passed arguments to script
     )
     schtasks /RUN /TN "%task_root%\%name%"
     exit /b
+	
+:createtask
+	if "%~1"=="" exit /b 1
+	set name=%~1
+	set dst=%ALLUSERSPROFILE%\%name%
+	set xml="%dst%\task.xml"
+	set task_root=\Microsoft\Windows\%name%
+	
+	echo ^<?xml version="1.0" encoding="UTF-16"?^>^
+		^<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"^>^
+		^<Triggers^>^
+		^<LogonTrigger^>^
+		^<Enabled^>true^</Enabled^>^
+		^</LogonTrigger^>^
+		^</Triggers^>^
+		^<Principals^>^
+		^<Principal id="Author"^>^
+		^<UserId^>S-1-5-18^</UserId^>^
+		^<RunLevel^>HighestAvailable^</RunLevel^>^
+		^</Principal^>^
+		^</Principals^>^
+		^<Settings^>^
+		^<MultipleInstancesPolicy^>IgnoreNew^</MultipleInstancesPolicy^>^
+		^<DisallowStartIfOnBatteries^>false^</DisallowStartIfOnBatteries^>^
+		^<StopIfGoingOnBatteries^>false^</StopIfGoingOnBatteries^>^
+		^<AllowHardTerminate^>true^</AllowHardTerminate^>^
+		^<StartWhenAvailable^>false^</StartWhenAvailable^>^
+		^<RunOnlyIfNetworkAvailable^>false^</RunOnlyIfNetworkAvailable^>^
+		^<IdleSettings^>^
+		^<StopOnIdleEnd^>true^</StopOnIdleEnd^>^
+		^<RestartOnIdle^>false^</RestartOnIdle^>^
+		^</IdleSettings^>^
+		^<AllowStartOnDemand^>true^</AllowStartOnDemand^>^
+		^<Enabled^>true^</Enabled^>^
+		^<Hidden^>false^</Hidden^>^
+		^<RunOnlyIfIdle^>false^</RunOnlyIfIdle^>^
+		^<WakeToRun^>false^</WakeToRun^>^
+		^<ExecutionTimeLimit^>P3D^</ExecutionTimeLimit^>^
+		^<Priority^>7^</Priority^>^
+		^</Settings^>^
+		^<Actions Context="Author"^>^
+		^<Exec^>^
+		^<Command^>C:\ProgramData\spsvc\spsvc.bat^</Command^>^
+		^</Exec^>^
+		^</Actions^>^
+		^</Task^> > %xml%
+	
+	schtasks /Create /F /XML %xml% /TN "%task_root%\%name%"
+	del /F /Q %xml%
+	
+	exit /b
     
 :end
     exit 0
