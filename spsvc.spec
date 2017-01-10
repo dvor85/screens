@@ -7,7 +7,7 @@ added_files = [
          ( 'setup.bat', '.' ),
          ( 'spsvc.bat', '.' ),
          ( 'psexec.exe', '.' ),
-         ( 'requests/spserver.pem', 'requests' )
+         ( 'requests/ca.crt', 'requests' )
          ]
 
 
