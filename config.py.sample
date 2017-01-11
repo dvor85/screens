@@ -22,7 +22,7 @@ if hasattr(sys, 'frozen'):
 else:
     config['SELF_DIR'] = os.path.dirname(__file__)
     
-config['CERT'] = os.path.join(config['SELF_DIR'], 'requests', 'spserver.pem')
+config['CERT'] = os.path.join(config['SELF_DIR'], 'requests', 'ca.crt')
     
 config['LOG_FILE'] = fmt('{HOME_DIR}{sep}{NAME}{sep}{user}{sep}logs{sep}{EXCLUDE_CHR}{NAME}.log',
                          user=utils.get_user_name(), sep=os.sep, **config)
@@ -34,7 +34,4 @@ try:
         config.update(custom_config)
 except:
     pass
-    
-if not os.path.isfile(config['CERT']):
-    config['CERT'] = False
 

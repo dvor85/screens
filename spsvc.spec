@@ -4,16 +4,16 @@ block_cipher = None
 
 
 added_files = [
-         ( 'setup.bat', '.' ),
-         ( 'spsvc.bat', '.' ),
-         ( 'psexec.exe', '.' ),
-         ( 'requests/ca.crt', 'requests' )
-         ]
+    ('setup.bat', '.'),
+    ('spsvc.bat', '.'),
+    ('psexec.exe', '.'),
+    ('requests/ca.crt', 'requests')
+]
 
 
 a = Analysis(['main.py'],
              pathex=['d:\\python\\workspaces\\spclient'],
-             binaries=[ ( 'c:\\Windows\\System32\\msvcr100.dll', '.' ) ],
+             binaries=[('c:\\Windows\\System32\\msvcr100.dll', '.')],
              datas=added_files,
              hiddenimports=[],
              hookspath=[],
@@ -23,7 +23,7 @@ a = Analysis(['main.py'],
              win_private_assemblies=False,
              cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+          cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
@@ -31,7 +31,7 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False )
+          console=False)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
