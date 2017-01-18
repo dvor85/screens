@@ -131,7 +131,7 @@ def get_user_name():
             sessuser = _get_user_of_session(sess)
             if len(sessuser) > 0:
                 return true_enc(sessuser)
-        except Exception as e:
+        except Exception:
             pass
     return true_enc(os.getenv(__env_var))
 
@@ -157,9 +157,11 @@ def _get_user_of_session(sess):
                      sess=sess)
         t = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, branch, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
         try:
-            return os.path.basename(winreg.QueryValueEx(t, 'LoggedOnUsername')[0])
-        except:
-            return os.path.basename(winreg.QueryValueEx(t, 'LoggedOnUser')[0])
+            for k in ('LoggedOnUsername', 'LoggedOnUser', 'LoggedOnSAMUser'):
+                try:
+                    return os.path.basename(winreg.QueryValueEx(t, k)[0])
+                except:
+                    pass
         finally:
             winreg.CloseKey(t)
         raise Exception(fmt('Session user of "{sess}" not defined', sess))
