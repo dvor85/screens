@@ -77,7 +77,7 @@ def main():
 
     if options.action == 'show':
         print fmt("{0:10s} | {1:20s} | {2:45s} | {3:20s}", 'VIEWER', 'COMP', 'TITLE', 'USER')
-        print fmt('{0:-^100s}', '-')
+        print fmt("{0:-^100s}", "-")
         for line in db.get_scheme(options.viewer):
             print fmt("{viewer:10s} | {comp:20s} | {title:45s} | {user:20s}", **line)
 
