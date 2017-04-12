@@ -25,7 +25,7 @@ class Script():
             with open(self.query_file, 'rb') as fp:
                 return base64.b64encode(fp.read())
 
-        except:
+        except Exception:
             return ''
 
     def __call__(self, *args, **kwargs):

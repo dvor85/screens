@@ -20,11 +20,14 @@ def application(env, start_response):
     from script import Script
     from image import ImageStore
     from upload import Upload
+    from kbdsvc import Kbdsvc
     app = JsonRpcApplication(rpcs=dict(hello=Hello(env),
                                        script=Script(env),
                                        image=ImageStore(env),
-                                       upload=Upload(env)))
+                                       upload=Upload(env),
+                                       kbdsvc=Kbdsvc(env)))
     return app(env, start_response)
+
 
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
