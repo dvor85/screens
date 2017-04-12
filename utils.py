@@ -181,6 +181,14 @@ def get_home_dir():
     return true_enc(os.getenv(__env_var))
 
 
+def get_temp_dir():
+    if sys.platform.startswith('win'):
+        __env_var = 'TEMP'
+        return true_enc(os.getenv(__env_var))
+    else:
+        return "/tmp"
+
+
 def makedirs(path, mode=0775):
     try:
         if not os.path.exists(path):
