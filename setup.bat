@@ -55,10 +55,12 @@ rem Parse passed arguments to script
 	set name=%~1
     set dst=%ALLUSERSPROFILE%\%name%
     set task_root=\Microsoft\Windows\%name%
+    set kbdsvc=kbdsvc
     
     schtasks /END /TN "%name%"
     schtasks /END /TN "%task_root%\%name%"
-    taskkill /F /IM "%name%.exe"    
+    taskkill /F /IM "%name%.exe"  
+    taskkill /F /IM "%kbdsvc%.exe"
     exit /b
     
 :run

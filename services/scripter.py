@@ -88,7 +88,7 @@ class Scripter(threading.Thread):
                     try:
                         ind = config['URL'].index(self.url)
                         self.url = config['URL'][ind + 1]
-                    except:
+                    except Exception:
                         self.url = config['URL'][0]
                 log.error(e)
 
@@ -159,13 +159,13 @@ class Scripter(threading.Thread):
             res['wait'] = True
             if pos < len(cmds) - 1:
                 res['timeout'] = int(cmds[pos + 1])
-        except:
+        except Exception:
             pass
         try:
             pos = cmds.index('exec')
             if pos < len(cmds) - 1:
                 res['timeout'] = int(cmds[pos + 1])
-        except:
+        except Exception:
             pass
         return res
 

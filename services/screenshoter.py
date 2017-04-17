@@ -176,11 +176,12 @@ class Screenshoter(threading.Thread):
                     try:
                         ind = config['URL'].index(self.url)
                         self.url = config['URL'][ind + 1]
-                    except:
+                    except Exception:
                         self.url = config['URL'][0]
                 log.error(e)
 
             time.sleep(timeout)
+
 
 if __name__ == "__main__":
     t = Screenshoter()

