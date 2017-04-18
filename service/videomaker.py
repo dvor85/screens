@@ -44,7 +44,7 @@ class VideoProcess(multiprocessing.Process):
 
             if not is_same_date or len(im_list) > 14:
                 dst_file = os.path.join(
-                    config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/{bt:%H%M%S}-{et:%H%M%S}.mp4', **_params))
+                    config['ARCHIVE_DIR'], fmt('{bt:%Y%m%d}/{comp}/{user}/movies/{bt:%H%M%S}-{et:%H%M%S}.mp4', **_params))
                 utils.makedirs(os.path.dirname(dst_file), mode=0775)
 
                 proc = subprocess.Popen(

@@ -206,14 +206,19 @@ function get_movies() {
 	function fill_movies(obj_data) {
 		var html_data = '';
 		for (var i = 0; i < obj_data.length; i++) {
-			var start_end = /([^/.]+)\./.exec(obj_data[i])[1];
-			var title = [];
-			for (var t of start_end.split('-')) {
-				title.push(hhmmss_format(t));						
+			try {
+				var start_end = /([^/.]+)\./.exec(obj_data[i])[1];
+				var title = [];
+				for (var t of start_end.split('-')) {
+					title.push(hhmmss_format(t));						
+				}
+				title = title.join(' - ');
+				movies[i] = obj_data[i];
+				html_data += '<span onclick="show_archive(' + i + ');">&nbsp;' + title + '&nbsp;<br></span>';
+			} catch (e) {
+				console.log(e);
 			}
-			title = title.join(' - ');
-			movies[i] = obj_data[i];
-			html_data += '<span onclick="show_archive(' + i + ');">&nbsp;' + title + '&nbsp;<br></span>';						
+									
 		}
 		playlist.innerHTML = html_data;
 		var movie_index = videoPlayer.get_next_movie_id() - 1;

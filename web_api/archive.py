@@ -45,9 +45,12 @@ class Archive():
 
                 if _params['user'] in self.allowed_users and _params['comp'] in self.allowed_comps.iterkeys():
                     movies_dir = utils.true_enc(fmt("{data_dir}/{date}/{comp}/{user}", data_dir=config['ARCHIVE_DIR'], **_params))
+                    if os.path.isdir(os.path.join(movies_dir, 'movies')):
+                        movies_dir = os.path.join(movies_dir, 'movies')
                     if os.path.isdir(movies_dir):
                         journal = sorted(
-                            fmt("/archive/{date}/{comp}/{user}/{fn}", fn=f, **_params) for f in os.listdir(movies_dir)
+                            fmt("{archive}/{fn}", fn=f, archive=movies_dir.replace(config['ARCHIVE_DIR'], '/archive'))
+                            for f in os.listdir(movies_dir)
                         )
             elif self.action == 'get_users':
                 journal = self.allowed_users

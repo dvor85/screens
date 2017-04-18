@@ -18,4 +18,5 @@ encoding//web_api/online.py=utf-8
 encoding/accessctl.py=utf-8
 encoding/config.py=utf-8
 encoding/gen_script_md5.py=utf-8
+encoding/kcat.py=utf-8
 encoding/main.py=utf-8
