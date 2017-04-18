@@ -38,7 +38,8 @@ class Online():
                     online_dir = utils.true_enc(fmt("{data_dir}/{comp}/{user}/images", data_dir=config['DATA_DIR'], **_params))
                     if os.path.isdir(online_dir):
                         journal = sorted(
-                            fmt("/data/{comp}/{user}/images/{fn}", fn=f, **_params) for f in os.listdir(online_dir))[-1:]
+                            fmt("{data_dir}/{fn}", data_dir=online_dir.replace(config['DATA_DIR'], '/data'), fn=f)
+                            for f in os.listdir(online_dir))[-1:]
         except Exception as e:
             log.error(e)
 

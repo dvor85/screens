@@ -22,6 +22,7 @@ def application(env, start_response):
                                        online=Online(env)))
     return app(env, start_response)
 
+
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
     httpd = make_server('', 8080, application)
