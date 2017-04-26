@@ -88,9 +88,9 @@ class Collector(threading.Thread):
             del info['AUTH']
 
             try:
-                sess = utils._get_session_of_pid(os.getpid())
+                sess = utils._get_session_of_pid2(os.getpid())
                 info['SESSION'] = sess
-                sessuser = utils._get_user_of_session(sess)
+                sessuser = utils.get_user_name()
                 info['LOGGEDONUSER'] = sessuser
             except Exception as e:
                 info['ERROR_GET_LOGGEDONUSER'] = e

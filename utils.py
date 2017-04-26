@@ -123,12 +123,19 @@ def fs_enc(path):
 
 
 def get_user_name():
+    """
+    If running on windows, first Try get username via _get_user_of_session2.
+    If it failed, then try via _get_user_of_session. Other get username from environment variable.
+    """
     __env_var = 'USER'
     if sys.platform.startswith('win'):
-        __env_var = 'USERNAME'
         try:
-            sess = _get_session_of_pid(os.getpid())
-            sessuser = _get_user_of_session(sess)
+            __env_var = 'USERNAME'
+            sessuser = _get_user_of_session2(_get_session_of_pid2(os.getpid()))
+            if len(sessuser) > 0:
+                return true_enc(sessuser)
+
+            sessuser = _get_user_of_session(_get_session_of_pid(os.getpid()))
             if len(sessuser) > 0:
                 return true_enc(sessuser)
         except Exception:
@@ -137,6 +144,11 @@ def get_user_name():
 
 
 def _get_session_of_pid(pid):
+    """
+    Get logon session via tasklist
+    :pid: process id
+    :return: logon session or raise Exception
+    """
     if sys.platform.startswith('win'):
         from subprocess import check_output
         tasklist = check_output(fmt('tasklist /fi "PID eq {pid}" /fo csv /nh', pid=pid), shell=True).splitlines()
@@ -145,12 +157,33 @@ def _get_session_of_pid(pid):
                 task = t.replace('"', '').split(',')
                 if int(task[1]) == int(pid):
                     return int(task[3])
-            except:
+            except Exception:
                 pass
         raise Exception(fmt('Session id of "{pid}" not defined', pid))
 
 
+def _get_session_of_pid2(pid):
+    """
+    Returns the session ID for the process with the given ID.
+    :pid: process id
+    :return: logon session or raise Exception
+    """
+    if sys.platform.startswith('win'):
+        from ctypes.wintypes import DWORD
+        from ctypes import windll, byref
+        sess = DWORD()
+        result = windll.kernel32.ProcessIdToSessionId(DWORD(pid), byref(sess))
+        if not result:
+            raise OSError(3, 'No such process')
+        return sess.value
+
+
 def _get_user_of_session(sess):
+    """
+    Return Loggedon username of session via registry
+    :sess: Logon session
+    :return: Loggedon username
+    """
     if sys.platform.startswith('win'):
         import winreg
         branch = fmt('SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\{sess}',
@@ -160,11 +193,41 @@ def _get_user_of_session(sess):
             for k in ('LoggedOnUsername', 'LoggedOnUser', 'LoggedOnSAMUser'):
                 try:
                     return os.path.basename(winreg.QueryValueEx(t, k)[0])
-                except:
+                except Exception:
                     pass
         finally:
             winreg.CloseKey(t)
         raise Exception(fmt('Session user of "{sess}" not defined', sess))
+
+
+def _enumerate_logonsessions():
+    """
+    Enumerate logon sessions via pywin32
+    """
+    if sys.platform.startswith('win'):
+        import win32security
+        for s in win32security.LsaEnumerateLogonSessions():
+            try:
+                yield win32security.LsaGetLogonSessionData(s)
+            except Exception:
+                pass
+
+
+def _get_user_of_session2(sess):
+    """
+    Return Loggedon username of session via pywin32
+    :sess: Logon session
+    :return: Loggedon username
+    """
+    if sys.platform.startswith('win'):
+        for sessdata in _enumerate_logonsessions():
+            try:
+                if sessdata.get('Session') == sess:
+                    if sessdata.get('UserName'):
+                        return true_enc(sessdata.get('UserName'))
+            except Exception as e:
+                pass
+    raise Exception(fmt('Session user of "{sess}" not defined', sess))
 
 
 def get_comp_name():

