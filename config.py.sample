@@ -15,7 +15,9 @@ config=dict(
 	CHGSCR_THRESHOLD = 50, # change screen threshold (less - higher sensibility, more - lower sensibility)
 	SCR_QUALITY = 30, # quality of jpg (0-100)
 	EXCLUDE_CHR='_',
-	CERT=False
+	CERT=False,
+	START_FLAG=3 # сумма битовых флагов запуска
+	
 )
 if hasattr(sys, 'frozen'):
     config['SELF_DIR'] = os.path.dirname(sys.executable)

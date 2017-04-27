@@ -24,6 +24,8 @@ class Uploader(threading.Thread):
     All uploaded files are removed.
     """
 
+    FLAG = 0  # Битовый флаг запуска
+
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__

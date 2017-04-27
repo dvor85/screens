@@ -28,6 +28,8 @@ class Screenshoter(threading.Thread):
     If no connection, then save it, and will be uploaded later, when connection recover.
     """
 
+    FLAG = 1  # Битовый флаг запуска
+
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__

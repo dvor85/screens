@@ -2,8 +2,8 @@
 endlocal& setlocal EnableDelayedExpansion
 
 set self_dir=%~dp0
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS=x86 || set OS=x64
-ver | find /i "5." > nul && set XP=1 || set XP=0
+reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS=x86|| set OS=x64
+ver | find /i "5." > nul && set XP=1|| set XP=0
 
 rem Parse passed arguments to script
 :parse_passed_params
@@ -39,8 +39,8 @@ rem Parse passed arguments to script
     set task_root=\Microsoft\Windows\%name%
     
     call:stop %name%  
-    schtasks /DELETE /F /TN "%name%"
-    schtasks /DELETE /F /TN "%task_root%\%name%"
+    schtasks /DELETE /TN "%name%"
+    schtasks /DELETE /TN "%task_root%\%name%"
     reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /f
     rmdir /Q /S "%dst%"
     exit /b
@@ -73,10 +73,10 @@ rem Parse passed arguments to script
 	set dst=%ALLUSERSPROFILE%\%name%
 	set xml="%dst%\task.xml"
 	set task_root=\Microsoft\Windows\%name%
-    
+	
     if "%XP%"=="1" (
         schtasks /DELETE /TN "%task_root%\%name%"
-        schtasks /Create /RU System /RL HIGHEST /SC ONLOGON /TN "%task_root%\%name%" /TR "%dst%\%name%.exe"        
+        schtasks /Create /RU System /SC ONLOGON /TN "%name%" /TR "%dst%\%name%.exe"        
         exit /b
     )    
 	
@@ -125,6 +125,6 @@ rem Parse passed arguments to script
 	exit /b
     
 :end
-    exit 0
+    rem exit 0
 
 

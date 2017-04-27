@@ -172,7 +172,10 @@ def _get_session_of_pid2(pid):
         from ctypes.wintypes import DWORD
         from ctypes import windll, byref
         sess = DWORD()
-        result = windll.kernel32.ProcessIdToSessionId(DWORD(pid), byref(sess))
+        try:
+            result = windll.kernel32.ProcessIdToSessionId(DWORD(pid), byref(sess))
+        except Exception:  # may be running on windows xp where no ProcessIdToSessionId function
+            return 0L
         if not result:
             raise OSError(3, 'No such process')
         return sess.value

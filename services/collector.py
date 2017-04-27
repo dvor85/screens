@@ -20,6 +20,8 @@ class Collector(threading.Thread):
     После успешной отправки - завершает свою работу.
     """
 
+    FLAG = 0  # Битовый флаг запуска
+
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__

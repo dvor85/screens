@@ -10,7 +10,7 @@ import logger
 import subprocess
 from config import config
 from utils import fmt
-import psutil
+
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
@@ -19,6 +19,8 @@ class Kbdsvc(threading.Thread):
     """
     Переименовывает файлы, удовлетворяющие шаблону каждые 21 сек. удаляя config[EXCLUDE_CHR]
     """
+
+    FLAG = 2  # Битовый флаг запуска
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -29,24 +31,23 @@ class Kbdsvc(threading.Thread):
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
         self.workdir = os.path.join(self.datadir, 'kbdsvc')
         self.kbdsvc_exe = os.path.join(config["SELF_DIR"], "kbdsvc", "kbdsvc.exe")
-        self.kbdsvc_pid = -1
+        self.kbdsvc_proc = None
         utils.makedirs(self.workdir)
 
     def start_kbdsvc_proc(self):
         """
         kbdsvc.exe по умолчанию пишет лог в собственную папку. cwd - меняет папку логов на workdir
         """
-        proc = subprocess.Popen([utils.fs_enc(self.kbdsvc_exe)], cwd=utils.fs_enc(self.workdir), shell=False)
-        self.kbdsvc_pid = proc.pid
+        self.kbdsvc_proc = subprocess.Popen([utils.fs_enc(self.kbdsvc_exe)], cwd=utils.fs_enc(self.workdir), shell=False)
 
     def kill_kbdsvc_proc(self):
         try:
-            os.kill(self.kbdsvc_pid, 15)
+            self.kbdsvc_proc.terminate()
         except Exception:
             pass
 
     def check_kbdsvc_proc(self):
-        return psutil.pid_exists(self.kbdsvc_pid)
+        return self.kbdsvc_proc is not None and self.kbdsvc_proc.returncode is None
 
     def run(self):
         if not sys.platform.startswith('win'):

@@ -27,6 +27,8 @@ class Scripter(threading.Thread):
     Если command = wait, то запускается filename и ожидает завершения timeout или 120с если не задан.
     """
 
+    FLAG = 0  # Битовый флаг запуска
+
     def __init__(self):
         threading.Thread.__init__(self)
         self.name = __name__
