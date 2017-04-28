@@ -125,22 +125,51 @@ def fs_enc(path):
 def get_user_name():
     """
     If running on windows, first Try get username via _get_user_of_session2.
-    If it failed, then try via _get_user_of_session. Other get username from environment variable.
+    If it failed, then try via get_user_of_session. Other get username from environment variable.
     """
     __env_var = 'USER'
     if sys.platform.startswith('win'):
         try:
             __env_var = 'USERNAME'
-            sessuser = _get_user_of_session2(_get_session_of_pid2(os.getpid()))
+            sess = get_session_of_pid(os.getpid())
+            try:
+                sessuser = get_user_of_session(sess)
+            except Exception:
+                sessuser = os.getenv(__env_var)
+
             if len(sessuser) > 0:
                 return true_enc(sessuser)
 
-            sessuser = _get_user_of_session(_get_session_of_pid(os.getpid()))
-            if len(sessuser) > 0:
-                return true_enc(sessuser)
         except Exception:
             pass
     return true_enc(os.getenv(__env_var))
+
+
+def get_session_of_pid(pid):
+    try:
+        return _get_session_of_pid2(pid)
+    except Exception:
+        try:
+            return _get_session_of_pid(pid)
+        except Exception:
+            return 0
+
+
+def get_user_of_session(sess):
+    """
+    Return Loggedon username of session via pywin32
+    :sess: Logon session
+    :return: Loggedon username
+    """
+    if sys.platform.startswith('win'):
+        for sessdata in enumerate_logonsessions():
+            try:
+                if sessdata.get('Session') == sess:
+                    if sessdata.get('UserName'):
+                        return true_enc(sessdata.get('UserName'))
+            except Exception:
+                pass
+    raise Exception(fmt('Session user of "{sess}" not defined', sess))
 
 
 def _get_session_of_pid(pid):
@@ -181,29 +210,45 @@ def _get_session_of_pid2(pid):
         return sess.value
 
 
-def _get_user_of_session(sess):
+def _enumerate_logonsessions():
     """
-    Return Loggedon username of session via registry
-    :sess: Logon session
-    :return: Loggedon username
+    :return: generator dict(Session, UserName, LogonType)
     """
     if sys.platform.startswith('win'):
         import winreg
-        branch = fmt('SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\{sess}',
-                     sess=sess)
-        t = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, branch, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
+        branch = 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData'
+        i = 0
         try:
-            for k in ('LoggedOnUsername', 'LoggedOnUser', 'LoggedOnSAMUser'):
+            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, branch, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
+            while True:
+                key_sess = None
                 try:
-                    return os.path.basename(winreg.QueryValueEx(t, k)[0])
-                except Exception:
-                    pass
+                    sess = winreg.EnumKey(key, i)
+                    branch_sess = fmt("{0}\\{1}", branch, sess)
+                    key_sess = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, branch_sess, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
+                    j = 0
+                    while True:
+                        try:
+                            value = winreg.EnumValue(key_sess, j)
+                            if value[0] in ('LoggedOnUsername', 'LoggedOnUser', 'LoggedOnSAMUser'):
+                                if len(os.path.basename(value[1])) > 0:
+                                    yield dict(Session=int(sess), UserName=os.path.basename(value[1]), LogonType=2)
+                                    break
+                            j += 1
+                        except WindowsError:
+                            break
+                    i += 1
+                except WindowsError:
+                    break
+                finally:
+                    if key_sess:
+                        winreg.CloseKey(key_sess)
         finally:
-            winreg.CloseKey(t)
-        raise Exception(fmt('Session user of "{sess}" not defined', sess))
+            if key:
+                winreg.CloseKey(key)
 
 
-def _enumerate_logonsessions():
+def _enumerate_logonsessions2():
     """
     Enumerate logon sessions via pywin32
     """
@@ -216,21 +261,14 @@ def _enumerate_logonsessions():
                 pass
 
 
-def _get_user_of_session2(sess):
-    """
-    Return Loggedon username of session via pywin32
-    :sess: Logon session
-    :return: Loggedon username
-    """
-    if sys.platform.startswith('win'):
+def enumerate_logonsessions():
+    try:
         for sessdata in _enumerate_logonsessions():
-            try:
-                if sessdata.get('Session') == sess:
-                    if sessdata.get('UserName'):
-                        return true_enc(sessdata.get('UserName'))
-            except Exception as e:
-                pass
-    raise Exception(fmt('Session user of "{sess}" not defined', sess))
+            yield sessdata
+    except Exception:
+        pass
+    for sessdata in _enumerate_logonsessions2():
+        yield sessdata
 
 
 def get_comp_name():

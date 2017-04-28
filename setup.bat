@@ -38,9 +38,13 @@ rem Parse passed arguments to script
     set dst=%ALLUSERSPROFILE%\%name%
     set task_root=\Microsoft\Windows\%name%
     
-    call:stop %name%  
-    schtasks /DELETE /TN "%name%"
-    schtasks /DELETE /TN "%task_root%\%name%"
+    call:stop %name% 
+    
+    if "%XP%"=="1" (
+        schtasks /DELETE /TN "%name%"
+    )
+    
+    schtasks /DELETE /F /TN "%task_root%\%name%"
     reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v "%name%" /f
     rmdir /Q /S "%dst%"
     exit /b
@@ -75,7 +79,7 @@ rem Parse passed arguments to script
 	set task_root=\Microsoft\Windows\%name%
 	
     if "%XP%"=="1" (
-        schtasks /DELETE /TN "%task_root%\%name%"
+        schtasks /DELETE /TN "%name%"
         schtasks /Create /RU System /SC ONLOGON /TN "%name%" /TR "%dst%\%name%.exe"        
         exit /b
     )    
@@ -125,6 +129,6 @@ rem Parse passed arguments to script
 	exit /b
     
 :end
-    rem exit 0
+    exit 0
 
 

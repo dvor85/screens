@@ -25,7 +25,7 @@ def is_already_running(name):
     """
     pids = []
     try:
-        curr_sess = utils._get_session_of_pid2(os.getpid())
+        curr_sess = utils.get_session_of_pid(os.getpid())
         import psutil
         pids = [proc.pid for proc in psutil.process_iter() if utils.utf(proc.name()) == name and proc.pid != os.getpid()]
 
@@ -34,7 +34,7 @@ def is_already_running(name):
 
     for pid in pids:
         try:
-            if utils._get_session_of_pid2(pid) == curr_sess:
+            if utils.get_session_of_pid(pid) == curr_sess:
                 return True
         except Exception as e:
             log.debug(e)
@@ -99,13 +99,13 @@ if __name__ == '__main__':
     log.debug(fmt("PID={0}", os.getpid()))
     try:
         if hasattr(sys, 'frozen'):
-            curr_sess = utils._get_session_of_pid2(os.getpid())
+            curr_sess = utils.get_session_of_pid(os.getpid())
             self_terminate = False
 
             if is_already_running(os.path.basename(sys.executable)):
                 sys.exit()
             # fork only on interactive sessions (LogonType == 2)
-            for sessdata in utils._enumerate_logonsessions():
+            for sessdata in utils._enumerate_logonsessions2():
                 if sessdata.get('Session') == curr_sess:
                     if sessdata.get('LogonType') != 2:
                         self_terminate = True
