@@ -10,7 +10,7 @@ from Cython.Distutils import build_ext
 
 
 ext_modules = [
-    Extension("config", ["config.py"]),
+    #     Extension("config", ["config.py"]),
     #     Extension("utils", ["utils.py"]),
     #     Extension("logger", ["logger.py"]),
     #     Extension("services.screenshoter", ["services/screenshoter.py"]),

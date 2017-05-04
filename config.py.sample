@@ -6,7 +6,7 @@ fmt = utils.fmt
 
 config=dict(
 	NAME = 'spclient',
-	VERSION = '3.0.3',    
+	VERSION = '3.0.4',    
 	URL = ('http://spserver/api',), # urls to spserver api
 	AUTH = ('', ''), # tuple with login and password for url
 	SAVED_IMAGES = 300, # amount of saved images when no connection to url

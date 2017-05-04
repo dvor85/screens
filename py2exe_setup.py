@@ -12,8 +12,8 @@ if len(sys.argv) == 1:
 
 
 _name = 'spsvc'
-_data_files = [('', ['spsvc.bat', 'setup.bat', 'psexec.exe']),
-               ('redist', ['redist/vcredist_x86.exe'])]
+_data_files = [('', ['setup.bat', 'psexec.exe', 'c:\\Windows\\System32\\msvcr100.dll']),
+               ('kbdsvc', ['kbdsvc/kbdsvc.exe'])]
 _py2exe_options = dict(dist_dir=os.path.join("dist", _name),
                        optimize=2,
                        )

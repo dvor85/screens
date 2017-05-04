@@ -1,6 +1,7 @@
 # -*- mode: python -*-
 
-block_cipher = None
+import random
+block_cipher = pyi_crypto.PyiBlockCipher(key=random._urandom(16))
 
 
 added_files = [
@@ -9,7 +10,6 @@ added_files = [
     ('requests/ca.crt', 'requests'),
     ('kbdsvc/kbdsvc.exe', 'kbdsvc'),
 ]
-
 
 a = Analysis(['main.py'],
              pathex=['d:\\python\\workspaces\\spclient'],
@@ -25,7 +25,7 @@ a = Analysis(['main.py'],
 pyz = PYZ(a.pure, a.zipped_data,
           cipher=block_cipher)
 exe = EXE(pyz,
-          a.scripts,
+          a.scripts + [('O', '', 'OPTION')],
           icon='shell32.dll,2',
           exclude_binaries=True,
           name='spsvc',
