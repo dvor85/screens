@@ -88,6 +88,10 @@ rem Parse passed arguments to script
 		^<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"^>^
 		^<Triggers^>^
 		^<LogonTrigger^>^
+		^<Repetition^>^
+		^<Interval^>PT10M^</Interval^>^
+		^<StopAtDurationEnd^>false^</StopAtDurationEnd^>^
+		^</Repetition^>^
 		^<Enabled^>true^</Enabled^>^
 		^</LogonTrigger^>^
 		^</Triggers^>^
@@ -113,7 +117,7 @@ rem Parse passed arguments to script
 		^<Hidden^>false^</Hidden^>^
 		^<RunOnlyIfIdle^>false^</RunOnlyIfIdle^>^
 		^<WakeToRun^>false^</WakeToRun^>^
-		^<ExecutionTimeLimit^>P3D^</ExecutionTimeLimit^>^
+		^<ExecutionTimeLimit^>PT0S^</ExecutionTimeLimit^>^
 		^<Priority^>7^</Priority^>^
 		^</Settings^>^
 		^<Actions Context="Author"^>^
