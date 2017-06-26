@@ -32,8 +32,13 @@ class ArchiveRotator(threading.Thread):
         log.info(fmt('Archive size = {size} GB', size=arch_size))
         if arch_size > config['ARC_SIZE_GB']:
             dayslist = sorted(os.listdir(config['ARCHIVE_DIR']))
-            log.info(fmt('Delete day: {day}', day=dayslist[0]))
-            shutil.rmtree(os.path.join(config['ARCHIVE_DIR'], dayslist[0]))
+            for day in dayslist:
+                try:
+                    log.info(fmt('try to delete day: {day}', day=day))
+                    if utils.rmdir(os.path.join(config['ARCHIVE_DIR'], day)):
+                        break
+                except Exception as e:
+                    log.error(fmt('delete day: {day} error: {e}', day=day, e=e))
 
     def run(self):
         log.info('Start ArchiveRotator')

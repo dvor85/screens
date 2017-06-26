@@ -8,6 +8,7 @@ from UserDict import UserDict
 import re
 import pwd
 import string
+import shutil
 
 
 __re_denied = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
@@ -150,6 +151,11 @@ def makedirs(path, mode=0775, user=None, group=None):
         os.mkdir(path)
         os.chmod(path, mode)
         chown(path, user, group)
+
+
+def rmdir(path):
+    shutil.rmtree(path, ignore_errors=True)
+    return not os.path.exists(path)
 
 
 def uni(path):
