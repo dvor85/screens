@@ -4,7 +4,6 @@
 import os
 import time
 import threading
-import shutil
 from config import config
 from core import logger, utils
 
