@@ -272,12 +272,19 @@ function show_archive(movie_index) {
 	playlist_hlight(movie_index);
 	
 	player.innerHTML = "<div id='player_obj'></div>";
+    var rate = document.getElementById('playback_rate').value;
 	videoPlayer.set_video_player({
 		id : 'player_obj',
 		src : movies[movie_index],
 		width : '100%',
-		height : '100%'
-	})	
+		height : '100%',
+        config:{
+            autoplay:true, 
+            controls:true, 
+            muted:true, 
+            playbackRate:rate
+        }
+    });	
 	
 	var html5player = document.getElementById('html5player');
 	if (html5player) {
@@ -449,11 +456,7 @@ videoPlayer = function() {
     }
     
     function html5playerProgress() {
-        var rate=1;
-        if (current_play_accel<0)
-            rate=0.5;
-        else if (current_play_accel>1)
-            rate=2;
+        var rate = document.getElementById('playback_rate').value;
             
         this.playbackRate=rate;
         tm=this.currentTime;
@@ -597,9 +600,15 @@ videoPlayer = function() {
 					+ params.width
 					+ '" height="'
 					+ params.height
-					+ '" autoplay controls ></video>';
-
+                    + '"</video>';
+            
 			var html5player = document.getElementById('html5player');
+            for (var key in params.config) {
+                if (params.config.hasOwnProperty(key))
+                    try {
+                        html5player[key] = params.config[key];
+                    } catch (e) {};
+            }
 			html5player.innerHTML = "<p><a href=\"" + document.URL + params.src
 					+ "\" target='_blank'>DOWNLOAD: "
 					+ params.src.split(/(\\|\/)/g).pop() + "</a></p>";

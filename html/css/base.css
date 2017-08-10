@@ -76,7 +76,7 @@ body {
 	left: 200px;
 	right: 0px;
 	top: 0px;
-	bottom: 0px;
+	bottom: 40px;
 }
 
 #player_obj {
@@ -87,6 +87,19 @@ body {
 	left: 0px;
 	right: 0px;
 } 
+
+#playback_form {
+	position: absolute;
+	padding: 10px;
+	left: 200px;
+	right: 5px;
+	bottom: 0px;  
+}
+
+#playback_form  input{	  
+    width:100%;
+    height:20px;
+}
 
 #playlist span {
 	cursor: pointer;
