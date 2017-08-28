@@ -1,3 +1,5 @@
+python2.7
+libapache2-mod-wsgi
 wsgiref >= 0.1.2
-SimpleJson
-jsonrpc2
+simplejson
+jsonrpc2 >= 0.4.1
