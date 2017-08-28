@@ -9,6 +9,7 @@
 # Description: 
 ### END INIT INFO
 
+PATH=$PATH:/usr/local/bin:/usr/local/sbin
 DAEMON=${SELF_DIR}/main.py
 NAME=${NAME}
 PIDFILE=/var/run/spserver/$NAME.pid
