@@ -2,18 +2,15 @@ body {
 	font-family: Arial, Helvetica, sans-serif;
 	overflow-x: hidden;
 	overflow-y: auto;
-	width: 1280px;
-	height: 720px;	
 	margin: auto;	
-	position: relative;
+    user-select: none;
 }
 
 #title {
 	color: #000;
 	height: 20px;
-	left: 0px;
-	top: 0px;	
-	padding: 10px;
+	left: 50px;
+	top: 10px;	
 	margin: auto;
 	text-align: left;
 	font-size: 24px;
@@ -24,23 +21,28 @@ body {
 #main_display {
 	border: 2px solid #C1C1C1;
 	color: #C1C1C1;
-	bottom: 0px;
-	left: 0px;
-	top: 40px;
-	right: 0px;
+    margin: auto;
+	bottom: 5px;
+	left: 50px;
+	top: 50px;
+	right: 50px;
 	padding: 0px;
 	position: absolute;
 }
 
 #config_bar {
 	top: 0px;
-	height: 30px;
+	height: 20px;
 	left: 0px;
 	right: 0px;
 	padding: 5px;
-	position: relative;
-	margin: auto;
-	border-bottom: 2px solid #C1C1C1;
+	margin: auto;	
+    display: flex;
+    justify-content: space-between;
+}
+
+#config_bar select {    
+    width:100%;
 }
 
 #display_html {
@@ -49,7 +51,7 @@ body {
 	color: #818181;
 	margin: auto;	
 	position: absolute;
-	top: 40px;
+	top: 30px;
 	left: 0px;
 	bottom:0px;
 	right: 0px;	
@@ -76,14 +78,14 @@ body {
 	left: 200px;
 	right: 0px;
 	top: 0px;
-	bottom: 40px;
+	bottom: 5px;
 }
 
 #player_obj {
 	position: absolute;
 	padding: 10px;
 	top: 0px;
-	bottom:0px;
+	bottom:40px;
 	left: 0px;
 	right: 0px;
 } 
@@ -91,7 +93,7 @@ body {
 #playback_form {
 	position: absolute;
 	padding: 10px;
-	left: 200px;
+	left: 5px;
 	right: 5px;
 	bottom: 0px;  
 }
@@ -99,6 +101,7 @@ body {
 #playback_form  input{	  
     width:100%;
     height:20px;
+    color: #000;
 }
 
 #playlist span {
@@ -113,10 +116,4 @@ body {
 
 #main_display .playlist_hlight {
 	background-color: #000000;
-}
-
-select {
-	width: 24%;
-	float: left;
-	margin: 0px 5px;
 }

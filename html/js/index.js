@@ -127,7 +127,7 @@ function get_xmlHttp_obj() {
 	return xmlHttp;
 }
 
-function json_request(url, json, callback){
+json_request = function(url, json, callback, onerror){
 	var xmlHttp = get_xmlHttp_obj();
 	var jreq = json;
 	var json = JSON.stringify(jreq);
@@ -137,20 +137,47 @@ function json_request(url, json, callback){
 		if (xmlHttp.readyState == 4) {
 			xmlHttp.onreadystatechange = null; // plug memory leak
 			if (xmlHttp.status == 200) {
-				if (callback) {
-					var jres = JSON.parse(xmlHttp.responseText);
-					if (jres.id != jreq.id){
-						console.log("Invalid ID");
-						return false;
-					}
-					if (jres.error) {
-						console.log(jres.error.message);
-						return false;
-					}
-					
-					callback(jres.result);
-					return true;
-				}
+				try {
+                    var jres = JSON.parse(xmlHttp.responseText);
+                    if (jres.id != jreq.id){
+                        console.log("Invalid ID");
+                        if (onerror)
+                            try {
+                                onerror();
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        return false;
+                    }
+                    if (jres.error) {
+                        console.log(jres.error.message);
+                        if (onerror)
+                            try {
+                                onerror();
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        return false;                        
+                    }
+                    if (callback) 
+                        try {
+                            callback(jres.result);
+                        } catch (e) {
+                            console.log(e);
+                            return false;
+                        }
+                        
+                    return true;
+				} catch (e) {
+                    console.log(e);
+                    if (onerror) 
+                        try {
+                            onerror();
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    return false;
+                }    
 			}
 		}
 	}	
@@ -253,6 +280,7 @@ function playlist_hlight(movie_index) {
 			lines[i].classList.remove('playlist_hlight');
 		} else {
 			lines[i].classList.add('playlist_hlight');
+            lines[i].scrollIntoView(false);
 		}
 	}
 }
@@ -271,7 +299,23 @@ function show_archive(movie_index) {
 
 	playlist_hlight(movie_index);
 	
-	player.innerHTML = "<div id='player_obj'></div>";
+	player.innerHTML = '<div id="player_obj"></div>\
+                        <form id="playback_form">\
+                            <input id="playback_rate" type="range" value="1" min="0.1" max="10" step="0.1" list="tickmarks">\
+                                <datalist id="tickmarks">\
+                                    <option value="0" label="0">\
+                                    <option value="1" label="1">\
+                                    <option value="2" label="2">\
+                                    <option value="3" label="3">\
+                                    <option value="4" label="4">\
+                                    <option value="5" label="5">\
+                                    <option value="6" label="6">\
+                                    <option value="7" label="7">\
+                                    <option value="8" label="8">\
+                                    <option value="9" label="9">\
+                                    <option value="10" label="10">\
+                                </datalist>\
+                        </form>';
     var rate = document.getElementById('playback_rate').value;
 	videoPlayer.set_video_player({
 		id : 'player_obj',
