@@ -49,7 +49,7 @@ class VideoProcess(multiprocessing.Process):
                 metadata = '-metadata creation_time="{dtime}"'.format(dtime=_params['bt'].strftime("%Y-%m-%d %H:%M:%S"))
 
                 proc = subprocess.Popen(
-                    fmt('ffmpeg -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
+                    fmt('ffmpeg -loglevel error -threads auto -y -f image2pipe -r 2 -c:v mjpeg -i - -c:v libx264 -preset ultrafast \
                         -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
                         -profile:v baseline -b:v 100k -qp 28 -an -r 25 {metadata} "{dst_file}"',
                         dst_file=dst_file,
