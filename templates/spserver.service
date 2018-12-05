@@ -5,7 +5,7 @@ After=network.target
 
 [Service]
 ExecStart=${SELF_DIR}/main.py
-User=%I
+User=$USER
 Restart=always
 RestartSec=60
 
