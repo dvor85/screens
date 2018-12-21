@@ -5,7 +5,6 @@ import os
 from config import config
 from core import logger, base, utils
 
-
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 fmt = utils.fmt
 
@@ -21,6 +20,11 @@ class Archive():
             self.db = base.Base()
         except Exception as e:
             log.error(e)
+
+    def get_availible_comps(self, date):
+        comps_dir = utils.true_enc(fmt("{data_dir}/{date}", data_dir=config['ARCHIVE_DIR'], date=date))
+        avail_comps = os.listdir(comps_dir)
+        return dict((k, v) for k, v in self.allowed_comps.iteritems() if k in avail_comps)
 
     def __call__(self, *args, **kwargs):
         journal = []
@@ -54,8 +58,8 @@ class Archive():
                         )
             elif self.action == 'get_users':
                 journal = self.allowed_users
-            elif self.action == 'get_comps':
-                journal = self.allowed_comps
+            elif self.action == 'get_comps' and _params['date']:
+                journal = self.get_availible_comps(_params['date'])
             elif self.action == 'get_dates':
                 journal = sorted(os.listdir(config['ARCHIVE_DIR']), reverse=True)
         except Exception as e:

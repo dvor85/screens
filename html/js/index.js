@@ -113,6 +113,17 @@ function show_elem(elem, visible) {
 	}
 }
 
+function search_in_select(str, elem) {
+    if(elem) {
+        var options = elem.options;
+        for(var i = 0; i < options.length; i++) {
+            if(options[i].value == str) return i;
+        }
+        return -1;
+    }
+    return -1;
+}
+
 function get_xmlHttp_obj() {
 	var xmlHttp = null;
 	try { // Firefox, Opera 8.0+, Safari
@@ -190,9 +201,10 @@ function get_dates() {
 		for (var d of obj_data) {
 			html_data += '<option value="' + d	+ '">' + yyyymmdd_format(d) + '</option>';
 		}
-		date_select.innerHTML = html_data;
+		date_select.innerHTML = html_data;		
+		get_comps();
 	}
-	
+	videoPlayer.html5playerStop();
 	show_elem(onlineimg, false);
 	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_dates"} }
 	json_request(api_url, jreq, fill_dates)
@@ -207,10 +219,14 @@ function get_comps() {
 			}
 		}
 		comp_select.innerHTML = html_data;
+		if (comp && search_in_select(comp, comp_select)>=0)
+			comp_select.value = comp;
 		get_users();
 	}
+	videoPlayer.html5playerStop();
+	var comp = comp_select.value;
 	show_elem(onlineimg, false);
-	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_comps"} }
+	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_comps", date: date_select.value} }
 	json_request(api_url, jreq, fill_comps);
 }
 
@@ -223,7 +239,7 @@ function get_users() {
 		user_select.innerHTML = html_data;
 		get_movies();
 	}
-	
+	videoPlayer.html5playerStop();
 	show_elem(onlineimg, false);
 	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_users", comp: comp_select.value} }
 	json_request(api_url, jreq, fill_users);
@@ -353,9 +369,9 @@ function show_online() {
 	
 	mode_select.selectedIndex = 0;
 	player.innerHTML = '';
-	player.appendChild(onlineimg);	
-	player.appendChild(loadingimg);	
-	
+	player.appendChild(onlineimg);
+	player.appendChild(loadingimg);
+		
 	clearTimeout(online_timeout_id);	
 	online_timeout_id=setTimeout(function() {
 		if (mode_select.selectedIndex==0) {
@@ -382,7 +398,7 @@ function change_mode() {
 
 function init() {
 	get_dates();
-	get_comps();
+	//get_comps();
 	show_online();
 }
 
