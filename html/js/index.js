@@ -168,44 +168,46 @@ json_request = function(url, json, callback, onerror){
                             } catch (e) {
                                 console.log(e);
                             }
-                        return false;                        
+                        return false;
                     }
-                    if (callback) 
+                    if (callback)
                         try {
                             callback(jres.result);
                         } catch (e) {
                             console.log(e);
                             return false;
                         }
-                        
+
                     return true;
 				} catch (e) {
                     console.log(e);
-                    if (onerror) 
+                    if (onerror)
                         try {
                             onerror();
                         } catch (e) {
                             console.log(e);
                         }
                     return false;
-                }    
+                }
 			}
 		}
-	}	
+	}
 	xmlHttp.send(json);
 }
 
-function get_dates() {	
+function get_dates() {
 	function fill_dates(obj_data) {
 		var html_data = '';
 		for (var d of obj_data) {
 			html_data += '<option value="' + d	+ '">' + yyyymmdd_format(d) + '</option>';
 		}
-		date_select.innerHTML = html_data;		
+		date_select.innerHTML = html_data;
+		show_elem(loadingimg, false);
 		get_comps();
 	}
 	videoPlayer.html5playerStop();
-	show_elem(onlineimg, false);
+	show_elem(player, false);
+	show_elem(loadingimg, true);
 	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_dates"} }
 	json_request(api_url, jreq, fill_dates)
 }
@@ -221,11 +223,13 @@ function get_comps() {
 		comp_select.innerHTML = html_data;
 		if (comp && search_in_select(comp, comp_select)>=0)
 			comp_select.value = comp;
+		show_elem(loadingimg, false);
 		get_users();
 	}
 	videoPlayer.html5playerStop();
+	show_elem(player, false);
+	show_elem(loadingimg, true);
 	var comp = comp_select.value;
-	show_elem(onlineimg, false);
 	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_comps", date: date_select.value} }
 	json_request(api_url, jreq, fill_comps);
 }
@@ -237,10 +241,12 @@ function get_users() {
 			html_data += '<option value="' + u + '">' + u + '</option>';
 		}
 		user_select.innerHTML = html_data;
+		show_elem(loadingimg, false);
 		get_movies();
 	}
 	videoPlayer.html5playerStop();
-	show_elem(onlineimg, false);
+	show_elem(player, false);
+	show_elem(loadingimg, true);
 	var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: {act: "get_users", comp: comp_select.value} }
 	json_request(api_url, jreq, fill_users);
 }
@@ -253,7 +259,7 @@ function get_movies() {
 				var start_end = /([^/.]+)\./.exec(obj_data[i])[1];
 				var title = [];
 				for (var t of start_end.split('-')) {
-					title.push(hhmmss_format(t));						
+					title.push(hhmmss_format(t));
 				}
 				title = title.join(' - ');
 				movies[i] = obj_data[i];
@@ -261,13 +267,13 @@ function get_movies() {
 			} catch (e) {
 				console.log(e);
 			}
-									
+
 		}
 		playlist.innerHTML = html_data;
 		var movie_index = videoPlayer.get_next_movie_id() - 1;
 		playlist_hlight(movie_index);
 	}
-	
+
 	movies.length = 0;
 	if (mode_select.selectedIndex==1) {
 		videoPlayer.html5playerStop();
@@ -275,10 +281,10 @@ function get_movies() {
 	}
 	clearTimeout(movies_timeout_id);
 	movies_timeout_id=setTimeout(function() {
-		var _params = {act: "get_movies", 
+		var _params = {act: "get_movies",
 					   comp: comp_select.value,
 					   user: user_select.value,
-					   date: date_select.value					   
+					   date: date_select.value
 		}
 		var jreq = {jsonrpc: '2.0', method: 'archive', id: Math.random(), params: _params}
 		json_request(api_url, jreq, fill_movies);
@@ -314,7 +320,7 @@ function show_archive(movie_index) {
 	}
 
 	playlist_hlight(movie_index);
-	
+
 	player.innerHTML = '<div id="player_obj"></div>\
                         <form id="playback_form">\
                             <input id="playback_rate" type="range" value="1" min="0.1" max="10" step="0.1" list="tickmarks">\
@@ -339,16 +345,17 @@ function show_archive(movie_index) {
 		width : '100%',
 		height : '100%',
         config:{
-            autoplay:true, 
-            controls:true, 
-            muted:true, 
+            autoplay:true,
+            controls:true,
+            muted:true,
             playbackRate:rate
         }
-    });	
-	
+    });
+    show_elem(player, true);
+
 	var html5player = document.getElementById('html5player');
 	if (html5player) {
-		html5player.onloadeddata=videoPlayer.html5playerLoaded;				
+		html5player.onloadeddata=videoPlayer.html5playerLoaded;
 		html5player.onseeked=videoPlayer.html5playerScrolled;
 		html5player.ontimeupdate=videoPlayer.html5playerProgress;
 		html5player.onended=videoPlayer.html5playerFinished;
@@ -361,28 +368,28 @@ function show_online() {
 	function show(obj_data) {
 		if (obj_data.length > 0) {
 			show_elem(onlineimg, true);
-			onlineimg.src=obj_data[0];						
+			onlineimg.src=obj_data[0];
 		} else {
 			show_elem(onlineimg, false);
-		}		
+		}
 	}
-	
+
 	mode_select.selectedIndex = 0;
 	player.innerHTML = '';
 	player.appendChild(onlineimg);
 	player.appendChild(loadingimg);
-		
-	clearTimeout(online_timeout_id);	
+
+	clearTimeout(online_timeout_id);
 	online_timeout_id=setTimeout(function() {
 		if (mode_select.selectedIndex==0) {
 			var _params = {comp: comp_select.value,
-						   user: user_select.value,						   					   
+						   user: user_select.value,
 			}
 			var jreq = {jsonrpc: '2.0', method: 'online', id: Math.random(), params: _params}
 			json_request(api_url, jreq, show);
 			clearTimeout(online_timeout_id);
 			online_timeout_id = setTimeout(arguments.callee, 2000);
-		}	
+		}
 	}, 1000);
 }
 
@@ -415,31 +422,31 @@ videoPlayer = function() {
     var next_movie=0;
     var cur_event_secs=0;
     var current_play_accel=1;
-    
+
     function set_cur_event_secs(secs) {
         cur_event_secs = secs;
     }
-    
+
     function set_next_movie(movie_id) {
         next_movie = movie_id;
     }
-    
+
     function set_movie_duration(dur) {
         movie_duration = dur;
     }
-    
+
     function set_play_accel(accel) {
         current_play_accel = accel;
     }
-    
+
     function get_time() {
         return tm;
     }
-    
+
     function get_next_movie_id() {
         return next_movie;
     }
-    
+
     function ktVideoProgress(time) {
     // вызывается каждую секунду проигрывания видео
         tm=parseInt(time,10);
@@ -447,39 +454,39 @@ videoPlayer = function() {
             if (document.getElementById('flashplayer')['jsScroll']) {
                 document.getElementById('flashplayer').jsScroll(++tm);
             }
-        }        
+        }
     }
-    
+
     function ktVideoFinished() {
         tm=0;
         show_archive(next_movie);
     }
-    
+
     function ktVideoScrolled(time) {
     // вызовется при перемотке видео
-        tm=parseInt(time,10);        
+        tm=parseInt(time,10);
     }
-    
+
     function ktVideoStarted() {
     // вызовется при нажатии на кнопку play
         paused=false;
     }
-    
+
     function ktVideoPaused() {
     // вызовется при нажатии на кнопку pause
         paused=true;
     }
-    
+
     function ktVideoStopped() {
     // вызовется при нажатии на кнопку stop
         paused=true;
-    }   
+    }
 
     function ktPlayerLoaded() {
         tm=0;
         document.onkeydown = function(e) {
         	var flashplayer=document.getElementById('flashplayer');
-            if (flashplayer) {			
+            if (flashplayer) {
                 switch (e.which) {
                 case 39:
                     if (flashplayer['jsScroll']) {
@@ -490,7 +497,7 @@ videoPlayer = function() {
                     return false;
                 case 37:
                     if (flashplayer['jsScroll']) {
-                        tm-=1;	
+                        tm-=1;
                         if (tm>=1)
                             flashplayer.jsScroll(tm);
                     }
@@ -509,23 +516,23 @@ videoPlayer = function() {
                         }
                     }
                     return false;
-                }                
+                }
                 flashplayer=null;
             }
         }
     }
-    
+
     function html5playerProgress() {
         var rate = document.getElementById('playback_rate').value;
-            
+
         this.playbackRate=rate;
         tm=this.currentTime;
     }
-    
+
     function html5playerScrolled() {
-        tm=this.currentTime;            
+        tm=this.currentTime;
     }
-    
+
     function html5playerFinished() {
         tm=0;
         if (movies[next_movie]) {
@@ -533,18 +540,18 @@ videoPlayer = function() {
         	playlist_hlight(next_movie);
         }
     }
-    
+
     function html5playerPlayPause() {
-    	var html5player=document.getElementById('html5player'); 
+    	var html5player=document.getElementById('html5player');
         if (html5player) {
             if (html5player.paused)
                 html5player.play();
             else
                 html5player.pause();
             html5player=null;
-        }	
+        }
     }
-    
+
     function html5playerStop() {
     	var html5player=document.getElementById('html5player');
     	if (html5player) {
@@ -554,10 +561,10 @@ videoPlayer = function() {
     	}
     	html5player=null;
     }
-    
+
     function html5playerLoaded() {
         document.onkeydown = function(e) {
-        	var html5player=document.getElementById('html5player'); 
+        	var html5player=document.getElementById('html5player');
             if (html5player) {
                 switch (e.which) {
                 case 39:
@@ -574,12 +581,12 @@ videoPlayer = function() {
                 	html5playerPlayPause();
                     tm=html5player.currentTime;
                     return false;
-                }                
+                }
                 html5player=null;
             }
         }
     }
-    
+
     function set_video_player(params) {
 		function getFileExtension(filename) {
 			var ext = /^.+\.([^.]+)$/.exec(filename);
@@ -661,7 +668,7 @@ videoPlayer = function() {
 					+ '" height="'
 					+ params.height
                     + '"</video>';
-            
+
 			var html5player = document.getElementById('html5player');
             for (var key in params.config) {
                 if (params.config.hasOwnProperty(key))
@@ -712,9 +719,9 @@ videoPlayer = function() {
 					+ params.src.split(/(\\|\/)/g).pop() + "</a></p>";
 		}
 	}
-		
+
     // /////////////////EXPORT METHODS//////////////////////////////
-    
+
     return {
         set_video_player: set_video_player,
         set_cur_event_secs: set_cur_event_secs,
@@ -723,8 +730,8 @@ videoPlayer = function() {
         set_play_accel: set_play_accel,
         get_time: get_time,
         get_next_movie_id: get_next_movie_id,
-        
-        
+
+
         // /////////////////FLASHPLAYER EVENTS//////////////////////////////
 
         ktVideoProgress: ktVideoProgress,
@@ -742,8 +749,8 @@ videoPlayer = function() {
         html5playerFinished: html5playerFinished,
         html5playerPlayPause: html5playerPlayPause,
         html5playerStop: html5playerStop,
-        html5playerLoaded: html5playerLoaded 
-        
+        html5playerLoaded: html5playerLoaded
+
     }
 }();
 
