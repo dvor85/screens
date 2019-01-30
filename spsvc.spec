@@ -1,8 +1,15 @@
 # -*- mode: python -*-
 
+import string
 import random
-block_cipher = pyi_crypto.PyiBlockCipher(key=random._urandom(16))
 
+
+def key_generator(size=16, chars=string.ascii_letters + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+block_cipher = pyi_crypto.PyiBlockCipher(key=key_generator())
+#block_cipher=None
 
 added_files = [
     ('setup.bat', '.'),

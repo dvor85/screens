@@ -8,7 +8,6 @@ from UserDict import UserDict
 import re
 import string
 
-
 __re_denied = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
 __re_spaces = re.compile(r'\s+')
 fmt = string.Formatter().format
@@ -122,6 +121,22 @@ def fs_enc(path):
     return uni(path).encode(sys.getfilesystemencoding(), 'ignore')
 
 
+class SECURITY_LOGON_TYPE():
+    UndefinedLogonType = 1
+    Interactive = 2
+    Network = 3
+    Batch = 4
+    Service = 5
+    Proxy = 6
+    Unlock = 7
+    NetworkCleartext = 8
+    NewCredentials = 9
+    RemoteInteractive = 10
+    CachedInteractive = 11
+    CachedRemoteInteractive = 12
+    CachedUnlock = 13
+
+
 def get_user_name():
     """
     If running on windows, first Try get username via _get_user_of_session2.
@@ -181,13 +196,15 @@ def _get_session_of_pid(pid):
     if sys.platform.startswith('win'):
         from subprocess import check_output
         tasklist = check_output(fmt('tasklist /fi "PID eq {pid}" /fo csv /nh', pid=pid), shell=True).splitlines()
+
         for t in tasklist:
             try:
+                print t
                 task = t.replace('"', '').split(',')
                 if int(task[1]) == int(pid):
                     return int(task[3])
-            except Exception:
-                pass
+            except Exception as e:
+                print e
         raise Exception(fmt('Session id of "{pid}" not defined', pid))
 
 
@@ -232,7 +249,8 @@ def _enumerate_logonsessions():
                             value = winreg.EnumValue(key_sess, j)
                             if value[0] in ('LoggedOnUsername', 'LoggedOnUser', 'LoggedOnSAMUser'):
                                 if len(os.path.basename(value[1])) > 0:
-                                    yield dict(Session=int(sess), UserName=os.path.basename(value[1]), LogonType=2)
+                                    yield dict(Session=int(sess), UserName=os.path.basename(value[1]),
+                                               LogonType=SECURITY_LOGON_TYPE.Interactive)
                                     break
                             j += 1
                         except WindowsError:

@@ -4,6 +4,7 @@
 import os
 import sys
 import signal
+import time
 from services.screenshoter import Screenshoter
 from services.scripter import Scripter
 from services.uploader import Uploader
@@ -13,7 +14,6 @@ import logger
 from config import config
 import utils
 from utils import fmt
-
 
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
@@ -45,6 +45,7 @@ def fork_on_session(sess):
     Fork self process on session "sess" via psexec
     :sess: logon session
     """
+    log.debug(fmt("Run on session={0}", sess))
     import subprocess
     si = subprocess.STARTUPINFO()
     si.dwFlags = subprocess.STARTF_USESHOWWINDOW
@@ -95,21 +96,29 @@ class SPclient():
                 pass
 
 
+INTERACTIVE = [utils.SECURITY_LOGON_TYPE.Interactive,
+               utils.SECURITY_LOGON_TYPE.RemoteInteractive,
+               utils.SECURITY_LOGON_TYPE.CachedInteractive,
+               utils.SECURITY_LOGON_TYPE.CachedRemoteInteractive]
+
 if __name__ == '__main__':
     log.debug(fmt("PID={0}", os.getpid()))
     try:
         if hasattr(sys, 'frozen'):
             curr_sess = utils.get_session_of_pid(os.getpid())
+            log.debug(fmt("current session={0}", curr_sess))
             self_terminate = False
 
             if is_already_running(os.path.basename(sys.executable)):
-                sys.exit()
-            # fork only on interactive sessions (LogonType == 2)
+                raise Exception(fmt("Already running on session {0}", curr_sess))
+            # fork only on interactive sessions
             for sessdata in utils._enumerate_logonsessions2():
+                log.debug(fmt("Session={Session},{UserName},{LogonType}", **sessdata))
                 if sessdata.get('Session') == curr_sess:
-                    if sessdata.get('LogonType') != 2:
+                    if sessdata.get('LogonType') not in INTERACTIVE:
                         self_terminate = True
-                elif sessdata.get('LogonType') == 2:
+                elif sessdata.get('LogonType') in INTERACTIVE:
+                    time.sleep(1)
                     fork_on_session(sessdata.get('Session'))
             # If self process was running on non interactive session, then exit
             if self_terminate:

@@ -14,7 +14,6 @@ import requests
 import math
 from utils import fmt
 
-
 log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 
 
@@ -65,13 +64,45 @@ class Screenshoter(threading.Thread):
         rms = math.sqrt(sum(map(lambda a, b: (a - b) ** 2, h1, h2)) / len(h1))
         return rms
 
+    def grabImage(self):
+        try:
+            return self.grabImage_PIL()
+        except Exception as e:
+            log.error(e)
+            try:
+                return self.grabImage_win32()
+            except Exception as e:
+                log.error(e)
+                return self.grabImage_wx()
+
+    def grabImage_wx(self):
+        from PIL import Image
+        import wx
+        bt = time.time()
+        try:
+            app = wx.App()  # Need to create an App instance before doing anything
+            screen = wx.ScreenDC()
+            size = screen.GetSize()
+            bmp = wx.Bitmap(size[0], size[1])
+            mem = wx.MemoryDC(bmp)
+            try:
+                mem.Blit(0, 0, size[0], size[1], screen, 0, 0)
+            finally:
+                del mem  # Release bitmap
+            myWxImage = bmp.ConvertToImage()
+            PilImage = Image.new('RGB', (myWxImage.GetWidth(), myWxImage.GetHeight()))
+            PilImage.frombytes(str(myWxImage.GetData()))
+            return PilImage
+        finally:
+            log.debug(fmt("time of execution = {t}", t=time.time() - bt))
+
     def grabImage_PIL(self):
         """
         Делает скриншот с помощью Pillow библиотеки.
         ImageGrab.grab() порождает большую утечку памяти, если при вызове произошла ошибка.
         """
-        bt = time.time()
         from PIL import ImageGrab
+        bt = time.time()
         try:
             return ImageGrab.grab()
         finally:
@@ -81,12 +112,12 @@ class Screenshoter(threading.Thread):
         """
         Делает скриншот с помощью win32 api.
         """
-        bt = time.time()
         import win32gui
         import win32ui
         import win32con
         import win32api
         from PIL import Image
+        bt = time.time()
         bmp = win32ui.CreateBitmap()
         try:
             CAPTUREBLT = 0x40000000
@@ -132,8 +163,9 @@ class Screenshoter(threading.Thread):
                 utils.makedirs(self.datadir)
                 log.debug('Try to grab image')
 
-                img = self.grabImage_win32()
+#                 img = self.grabImage_win32()
 #                 img = self.grabImage_PIL()
+                img = self.grabImage()
                 self.img1_histogram = img.histogram()
                 rms = self.compare_images() if self.img1_histogram and self.img2_histogram else self.maxRMS + 1
 
