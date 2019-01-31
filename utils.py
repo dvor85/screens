@@ -59,14 +59,21 @@ def parse_str(s):
     return s
 
 
-def str2num(s):
+def str2num(s, default=0):
     try:
         return int(s)
     except:
         try:
             return float(s)
         except:
-            return 0
+            return default
+
+
+def str2int(str_val, default=0):
+    try:
+        return int(str_val)
+    except:
+        return default
 
 
 def uniq(seq):

