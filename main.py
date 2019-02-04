@@ -52,7 +52,7 @@ def fork_on_session(sess):
     si.dwFlags = subprocess.STARTF_USESHOWWINDOW
     si.wShowWindow = subprocess.SW_HIDE
     subprocess.Popen([utils.fs_enc(os.path.join(config["SELF_DIR"], "psexec.exe")),
-                      "\\\\127.0.0.1", "-accepteula", "-d", "-i", str(sess),
+                      "\\\\127.0.0.1", "-accepteula", "-nobanner", "-d", "-i", str(sess),
                       utils.fs_enc(sys.executable)],
                      shell=False, startupinfo=si)
 
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     log.debug("; ".join(platform.uname()))
     try:
         if hasattr(sys, 'frozen'):
-            if sys.platform.startswith('win') and utils.str2num(('.'.join(platform.version().split('.')[:2]))) >= 6.0:
+            if sys.platform.startswith('win') and utils.get_platform_ver() >= 6.0:
                 curr_sess = utils.get_session_of_pid(os.getpid())
                 log.debug(fmt("current session={0}", curr_sess))
                 self_terminate = False

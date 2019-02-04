@@ -7,6 +7,7 @@ from cgi import parse_qs, escape
 from UserDict import UserDict
 import re
 import string
+import platform
 
 __re_denied = re.compile(ur'[^./\wА-яЁё-]|[./]{2}', re.UNICODE | re.LOCALE)
 __re_spaces = re.compile(r'\s+')
@@ -144,6 +145,10 @@ class SECURITY_LOGON_TYPE():
     CachedUnlock = 13
 
 
+def get_platform_ver():
+    return str2num(('.'.join(platform.version().split('.')[:2])))
+
+
 def get_user_name():
     """
     If running on windows, first Try get username via _get_user_of_session2.
@@ -153,14 +158,15 @@ def get_user_name():
     if sys.platform.startswith('win'):
         try:
             __env_var = 'USERNAME'
-            sess = get_session_of_pid(os.getpid())
-            try:
-                sessuser = get_user_of_session(sess)
-            except Exception:
-                sessuser = os.getenv(__env_var)
+            if get_platform_ver() >= 6.0:
+                sess = get_session_of_pid(os.getpid())
+                try:
+                    sessuser = get_user_of_session(sess)
+                except Exception:
+                    sessuser = os.getenv(__env_var)
 
-            if len(sessuser) > 0:
-                return true_enc(sessuser)
+                if len(sessuser) > 0:
+                    return true_enc(sessuser)
 
         except Exception:
             pass

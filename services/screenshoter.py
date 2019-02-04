@@ -66,16 +66,12 @@ class Screenshoter(threading.Thread):
 
     def grabImage(self):
         try:
-            return self.grabImage_PIL()
+            return self._grabImage_win32()
         except Exception as e:
             log.error(e)
-            try:
-                return self.grabImage_win32()
-            except Exception as e:
-                log.error(e)
-                return self.grabImage_wx()
+            return self._grabImage_wx()
 
-    def grabImage_wx(self):
+    def _grabImage_wx(self):
         from PIL import Image
         import wx
         bt = time.time()
@@ -85,10 +81,7 @@ class Screenshoter(threading.Thread):
             size = screen.GetSize()
             bmp = wx.Bitmap(size[0], size[1])
             mem = wx.MemoryDC(bmp)
-            try:
-                mem.Blit(0, 0, size[0], size[1], screen, 0, 0)
-            finally:
-                del mem  # Release bitmap
+            mem.Blit(0, 0, size[0], size[1], screen, 0, 0)
             myWxImage = bmp.ConvertToImage()
             PilImage = Image.new('RGB', (myWxImage.GetWidth(), myWxImage.GetHeight()))
             PilImage.frombytes(str(myWxImage.GetData()))
@@ -96,7 +89,7 @@ class Screenshoter(threading.Thread):
         finally:
             log.debug(fmt("time of execution = {t}", t=time.time() - bt))
 
-    def grabImage_PIL(self):
+    def _grabImage_PIL(self):
         """
         Делает скриншот с помощью Pillow библиотеки.
         ImageGrab.grab() порождает большую утечку памяти, если при вызове произошла ошибка.
@@ -108,7 +101,7 @@ class Screenshoter(threading.Thread):
         finally:
             log.debug(fmt("time of execution = {t}", t=time.time() - bt))
 
-    def grabImage_win32(self):
+    def _grabImage_win32(self):
         """
         Делает скриншот с помощью win32 api.
         """

