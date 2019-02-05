@@ -83,9 +83,7 @@ class Screenshoter(threading.Thread):
             mem = wx.MemoryDC(bmp)
             mem.Blit(0, 0, size[0], size[1], screen, 0, 0)
             myWxImage = bmp.ConvertToImage()
-            PilImage = Image.new('RGB', (myWxImage.GetWidth(), myWxImage.GetHeight()))
-            PilImage.frombytes(str(myWxImage.GetData()))
-            return PilImage
+            return Image.frombytes('RGB', size.Get(), myWxImage.GetDataBuffer().tobytes())
         finally:
             log.debug(fmt("time of execution = {t}", t=time.time() - bt))
 

@@ -8,20 +8,20 @@ ver | find /i "5." > nul && set XP=1|| set XP=0
 rem Parse passed arguments to script
 :parse_passed_params
   if "%~1"=="" goto:end_parse_passed_params
-  if "%~1"=="install"           ( set Action="%~1" && shift & goto:parse_passed_params )
-  if "%~1"=="uninstall"         ( set Action="%~1" && shift & goto:parse_passed_params )
-  if "%~1"=="stop"              ( set Action="%~1" && shift & goto:parse_passed_params )
-  if "%~1"=="run"               ( set Action="%~1" && shift & goto:parse_passed_params )
-  if not "%~1"==""              ( set Progra="%~1" && shift & goto:parse_passed_params )
+  if "%~1"=="install"           ( set Action=%~1&& shift & goto:parse_passed_params )
+  if "%~1"=="uninstall"         ( set Action=%~1&& shift & goto:parse_passed_params )
+  if "%~1"=="stop"              ( set Action=%~1&& shift & goto:parse_passed_params )
+  if "%~1"=="run"               ( set Action=%~1&& shift & goto:parse_passed_params )
+  if not "%~1"==""              ( set Progra=%~1&& shift & goto:parse_passed_params )
   shift & goto:parse_passed_params
 :end_parse_passed_params
 
 :begin
-    if %Progra%==""        	 goto:end  
-    if %Action%=="install"   call:install %Progra%
-    if %Action%=="uninstall" call:uninstall %Progra%
-    if %Action%=="stop"      call:stop %Progra%
-    if %Action%=="run"       call:run %Progra%
+    if "%Progra%"==""        	 goto:end  
+    if "%Action%"=="install"   call:install "%Progra%"
+    if "%Action%"=="uninstall" call:uninstall "%Progra%"
+    if "%Action%"=="stop"      call:stop "%Progra%"
+    if "%Action%"=="run"       call:run "%Progra%"
     goto:end
 	
 :install
