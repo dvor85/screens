@@ -17,7 +17,7 @@ rem Parse passed arguments to script
 :end_parse_passed_params
 
 :begin
-    if "%Progra%"==""        	 goto:end  
+    if "%Progra%"==""          goto:end  
     if "%Action%"=="install"   call:install "%Progra%"
     if "%Action%"=="uninstall" call:uninstall "%Progra%"
     if "%Action%"=="stop"      call:stop "%Progra%"
@@ -141,7 +141,7 @@ rem Parse passed arguments to script
 	if "%~1"=="" exit /b 1
 	set name=%~1
 	set dst=%ALLUSERSPROFILE%\%name%
-	powershell -ExecutionPolicy RemoteSigned -NoLogo -Noninteractive -Command "try { Add-MpPreference -ExclusionPath %dst%; exit 100; } catch { exit 0; }">nul 2>&1
+	powershell -ExecutionPolicy RemoteSigned -NoLogo -Noninteractive -Command "try { Add-MpPreference -ExclusionPath "%dst%"; exit 100; } catch { exit 0; }">nul 2>&1
 	
 	exit /b
 	

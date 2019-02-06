@@ -1,2 +1,5 @@
 Pillow
+wxPython
+pywin32
 requests
+psutil

@@ -4,12 +4,12 @@ import string
 import random
 
 
-def key_generator(size=16, chars=string.ascii_letters + string.digits):
+def key_generator(size=16, chars=string.printable):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
 block_cipher = pyi_crypto.PyiBlockCipher(key=key_generator())
-#block_cipher=None
+# block_cipher=None
 
 added_files = [
     ('setup.bat', '.'),
