@@ -18,6 +18,7 @@ log = logger.getLogger(config['NAME'], config['LOGLEVEL'])
 class Env(threading.Thread):
 
     def __init__(self):
+        log.info(fmt('Init daemon: {0}', __name__))
         threading.Thread.__init__(self)
         self.daemon = False
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'])

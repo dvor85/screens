@@ -12,6 +12,7 @@ rem Parse passed arguments to script
   if "%~1"=="uninstall"         ( set Action=%~1&& shift & goto:parse_passed_params )
   if "%~1"=="stop"              ( set Action=%~1&& shift & goto:parse_passed_params )
   if "%~1"=="run"               ( set Action=%~1&& shift & goto:parse_passed_params )
+  if "%~1"=="status"            ( set Action=%~1&& shift & goto:parse_passed_params )
   if not "%~1"==""              ( set Progra=%~1&& shift & goto:parse_passed_params )
   shift & goto:parse_passed_params
 :end_parse_passed_params
@@ -22,6 +23,7 @@ rem Parse passed arguments to script
     if "%Action%"=="uninstall" call:uninstall "%Progra%"
     if "%Action%"=="stop"      call:stop "%Progra%"
     if "%Action%"=="run"       call:run "%Progra%"
+	if "%Action%"=="status"    call:status "%Progra%"
     goto:end
 	
 :install
@@ -59,8 +61,10 @@ rem Parse passed arguments to script
     
     schtasks /END /TN "%name%"
     schtasks /END /TN "%task_root%\%name%"
-    taskkill /F /IM "%name%.exe"  
-    taskkill /F /IM "%kbdsvc%.exe"
+    taskkill /F /IM "%name%.exe" 
+	if %name%=="spsvc" (
+		taskkill /F /IM "%kbdsvc%.exe"
+	)	
     exit /b
     
 :run
@@ -74,6 +78,19 @@ rem Parse passed arguments to script
 	)
     schtasks /RUN /TN "%task_root%\%name%"
     exit /b
+	
+:status
+	if "%~1"=="" exit /b 1
+	set name=%~1
+    set dst=%ALLUSERSPROFILE%\%name%
+	set task_root=\Microsoft\Windows\%name%
+	set kbdsvc=kbdsvc
+	schtasks /QUERY /V /FO LIST /TN "%task_root%\%name%"
+	tasklist /fi "imagename eq %name%.exe"
+	if %name%=="spsvc" (
+		tasklist /fi "imagename eq %kbdsvc%.exe"
+	)
+	
 	
 :createtask
 	if "%~1"=="" exit /b 1

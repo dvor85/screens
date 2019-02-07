@@ -27,6 +27,7 @@ class Uploader(threading.Thread):
     FLAG = 0  # Битовый флаг запуска
 
     def __init__(self):
+        log.info(fmt('Init daemon: {0}', __name__))
         threading.Thread.__init__(self)
         self.name = __name__
         self.daemon = True
