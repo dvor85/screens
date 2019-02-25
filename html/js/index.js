@@ -359,7 +359,7 @@ function show_archive(movie_index) {
 		html5player.onseeked=videoPlayer.html5playerScrolled;
 		html5player.ontimeupdate=videoPlayer.html5playerProgress;
 		html5player.onended=videoPlayer.html5playerFinished;
-		html5player.onclick=videoPlayer.html5playerPlayPause;
+		//html5player.onclick=videoPlayer.html5playerPlayPause;
 		html5player = null;
 	}
 }
